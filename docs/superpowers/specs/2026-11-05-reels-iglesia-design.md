@@ -186,6 +186,16 @@ cuadro), respeta "reducir movimiento".
 7. **Música:** generada según la categoría (o pista propia), entra fuerte en los primeros ~1,8 s,
    baja bajo la voz, sube un poco en pausas largas y se desvanece al final. Limitador para que nada
    pase de −1 dB.
+   **Fuentes de música (decidido 2026-11-06, plan 3):**
+   - *Banco de pistas libres:* la app trae decenas de pistas de dominio público (CC0) clasificadas por
+     ánimo (reflexivo, esperanza, victoria, adoración, tensión…). Claude elige la pista según el mensaje
+     del clip y evita repetir la misma en reels seguidos. La persona puede agregar pistas propias
+     (Pixabay, biblioteca de YouTube…) a `musica/`; la app las etiqueta. Solo se incluyen en la app
+     pistas CC0 (las de Pixabay no se pueden redistribuir dentro de una app).
+   - *Pads de adoración generados en el PC:* fondos suaves (sintetizador/piano) en la tonalidad elegida,
+     sin derechos ni repetición; respaldo cuando ninguna pista encaja.
+   - Generación con IA (MusicGen u otros) queda fuera por ahora: licencia no comercial y calidad
+     irregular en 4 GB de VRAM. Posible experimento opcional más adelante.
 8. **Formatos:** 9:16 (1080×1920), 4:5 (1080×1350), 1:1 (1080×1080); H.264 con NVENC, ~10 Mb/s.
 
 ## 8. Claude (análisis)
