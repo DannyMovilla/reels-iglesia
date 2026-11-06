@@ -147,7 +147,8 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
         {clip && <div className="centro-cabeza"><h2>{clip.titulo}</h2><span>{clip.categoria} · {formatoTiempo(clip.fin - clip.inicio)}</span></div>}
         {listo && (
           <VistaPrevia ref={vista} proyectoId={proyecto.id} clip={clip} transcripcion={datos.transcripcion!} caras={datos.caras}
-            marca={datos.marca!} dimensiones={datos.dimensiones!} predicador={proyecto.predicador ?? datos.marca?.predicador} alAvisos={setAvisos} alTiempo={setTiempo} />
+            marca={datos.marca!} dimensiones={datos.dimensiones!} predicador={proyecto.predicador ?? datos.marca?.predicador}
+            inicioRango={proyecto.pasos.audio?.estado === "ok" ? proyecto.rango.inicio : undefined} alAvisos={setAvisos} alTiempo={setTiempo} />
         )}
       </main>
 

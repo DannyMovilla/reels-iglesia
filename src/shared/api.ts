@@ -43,6 +43,10 @@ export interface ApiReels {
   cambiarAnimo(id: string, animo: Animo): Promise<void>;
   /** URL para escuchar una pista de la carpeta de música. */
   urlPista(id: string): string;
+  /** Música que sonará en el reel, para la vista previa (URL), o null si no lleva música. */
+  urlMusicaVista(proyectoId: string, clip: ClipSpec, duracion: number): Promise<string | null>;
+  /** Voz limpia del proyecto (voz.m4a). */
+  urlVoz(proyectoId: string): string;
   guardarMarca(m: Marca): Promise<void>;
   /** Abre el diálogo para elegir el logo, lo copia a la carpeta de la marca y devuelve su ruta (null si se cancela). */
   elegirLogo(): Promise<string | null>;

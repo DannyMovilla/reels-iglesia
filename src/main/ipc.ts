@@ -3,7 +3,7 @@ import { basename, join } from "node:path";
 import { dialog, ipcMain, protocol, shell, type BrowserWindow } from "electron";
 import type { DatosNuevoProyecto, EstadoSistema } from "@shared/api";
 import { descargarVideo } from "./descargas/ytdlp";
-import { agregarPista, cambiarAnimo, carpetaMusica, listarPistas } from "./musica/banco";
+import { agregarPista, cambiarAnimo, carpetaMusica, listarPistas, musicaParaVista } from "./musica/banco";
 import type { Animo, Caras, ClipSpec, Formato, Marca, TipoTarea, Transcripcion } from "@shared/tipos";
 import type { Cola } from "./cola/cola";
 import { dimensionesVideo, duracionVideo } from "./procesos/video";
@@ -43,6 +43,8 @@ export async function resolverMedio(tipo: string, valor: string): Promise<string
     const [id, archivo] = valor.split("/");
     return simple(id) && simple(archivo) ? join(carpetaProyecto(id), "exportados", archivo) : null;
   }
+  if (tipo === "voz") return simple(valor) ? join(carpetaProyecto(valor), "voz.m4a") : null;
+  if (tipo === "cache") return simple(valor) ? join(carpetaDatos(), "cache", valor) : null;
   if (tipo === "proyecto") return simple(valor) ? (await leerProyecto(valor).catch(() => null))?.video.ruta ?? null : null;
   return null;
 }
@@ -94,6 +96,8 @@ export function registrarIpc(deps: DepsIpc): void {
   ipcMain.handle("proyectos:guardarClip", (_e, id: string, clip: ClipSpec) => guardarClip(id, clip));
   ipcMain.handle("marca:leer", () => leerMarca());
   ipcMain.handle("musica:listar", () => listarPistas());
+  ipcMain.handle("musica:vista", async (_e, proyectoId: string, clip: ClipSpec, duracion: number) =>
+    musicaParaVista(clip, await leerProyecto(proyectoId), duracion).catch(() => null));
   ipcMain.handle("musica:agregar", async () => {
     const r = await dialog.showOpenDialog({ title: "Agrega música de fondo", properties: ["openFile", "multiSelections"], filters: [{ name: "Audio", extensions: ["mp3", "wav", "m4a", "ogg", "flac"] }] });
     const agregadas = [];

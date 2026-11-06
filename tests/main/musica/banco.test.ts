@@ -66,3 +66,22 @@ test("modo pista usa la elegida (o el ánimo si ya no existe); modo ninguna, sin
   expect(await musicaParaClip(clip({ modo: "pista", pista: "borrada.mp3" }), proyecto, 30, deps)).toMatch(/pad/);
   expect(await musicaParaClip(clip({ modo: "ninguna" }), proyecto, 30, deps)).toBeNull();
 });
+
+test("vista previa: usa la pista del ánimo sin contarla como usada", async () => {
+  const { musicaParaVista } = await import("../../../src/main/musica/banco");
+  const a = await agregarPista(archivo("a.mp3"), deps);
+  await cambiarAnimo(a.id, "esperanza");
+  expect(await musicaParaVista(clip({}), proyecto, 40, deps)).toEqual({ tipo: "musica", nombre: a.id });
+  expect(existsSync(join(carpetaProyecto(proyecto.id), "musica-usada.json"))).toBe(false);
+});
+
+test("vista previa sin pistas: un pad guardado en caché por ánimo y tonalidad (no se genera cada vez)", async () => {
+  const { musicaParaVista } = await import("../../../src/main/musica/banco");
+  const r1 = await musicaParaVista(clip({ tonalidad: "Sol" }), proyecto, 40, deps);
+  const r2 = await musicaParaVista(clip({ tonalidad: "Sol" }), proyecto, 70, deps);
+  expect(r1).toEqual({ tipo: "cache", nombre: "pad-esperanza-Sol.wav" });
+  expect(r2).toEqual(r1);
+  expect(pads).toHaveLength(1);
+  expect(pads[0].duracion).toBeGreaterThanOrEqual(120);
+  expect(await musicaParaVista(clip({ modo: "ninguna" }), proyecto, 40, deps)).toBeNull();
+});

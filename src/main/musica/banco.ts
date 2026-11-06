@@ -103,6 +103,27 @@ export async function musicaParaClip(clip: ClipSpec, proyecto: Proyecto, duracio
   return destino;
 }
 
+/**
+ * Música para la VISTA PREVIA: la misma elección que al exportar, pero sin contarla como usada.
+ * Sin pista, un pad de 2 minutos guardado en <datos>/cache por ánimo y tonalidad (se genera una sola vez).
+ */
+export async function musicaParaVista(clip: ClipSpec, proyecto: Proyecto, duracion: number, deps: DepsMusica = depsReales): Promise<{ tipo: "musica" | "cache"; nombre: string } | null> {
+  const m = clip.musica;
+  if (m.modo === "ninguna") return null;
+  if (m.modo === "pista" || m.modo === "auto") {
+    const pistas = await listarPistas(deps);
+    const elegida = (m.modo === "pista" ? pistas.find((p) => p.id === m.pista) : undefined) ?? elegirPista(m.animo, pistas, await recientes(proyecto.id), duracion);
+    if (elegida) return { tipo: "musica", nombre: elegida.id };
+  }
+  const nombre = `pad-${m.animo}-${m.tonalidad}.wav`;
+  const destino = join(carpetaDatos(), "cache", nombre);
+  if (!existsSync(destino)) {
+    await mkdir(join(carpetaDatos(), "cache"), { recursive: true });
+    await deps.generarPad(Math.max(120, Math.ceil(duracion) + 1), m.tonalidad, m.animo, 7, destino);
+  }
+  return { tipo: "cache", nombre };
+}
+
 export const depsReales: DepsMusica = {
   duracion: (ruta) => duracionVideo(ruta),
   async generarPad(duracion, tonalidad, animo, semilla, destino) {

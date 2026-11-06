@@ -70,3 +70,12 @@ test("8. el campo de tiempo rechaza minutos o segundos de 60 o más", () => {
   expect(leerTiempo("90:00")).toBe(5400); // minutos sueltos sí pueden pasar de 59
   expect(leerTiempo("1:44:44")).toBe(6284);
 });
+
+test("el servidor de medios entrega la voz limpia y los pads de la caché (solo nombres simples)", async () => {
+  const { resolverMedio } = await import("../../src/main/ipc");
+  const { carpetaProyecto, carpetaDatos } = await import("../../src/main/rutas");
+  expect(await resolverMedio("voz", "p1")).toBe(join(carpetaProyecto("p1"), "voz.m4a"));
+  expect(await resolverMedio("voz", "../x")).toBeNull();
+  expect(await resolverMedio("cache", "pad-esperanza-Sol.wav")).toBe(join(carpetaDatos(), "cache", "pad-esperanza-Sol.wav"));
+  expect(await resolverMedio("cache", "../marca.json")).toBeNull();
+});

@@ -232,3 +232,7 @@
 .chequeo { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; }
 .chequeo .barra-descarga { margin-top: 8px; }
 .aviso-chico { display: flex; align-items: center; gap: 6px; color: var(--warn); font-size: 12px; margin: 0; }
+
+/* Editor: la cola de exportación no tapa los clips */
+.editor-izq > * { flex-shrink: 0; }
+.editor-izq .cola-exportacion { position: sticky; bottom: 0; z-index: 2; background: var(--bg-1); box-shadow: 0 -10px 18px var(--bg-1); }

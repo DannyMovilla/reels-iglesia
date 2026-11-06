@@ -26,6 +26,11 @@ const api: ApiReels = {
   agregarPistas: () => ipcRenderer.invoke("musica:agregar"),
   cambiarAnimo: (id, animo) => ipcRenderer.invoke("musica:animo", id, animo),
   urlPista: (id) => `${medios}/musica/${encodeURIComponent(id)}`,
+  urlMusicaVista: async (proyectoId, clip, duracion) => {
+    const r = (await ipcRenderer.invoke("musica:vista", proyectoId, clip, duracion)) as { tipo: string; nombre: string } | null;
+    return r ? `${medios}/${r.tipo}/${encodeURIComponent(r.nombre)}` : null;
+  },
+  urlVoz: (id) => `${medios}/voz/${encodeURIComponent(id)}`,
   urlExportado: (id, archivo) => `${medios}/exportado/${encodeURIComponent(id)}/${encodeURIComponent(archivo)}`,
   guardarMarca: (m) => ipcRenderer.invoke("marca:guardar", m),
   elegirLogo: () => ipcRenderer.invoke("marca:elegirLogo"),
