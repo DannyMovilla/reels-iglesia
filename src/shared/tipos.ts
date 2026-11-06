@@ -129,3 +129,23 @@ export interface ClipSpec {
   formatos: Formato[];
   estado: "sugerido" | "editado" | "exportado";
 }
+
+/** Escenas animadas para los reels de «Con IA» (fondos del catálogo de HyperFrames). */
+export type Escena = "luz" | "amanecer" | "aurora" | "nubes" | "atardecer" | "destello";
+
+/** Un reel de «Con IA»: un versículo RVR1960 (escrito por Claude, confirmado por la persona) con su reflexión. */
+export interface Creacion {
+  id: string;
+  creado: string;
+  entrada: { tipo: "versiculo" | "tema"; texto: string };
+  versiculo: { ref: string; texto: string; confirmado: boolean };
+  gancho: string;
+  reflexion: string;
+  palabrasClave: string[];
+  musica: ClipSpec["musica"];
+  subtitulos: { estilo: EstiloSub };
+  fondo: { tipo: "escena" | "degradado" | "imagen" | "video"; escena?: Escena; archivo?: string };
+  redes: Redes;
+  formatos: Formato[];
+  estado: "borrador" | "exportado";
+}

@@ -4,7 +4,8 @@ import { dialog, ipcMain, protocol, shell, type BrowserWindow } from "electron";
 import type { DatosNuevoProyecto, EstadoSistema } from "@shared/api";
 import { descargarVideo } from "./descargas/ytdlp";
 import { agregarPista, cambiarAnimo, carpetaMusica, listarPistas, musicaParaVista } from "./musica/banco";
-import type { Animo, Caras, ClipSpec, Formato, Marca, TipoTarea, Transcripcion } from "@shared/tipos";
+import { borrarCreacion, copiarFondo, crearCreacion, guardarCreacion, leerCreacion, listarCreaciones } from "./ia/almacen";
+import type { Animo, Caras, ClipSpec, Creacion, Formato, Marca, TipoTarea, Transcripcion } from "@shared/tipos";
 import type { Cola } from "./cola/cola";
 import { dimensionesVideo, duracionVideo } from "./procesos/video";
 import { carpetaDatos, carpetaProyecto, raizApp } from "./rutas";
@@ -95,6 +96,16 @@ export function registrarIpc(deps: DepsIpc): void {
   ipcMain.handle("proyectos:caras", (_e, id: string) => leerJson<Caras>(id, "caras.json"));
   ipcMain.handle("proyectos:guardarClip", (_e, id: string, clip: ClipSpec) => guardarClip(id, clip));
   ipcMain.handle("marca:leer", () => leerMarca());
+  ipcMain.handle("ia:listar", () => listarCreaciones());
+  ipcMain.handle("ia:crear", (_e, entrada: Creacion["entrada"]) => crearCreacion(entrada));
+  ipcMain.handle("ia:leer", (_e, id: string) => leerCreacion(id));
+  ipcMain.handle("ia:guardar", (_e, c: Creacion) => guardarCreacion(c));
+  ipcMain.handle("ia:borrar", (_e, id: string) => borrarCreacion(id));
+  ipcMain.handle("ia:elegirFondo", async (_e, id: string) => {
+    const r = await dialog.showOpenDialog({ title: "Elige una foto o un video de fondo", properties: ["openFile"],
+      filters: [{ name: "Fotos y videos", extensions: ["jpg", "jpeg", "png", "webp", "mp4", "mov", "m4v", "webm"] }] });
+    return r.canceled || !r.filePaths[0] ? null : copiarFondo(id, r.filePaths[0]);
+  });
   ipcMain.handle("musica:listar", () => listarPistas());
   ipcMain.handle("musica:vista", async (_e, proyectoId: string, clip: ClipSpec, duracion: number) =>
     musicaParaVista(clip, await leerProyecto(proyectoId), duracion).catch(() => null));

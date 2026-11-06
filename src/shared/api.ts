@@ -1,5 +1,5 @@
 import type { Pista } from "./reel/pistas";
-import type { Animo, Caras, ClipSpec, Formato, Marca, Proyecto, Tarea, TipoTarea, Transcripcion, VideoOrigen } from "./tipos";
+import type { Animo, Caras, ClipSpec, Creacion, Formato, Marca, Proyecto, Tarea, TipoTarea, Transcripcion, VideoOrigen } from "./tipos";
 
 export interface Chequeo {
   ok: boolean;
@@ -37,6 +37,14 @@ export interface ApiReels {
   /** Guarda un clip editado (reemplaza el de mismo id en clips.json). */
   guardarClip(proyectoId: string, clip: ClipSpec): Promise<void>;
   leerMarca(): Promise<Marca>;
+  /** «Con IA»: reels de un versículo. */
+  listarCreaciones(): Promise<Creacion[]>;
+  crearCreacion(entrada: Creacion["entrada"]): Promise<Creacion>;
+  leerCreacion(id: string): Promise<Creacion>;
+  guardarCreacion(c: Creacion): Promise<void>;
+  borrarCreacion(id: string): Promise<void>;
+  /** Abre el diálogo para elegir una foto o un video de fondo; devuelve la ruta copiada o null. */
+  elegirFondo(id: string): Promise<string | null>;
   listarPistas(): Promise<Pista[]>;
   /** Abre el diálogo para agregar pistas propias; devuelve las agregadas. */
   agregarPistas(): Promise<Pista[]>;
