@@ -7,6 +7,8 @@ import type { DatosNuevoProyecto, EstadoSistema } from "@shared/api";
 import type { ClipSpec, TipoTarea, Transcripcion } from "@shared/tipos";
 import type { Cola } from "./cola/cola";
 import { duracionVideo } from "./procesos/video";
+import { raizApp } from "./rutas";
+import { esquemaVista, registrarComposicion, servirVista } from "./vista";
 import { crearProyecto, leerJson, leerProyecto, listarProyectos } from "./proyectos/almacen";
 
 export interface DepsIpc {
@@ -20,7 +22,10 @@ const MIME: Record<string, string> = { ".mp4": "video/mp4", ".mov": "video/quick
 
 /** Debe llamarse antes de app.ready. */
 export function registrarEsquemaVideo(): void {
-  protocol.registerSchemesAsPrivileged([{ scheme: "reels-video", privileges: { stream: true, supportFetchAPI: true, bypassCSP: false } }]);
+  protocol.registerSchemesAsPrivileged([
+    { scheme: "reels-video", privileges: { stream: true, supportFetchAPI: true, bypassCSP: false } },
+    esquemaVista,
+  ]);
 }
 
 /** Videos que la persona eligió con el diálogo: solo esos se pueden servir por ruta. */
@@ -60,6 +65,8 @@ function servirVideo(): void {
 
 export function registrarIpc(deps: DepsIpc): void {
   servirVideo();
+  servirVista(raizApp());
+  ipcMain.handle("vista:registrar", (_e, id: string, html: string) => registrarComposicion(id, html));
   const { cola } = deps;
   cola.on("cambio", (t) => {
     const v = deps.ventana();

@@ -20,6 +20,7 @@ const api: ApiReels = {
   cancelar: (id) => ipcRenderer.invoke("tareas:cancelar", id),
   urlVideo: (id) => `reels-video://proyecto/${encodeURIComponent(id)}`,
   urlArchivo: (ruta) => `reels-video://archivo/${encodeURIComponent(ruta)}`,
+  registrarVista: (id, html) => ipcRenderer.invoke("vista:registrar", id, html),
   verificarSistema: () => ipcRenderer.invoke("sistema:verificar"),
   accionSistema: (a) => ipcRenderer.invoke("sistema:accion", a),
   ventana: {

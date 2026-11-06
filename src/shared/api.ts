@@ -36,6 +36,8 @@ export interface ApiReels {
   urlVideo(id: string): string;
   /** URL para reproducir un video elegido con elegirVideo() (antes de crear el proyecto). */
   urlArchivo(ruta: string): string;
+  /** Registra una composición de vista previa y devuelve su URL reels-comp://<id>/index.html. */
+  registrarVista(id: string, html: string): Promise<string>;
   verificarSistema(): Promise<EstadoSistema>;
   accionSistema(accion: NonNullable<Chequeo["accion"]>): Promise<void>;
   ventana: { minimizar(): void; maximizar(): void; cerrar(): void };
