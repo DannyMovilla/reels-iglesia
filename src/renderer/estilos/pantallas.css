@@ -226,3 +226,8 @@
 .zona-enlace { display: flex; flex-direction: column; gap: 12px; max-width: 680px; padding: 22px; border: 1px dashed var(--line-2); border-radius: var(--r-lg); background: var(--bg-1); }
 .barra-descarga { flex: 1; min-width: 200px; height: 8px; border-radius: 99px; background: var(--bg-3); overflow: hidden; }
 .barra-descarga i { display: block; height: 100%; background: var(--luz); transition: width .3s ease; }
+
+/* Primer uso y revisiones */
+.primer-uso { max-width: 760px; }
+.chequeo { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; }
+.chequeo .barra-descarga { margin-top: 8px; }

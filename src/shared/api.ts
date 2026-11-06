@@ -4,7 +4,7 @@ import type { Animo, Caras, ClipSpec, Formato, Marca, Proyecto, Tarea, TipoTarea
 export interface Chequeo {
   ok: boolean;
   detalle: string;
-  accion?: "instalar-ffmpeg" | "crear-venv" | "iniciar-sesion-claude";
+  accion?: "instalar-ffmpeg" | "instalar-python" | "crear-venv" | "iniciar-sesion-claude" | "comprobar-claude";
 }
 
 export interface EstadoSistema {
@@ -67,7 +67,10 @@ export interface ApiReels {
   urlArchivo(ruta: string): string;
   /** Registra una composición de vista previa y devuelve su URL reels-comp://<id>/index.html. */
   registrarVista(id: string, html: string): Promise<string>;
-  verificarSistema(): Promise<EstadoSistema>;
+  /** Revisa lo que necesita la app. Con `claude: true` también consulta a Claude (gasta una consulta). */
+  verificarSistema(opciones?: { claude?: boolean }): Promise<EstadoSistema>;
+  /** Progreso de una acción del asistente (preparar el entorno, instalar FFmpeg…). */
+  alProgresoSistema(cb: (p: { pct: number; texto?: string }) => void): () => void;
   accionSistema(accion: NonNullable<Chequeo["accion"]>): Promise<void>;
   ventana: { minimizar(): void; maximizar(): void; cerrar(): void };
 }

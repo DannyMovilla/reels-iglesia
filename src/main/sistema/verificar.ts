@@ -1,11 +1,14 @@
 import { spawn } from "node:child_process";
 import type { Chequeo, EstadoSistema } from "@shared/api";
 import { ejecutarConProgreso } from "../procesos/lineas";
+import { buscarPython } from "./preparar";
 
 export interface DepsVerificar {
   python: string;
   claude: string;
   claudeArgs?: string[];
+  /** false: no se consulta a Claude (la revisión al abrir la app no gasta uso de la suscripción). */
+  revisarClaude?: boolean;
   ejecutar?: (cmd: string, args: string[], op?: Parameters<typeof ejecutarConProgreso>[2]) => ReturnType<typeof ejecutarConProgreso>;
 }
 
@@ -35,8 +38,11 @@ async function revisarPython(ej: NonNullable<DepsVerificar["ejecutar"]>, python:
   } catch {
     /* falta el .venv */
   }
+  const hayPython = await buscarPython(ej);
   return {
-    python: { ok: false, detalle: "Falta preparar el entorno de Python de la app.", accion: "crear-venv" },
+    python: hayPython
+      ? { ok: false, detalle: "Falta preparar el entorno de Python de la app (unos 3 GB, una sola vez).", accion: "crear-venv" }
+      : { ok: false, detalle: "No encuentro Python en esta PC.", accion: "instalar-python" },
     gpu: { ok: false, detalle: "No se pudo revisar: falta el entorno de Python." },
   };
 }
@@ -62,7 +68,11 @@ async function revisarClaude(ej: NonNullable<DepsVerificar["ejecutar"]>, claude:
 
 export async function verificarSistema(deps: DepsVerificar): Promise<EstadoSistema> {
   const ej = deps.ejecutar ?? ((c: string, a: string[], op?: Parameters<typeof ejecutarConProgreso>[2]) => ejecutarConProgreso(c, a, op));
-  const [ffmpeg, py, claude] = await Promise.all([revisarFfmpeg(ej), revisarPython(ej, deps.python), revisarClaude(ej, deps.claude, deps.claudeArgs ?? [])]);
+  const claudeSinRevisar: Chequeo = { ok: true, detalle: "Toca «Comprobar» para revisar la sesión de Claude.", accion: "comprobar-claude" };
+  const [ffmpeg, py, claude] = await Promise.all([
+    revisarFfmpeg(ej), revisarPython(ej, deps.python),
+    deps.revisarClaude === false ? Promise.resolve(claudeSinRevisar) : revisarClaude(ej, deps.claude, deps.claudeArgs ?? []),
+  ]);
   return { ffmpeg, python: py.python, gpu: py.gpu, claude };
 }
 

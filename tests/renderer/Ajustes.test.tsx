@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
 import { Ajustes } from "../../src/renderer/pantallas/Ajustes";
@@ -13,7 +13,7 @@ const estado: EstadoSistema = {
 
 test("muestra cada chequeo y el botón de iniciar sesión solo cuando hace falta", async () => {
   const accionSistema = vi.fn(async () => {});
-  window.reels = { verificarSistema: async () => estado, accionSistema } as unknown as ApiReels;
+  window.reels = { verificarSistema: async () => estado, accionSistema, alProgresoSistema: () => () => {} } as unknown as ApiReels;
   render(<Ajustes />);
   expect(await screen.findByText("FFmpeg 9.0.2")).toBeInTheDocument();
   expect(screen.getByText("GPU NVIDIA lista")).toBeInTheDocument();
@@ -24,13 +24,19 @@ test("muestra cada chequeo y el botón de iniciar sesión solo cuando hace falta
   expect(accionSistema).toHaveBeenCalledWith("iniciar-sesion-claude");
 });
 
-test("las acciones que todavía no existen se explican con texto, sin botones que no hacen nada", async () => {
+test("preparar el entorno se hace con un botón y muestra el progreso", async () => {
+  let progreso: (p: { pct: number; texto?: string }) => void = () => {};
+  let terminar: () => void = () => {};
+  const accionSistema = vi.fn(() => new Promise<void>((r) => { terminar = r; }));
   window.reels = {
     verificarSistema: async () => ({ ...estado, python: { ok: false, detalle: "Falta preparar el entorno de Python de la app.", accion: "crear-venv" },
       claude: { ok: true, detalle: "Sesión iniciada" } }),
-    accionSistema: vi.fn(),
+    accionSistema, alProgresoSistema: (cb: typeof progreso) => { progreso = cb; return () => {}; },
   } as unknown as ApiReels;
   render(<Ajustes />);
-  expect(await screen.findByText(/python -m venv \.venv/)).toBeInTheDocument();
-  expect(screen.queryByRole("button", { name: "Preparar Python" })).toBeNull();
+  await userEvent.click(await screen.findByRole("button", { name: "Preparar el entorno" }));
+  expect(accionSistema).toHaveBeenCalledWith("crear-venv");
+  act(() => progreso({ pct: 40, texto: "Instalando numpy…" }));
+  expect(screen.getByText("Instalando numpy…")).toBeInTheDocument();
+  await act(async () => terminar());
 });

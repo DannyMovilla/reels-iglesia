@@ -16,8 +16,8 @@ import { aplicarEstilo, copiarLogo, crearProyecto, guardarClip, guardarMarca, le
 export interface DepsIpc {
   cola: Cola;
   ventana: () => BrowserWindow | null;
-  verificarSistema(): Promise<EstadoSistema>;
-  accionSistema(accion: string): Promise<void>;
+  verificarSistema(o?: { claude?: boolean }): Promise<EstadoSistema>;
+  accionSistema(accion: string, alProgreso: (p: { pct: number; texto?: string }) => void): Promise<void>;
 }
 
 const MIME: Record<string, string> = { ".jpg": "image/jpeg", ".mp3": "audio/mpeg", ".wav": "audio/wav", ".m4a": "audio/mp4", ".ogg": "audio/ogg", ".flac": "audio/flac", ".mp4": "video/mp4", ".mov": "video/quicktime", ".m4v": "video/mp4", ".webm": "video/webm", ".mkv": "video/x-matroska" };
@@ -157,6 +157,6 @@ export function registrarIpc(deps: DepsIpc): void {
   ipcMain.handle("tareas:lista", () => cola.lista());
   ipcMain.handle("tareas:reintentar", (_e, id: string) => cola.reintentar(id));
   ipcMain.handle("tareas:cancelar", (_e, id: string) => cola.cancelar(id));
-  ipcMain.handle("sistema:verificar", () => deps.verificarSistema());
-  ipcMain.handle("sistema:accion", (_e, a: string) => deps.accionSistema(a));
+  ipcMain.handle("sistema:verificar", (_e, o?: { claude?: boolean }) => deps.verificarSistema(o));
+  ipcMain.handle("sistema:accion", (e, a: string) => deps.accionSistema(a, (p) => e.sender.send("sistema:progreso", p)));
 }

@@ -9,7 +9,9 @@ import { crearEjecutorExportar } from "./exportar/tarea";
 import { crearEjecutores, marcarInterrumpidos } from "./pipeline/tareas";
 import { resolverComandoClaude } from "./sistema/claude-cmd";
 import { protegerNavegacion } from "./ventana";
-import { carpetaDatos, rutaPython, rutaTranscriptor } from "./rutas";
+import { carpetaDatos, raizApp, rutaEntorno, rutaPython, rutaTranscriptor } from "./rutas";
+import { argsWinget, prepararEntorno } from "./sistema/preparar";
+import { ejecutarConProgreso } from "./procesos/lineas";
 
 registrarEsquemaVideo();
 
@@ -53,12 +55,27 @@ app.whenReady().then(async () => {
   registrarIpc({
     cola,
     ventana: () => ventana,
-    verificarSistema: () => {
+    verificarSistema: (o) => {
       const [claude, claudeArgs] = resolverComandoClaude();
-      return verificarSistema({ python: rutaPython(), claude, claudeArgs });
+      return verificarSistema({ python: rutaPython(), claude, claudeArgs, revisarClaude: o?.claude ?? false });
     },
-    accionSistema: async (accion) => {
-      if (accion === "iniciar-sesion-claude") abrirInicioSesionClaude(comandoClaude());
+    accionSistema: async (accion, alProgreso) => {
+      if (accion === "iniciar-sesion-claude") return abrirInicioSesionClaude(comandoClaude());
+      if (accion === "crear-venv") {
+        const cli = join(raizApp(), "node_modules", "hyperframes", "bin", "hyperframes.mjs");
+        return prepararEntorno({
+          destino: rutaEntorno(), requisitos: join(raizApp(), "python", "requirements.txt"),
+          navegador: [process.execPath, [cli, "browser", "ensure"]], senal: new AbortController().signal,
+          alProgreso: (pct, texto) => alProgreso({ pct, texto }),
+        });
+      }
+      const ids: Record<string, string> = { "instalar-ffmpeg": "Gyan.FFmpeg", "instalar-python": "Python.Python.3.12" };
+      if (ids[accion]) {
+        alProgreso({ pct: 10, texto: "Instalando con winget… (puede pedir permiso de Windows)" });
+        const r = await ejecutarConProgreso("winget", argsWinget(ids[accion]));
+        if (r.codigo !== 0) throw new Error("No se pudo instalar con winget. Instálalo a mano desde la página oficial y vuelve a revisar.");
+        alProgreso({ pct: 100, texto: "Instalado. Cierra y vuelve a abrir Reels Iglesia si no aparece." });
+      }
     },
   });
   ipcMain.on("ventana:minimizar", () => ventana?.minimize());

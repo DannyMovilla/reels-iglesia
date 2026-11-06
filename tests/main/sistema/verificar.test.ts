@@ -9,6 +9,7 @@ function falso(r: Respuestas) {
   return async (cmd: string): Promise<ResultadoProceso> => {
     if (cmd === "ffmpeg") return r.ffmpeg ?? ok("ffmpeg version 9.0.2-full_build Copyright\n");
     if (cmd === "py.exe") return r.python ?? ok("1\n");
+    if (cmd === "py" || cmd === "python") return ok("Python 3.12.1"); // Python instalado en la PC
     const c = r.claude ?? ok('{"type":"result","is_error":false,"result":"ok"}');
     if (c instanceof Error) throw c;
     return c;
@@ -51,4 +52,13 @@ test("si falta el entorno de Python ofrece crearlo", async () => {
   expect(e.python.ok).toBe(false);
   expect(e.python.accion).toBe("crear-venv");
   expect(e.gpu.ok).toBe(false);
+});
+
+test("la revisión rápida no gasta una consulta de Claude", async () => {
+  const comandos: string[] = [];
+  const e = await verificarSistema({ python: "py.exe", claude: "claude", revisarClaude: false,
+    ejecutar: async (cmd) => { comandos.push(cmd); return cmd === "ffmpeg" ? ok("ffmpeg version 9") : ok("1\n"); } });
+  expect(comandos).not.toContain("claude");
+  expect(e.claude.ok).toBe(true);
+  expect(e.claude.detalle).toMatch(/Comprobar/);
 });
