@@ -48,7 +48,10 @@ export function ejecutarConProgreso(cmd: string, args: string[], op: OpcionesPro
       }
     });
     hijo.stderr.on("data", (t: string) => (stderr += t));
-    if (op.entrada !== undefined) hijo.stdin.end(op.entrada, "utf8");
+    // Si el hijo termina antes de leer la entrada (o no arrancó), Node emite EPIPE en stdin: se ignora,
+    // el resultado llega por "close"/"error".
+    hijo.stdin.on("error", () => undefined);
+    hijo.stdin.end(op.entrada ?? "", "utf8");
     const matar = () => {
       if (hijo.pid === undefined || hijo.exitCode !== null) return;
       if (process.platform === "win32") spawnSync("taskkill", ["/pid", String(hijo.pid), "/T", "/F"], { windowsHide: true });

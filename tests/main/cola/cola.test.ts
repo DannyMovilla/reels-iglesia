@@ -1,4 +1,4 @@
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, test } from "vitest";
@@ -71,4 +71,13 @@ test("una tarea que estaba corriendo al cerrar la app queda interrumpida y se pu
   expect(cola.lista()[0].estado).toBe("interrumpida");
   cola.reintentar("t1");
   await hastaQue(() => cola.lista()[0].estado === "ok");
+});
+
+test("un cola.json dañado no impide abrir la app: se respalda y la cola empieza vacía", async () => {
+  const ruta = archivo();
+  writeFileSync(ruta, "");
+  const cola = new Cola(ruta, { transcribir: ok, caras: ok, analizar: ok });
+  await cola.cargar();
+  expect(cola.lista()).toEqual([]);
+  expect(existsSync(ruta + ".bad")).toBe(true);
 });

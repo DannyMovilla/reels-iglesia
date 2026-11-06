@@ -25,8 +25,14 @@ export class Cola extends EventEmitter {
 
   async cargar(): Promise<void> {
     if (existsSync(this.archivoEstado)) {
-      const guardadas = JSON.parse(await readFile(this.archivoEstado, "utf8")) as Tarea[];
-      this.tareas = guardadas.map((t) => (t.estado === "corriendo" || t.estado === "pendiente" ? { ...t, estado: "interrumpida" } : t));
+      try {
+        const guardadas = JSON.parse(await readFile(this.archivoEstado, "utf8")) as Tarea[];
+        this.tareas = guardadas.map((t) => (t.estado === "corriendo" || t.estado === "pendiente" ? { ...t, estado: "interrumpida" } : t));
+      } catch {
+        // Archivo dañado (p. ej. un corte de luz): se guarda aparte y la cola empieza vacía para que la app abra igual.
+        await rename(this.archivoEstado, this.archivoEstado + ".bad").catch(() => undefined);
+        this.tareas = [];
+      }
     }
     this.cambio(true);
   }

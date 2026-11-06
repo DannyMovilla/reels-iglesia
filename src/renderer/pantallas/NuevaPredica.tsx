@@ -19,12 +19,22 @@ export function NuevaPredica({ videoInicial, alCrear, alCancelar }: Props) {
   const [fin, setFin] = useState(videoInicial ? tiempoConHoras(videoInicial.duracion) : "");
   const [creando, setCreando] = useState(false);
   const [errorCrear, setErrorCrear] = useState<string | null>(null);
+  const [errorVideo, setErrorVideo] = useState<string | null>(null);
   const reproductor = useRef<HTMLVideoElement>(null);
 
   const error = video ? validarRango(leerTiempo(inicio), leerTiempo(fin), video.duracion) : null;
 
+  const limpiar = (e: unknown) => (e instanceof Error ? e.message : String(e)).replace(/^Error invoking remote method '[^']+': (Error: )?/, "");
+
   async function elegir() {
-    const v = await window.reels?.elegirVideo();
+    setErrorVideo(null);
+    let v: VideoOrigen | null | undefined;
+    try {
+      v = await window.reels?.elegirVideo();
+    } catch (e) {
+      setErrorVideo(limpiar(e));
+      return;
+    }
     if (!v) return;
     setVideo(v);
     setInicio("0:00:00");
@@ -40,7 +50,7 @@ export function NuevaPredica({ videoInicial, alCrear, alCancelar }: Props) {
       await window.reels!.procesar(p.id);
       alCrear(p);
     } catch (e) {
-      setErrorCrear(e instanceof Error ? e.message.replace(/^Error invoking remote method '[^']+': (Error: )?/, "") : String(e));
+      setErrorCrear(limpiar(e));
       setCreando(false);
     }
   }
@@ -57,6 +67,7 @@ export function NuevaPredica({ videoInicial, alCrear, alCancelar }: Props) {
         <button type="button" className="btn fantasma" onClick={alCancelar}>Cancelar</button>
       </div>
 
+      {errorVideo && <p className="error" role="alert">{errorVideo}</p>}
       {!video ? (
         <button type="button" className="zona-video" onClick={() => void elegir()}>
           <Film size={28} aria-hidden="true" />

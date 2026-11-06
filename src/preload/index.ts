@@ -9,7 +9,7 @@ const api: ApiReels = {
   leerProyecto: (id) => ipcRenderer.invoke("proyectos:leer", id),
   leerClips: (id) => ipcRenderer.invoke("proyectos:clips", id),
   leerTranscripcion: (id) => ipcRenderer.invoke("proyectos:transcripcion", id),
-  procesar: (id) => ipcRenderer.invoke("proyectos:procesar", id),
+  procesar: (id, desde) => ipcRenderer.invoke("proyectos:procesar", id, desde),
   tareas: () => ipcRenderer.invoke("tareas:lista"),
   alCambiarTareas: (cb) => {
     const oyente = (_e: unknown, t: Tarea[]) => cb(t);

@@ -4,9 +4,9 @@ import { extname } from "node:path";
 import { Readable } from "node:stream";
 import { dialog, ipcMain, protocol, type BrowserWindow } from "electron";
 import type { DatosNuevoProyecto, EstadoSistema } from "@shared/api";
-import type { ClipSpec, Transcripcion } from "@shared/tipos";
+import type { ClipSpec, TipoTarea, Transcripcion } from "@shared/tipos";
 import type { Cola } from "./cola/cola";
-import { ejecutarConProgreso } from "./procesos/lineas";
+import { duracionVideo } from "./procesos/video";
 import { crearProyecto, leerJson, leerProyecto, listarProyectos } from "./proyectos/almacen";
 
 export interface DepsIpc {
@@ -58,17 +58,13 @@ function servirVideo(): void {
   });
 }
 
-async function duracion(ruta: string): Promise<number> {
-  const r = await ejecutarConProgreso("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", ruta]);
-  const d = Number(r.stdout.trim());
-  if (r.codigo !== 0 || !Number.isFinite(d)) throw new Error("No pude leer la duración del video. ¿Está instalado FFmpeg?");
-  return d;
-}
-
 export function registrarIpc(deps: DepsIpc): void {
   servirVideo();
   const { cola } = deps;
-  cola.on("cambio", (t) => deps.ventana()?.webContents.send("tareas:cambio", t));
+  cola.on("cambio", (t) => {
+    const v = deps.ventana();
+    if (v && !v.isDestroyed()) v.webContents.send("tareas:cambio", t);
+  });
 
   ipcMain.handle("video:elegir", async () => {
     let ruta = process.env.REELS_VIDEO_PRUEBA; // solo pruebas E2E: el diálogo nativo no se puede automatizar
@@ -83,14 +79,14 @@ export function registrarIpc(deps: DepsIpc): void {
     }
     elegidos.add(ruta);
     const st = await stat(ruta);
-    return { ruta, tamano: st.size, modificado: st.mtimeMs, duracion: await duracion(ruta) };
+    return { ruta, tamano: st.size, modificado: st.mtimeMs, duracion: await duracionVideo(ruta) };
   });
   ipcMain.handle("proyectos:crear", (_e, d: DatosNuevoProyecto) => crearProyecto(d));
   ipcMain.handle("proyectos:listar", () => listarProyectos());
   ipcMain.handle("proyectos:leer", (_e, id: string) => leerProyecto(id));
   ipcMain.handle("proyectos:clips", async (_e, id: string) => (await leerJson<ClipSpec[]>(id, "clips.json")) ?? []);
   ipcMain.handle("proyectos:transcripcion", (_e, id: string) => leerJson<Transcripcion>(id, "transcripcion.json"));
-  ipcMain.handle("proyectos:procesar", (_e, id: string) => void cola.agregar(id, "transcribir"));
+  ipcMain.handle("proyectos:procesar", (_e, id: string, desde?: TipoTarea) => void cola.agregar(id, desde ?? "transcribir"));
   ipcMain.handle("tareas:lista", () => cola.lista());
   ipcMain.handle("tareas:reintentar", (_e, id: string) => cola.reintentar(id));
   ipcMain.handle("tareas:cancelar", (_e, id: string) => cola.cancelar(id));

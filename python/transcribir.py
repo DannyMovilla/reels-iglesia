@@ -291,6 +291,11 @@ def crear_parser() -> argparse.ArgumentParser:
 
 def main() -> None:
     global PROGRESO_JSON
+    for flujo in (sys.stdout, sys.stderr):
+        try:
+            flujo.reconfigure(encoding="utf-8")
+        except (AttributeError, ValueError):
+            pass
     args = crear_parser().parse_args()
     PROGRESO_JSON = args.progreso_json
 

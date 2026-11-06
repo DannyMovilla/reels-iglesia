@@ -2,14 +2,20 @@ import type { Transcripcion } from "@shared/tipos";
 import type { ContextoTarea } from "../cola/cola";
 import { ejecutarConProgreso } from "../procesos/lineas";
 import { guardarJson, leerJson } from "../proyectos/almacen";
+import { resolverComandoClaude } from "../sistema/claude-cmd";
 import { RespuestaClaude } from "./esquema";
 import { normalizarClips } from "./normalizar";
 import { construirPrompt } from "./prompt";
 
 const ERROR_JSON = "Claude no devolvió una lista de clips válida";
 export const ERROR_SESION = "Claude no tiene sesión iniciada. Abre Ajustes → Iniciar sesión en Claude.";
+const ERROR_FORMATO = "Claude no devolvió una lista de clips válida. Toca Reintentar.";
+const ERROR_TIEMPO = "Claude tardó demasiado en responder. Revisa tu conexión y toca Reintentar.";
+const ERROR_SIN_CLAUDE = "No encuentro Claude Code en esta PC. Revisa Ajustes.";
+const ERROR_SIN_CLIPS = "Claude no encontró momentos de al menos 5 segundos. Revisa el rango de la prédica y toca Reintentar.";
+const DIEZ_MINUTOS = 10 * 60 * 1000;
 
-/** JSON completo; si no, el cuerpo de un bloque ```json; si no, del primer [ al último ]. */
+/** Una lista JSON: el texto completo; si no, el cuerpo de un bloque ```json; si no, del primer [ al último ]. */
 export function extraerJson(texto: string): unknown {
   const intentos = [texto.trim()];
   const bloque = /```(?:json)?\s*([\s\S]*?)```/i.exec(texto);
@@ -18,7 +24,8 @@ export function extraerJson(texto: string): unknown {
   if (a >= 0 && b > a) intentos.push(texto.slice(a, b + 1));
   for (const i of intentos) {
     try {
-      return JSON.parse(i);
+      const v = JSON.parse(i);
+      if (Array.isArray(v)) return v;
     } catch {
       /* siguiente intento */
     }
@@ -26,19 +33,27 @@ export function extraerJson(texto: string): unknown {
   throw new Error(ERROR_JSON);
 }
 
-/** Separa "node C:/x/falso.mjs" en ejecutable + argumentos (respeta comillas). */
 function partirComando(c: string): [string, string[]] {
   const partes = c.match(/"[^"]*"|\S+/g)?.map((p) => p.replace(/^"|"$/g, "")) ?? ["claude"];
   return [partes[0], partes.slice(1)];
 }
 
-async function preguntar(comando: string, prompt: string, senal: AbortSignal): Promise<string> {
-  const [exe, args] = partirComando(comando);
-  const r = await ejecutarConProgreso(exe, [...args, "-p", "--output-format", "json"], { entrada: prompt, senal });
+async function preguntar(comando: [string, string[]], prompt: string, senal: AbortSignal, tiempo: AbortSignal): Promise<string> {
+  const [exe, args] = comando;
+  let r;
+  try {
+    r = await ejecutarConProgreso(exe, [...args, "-p", "--output-format", "json"], { entrada: prompt, senal: AbortSignal.any([senal, tiempo]) });
+  } catch (e) {
+    if ((e as NodeJS.ErrnoException).code === "ENOENT") throw new Error(ERROR_SIN_CLAUDE);
+    throw e;
+  }
+  if (tiempo.aborted) throw new Error(ERROR_TIEMPO);
+  const todo = `${r.stdout}\n${r.stderr}`;
   let salida: { is_error?: boolean; result?: string };
   try {
     salida = JSON.parse(r.stdout.trim().split(/\r?\n/).pop() ?? "");
   } catch {
+    if (/not logged in|\/login/i.test(todo)) throw new Error(ERROR_SESION);
     throw new Error(`Claude no respondió (${r.stderr.trim().split(/\r?\n/).pop() || `código ${r.codigo}`}).`);
   }
   if (salida.is_error) {
@@ -51,23 +66,30 @@ async function preguntar(comando: string, prompt: string, senal: AbortSignal): P
 export async function analizarProyecto(
   id: string,
   ctx: ContextoTarea,
-  opciones: { comando?: string; n?: number } = {},
+  opciones: { comando?: string; n?: number; tiempoMaximoMs?: number } = {},
 ): Promise<void> {
   const t = await leerJson<Transcripcion>(id, "transcripcion.json");
   if (!t?.segmentos?.length) throw new Error("No hay transcripción para analizar. Vuelve a procesar la prédica.");
-  const comando = opciones.comando ?? process.env.REELS_CLAUDE_COMANDO ?? "claude";
+  const comando = opciones.comando ? partirComando(opciones.comando) : resolverComandoClaude();
+  const tiempo = AbortSignal.timeout(opciones.tiempoMaximoMs ?? DIEZ_MINUTOS);
   const prompt = construirPrompt(t, opciones.n ?? 6);
   ctx.alProgreso(10, "Claude está leyendo la prédica…");
-  let texto = await preguntar(comando, prompt, ctx.senal);
+  let texto = await preguntar(comando, prompt, ctx.senal, tiempo);
   let clips;
   try {
     clips = RespuestaClaude.parse(extraerJson(texto));
   } catch (e) {
     ctx.alProgreso(55, "Pidiendo a Claude que corrija el formato…");
     const motivo = e instanceof Error ? e.message.slice(0, 400) : String(e);
-    texto = await preguntar(comando, `${prompt}\n\nTu respuesta anterior no era válida: ${motivo}. Responde solo con el arreglo JSON.`, ctx.senal);
-    clips = RespuestaClaude.parse(extraerJson(texto));
+    texto = await preguntar(comando, `${prompt}\n\nTu respuesta anterior no era válida: ${motivo}. Responde solo con el arreglo JSON.`, ctx.senal, tiempo);
+    try {
+      clips = RespuestaClaude.parse(extraerJson(texto));
+    } catch {
+      throw new Error(ERROR_FORMATO);
+    }
   }
-  await guardarJson(id, "clips.json", normalizarClips(clips, t));
+  const normalizados = normalizarClips(clips, t);
+  if (normalizados.length === 0) throw new Error(ERROR_SIN_CLIPS);
+  await guardarJson(id, "clips.json", normalizados);
   ctx.alProgreso(100);
 }

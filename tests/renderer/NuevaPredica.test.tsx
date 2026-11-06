@@ -29,3 +29,13 @@ test("un rango válido habilita Procesar prédica", async () => {
   await userEvent.type(screen.getByLabelText("Fin de la prédica"), "2:32:35");
   expect(screen.getByRole("button", { name: "Procesar prédica" })).toBeEnabled();
 });
+
+test("si no se puede leer el video elegido, se explica en pantalla", async () => {
+  window.reels = {
+    urlArchivo: () => "",
+    elegirVideo: async () => { throw new Error("Error invoking remote method 'video:elegir': Error: No pude leer la duración del video. ¿Está instalado FFmpeg?"); },
+  } as unknown as ApiReels;
+  render(<NuevaPredica alCrear={() => {}} alCancelar={() => {}} />);
+  await userEvent.click(screen.getByRole("button", { name: /Elige el video del culto/ }));
+  expect(await screen.findByRole("alert")).toHaveTextContent("No pude leer la duración del video. ¿Está instalado FFmpeg?");
+});

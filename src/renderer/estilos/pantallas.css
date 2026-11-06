@@ -88,3 +88,5 @@
 .tarjeta-cabeza svg { color: var(--luz); }
 .tarjeta p { color: var(--text-2); font-size: 12.5px; }
 .hashtags { color: var(--cielo); font-size: 12px; }
+
+.instruccion { display: block; margin-top: 6px; font: 12px/1.5 var(--font-mono); color: var(--text-2); background: var(--bg-2); padding: 6px 8px; border-radius: var(--r-sm); overflow-wrap: anywhere; user-select: all; }

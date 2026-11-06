@@ -20,6 +20,18 @@ process.stdin.on("end", () => {
     console.log(JSON.stringify({ type: "result", is_error: true, result: "Prompt vacío" }));
     process.exit(1);
   }
+  if (modo === "colgado") {
+    setInterval(() => {}, 1000); // nunca responde
+    return;
+  }
+  if (modo === "invalido-siempre") {
+    console.log(JSON.stringify({ type: "result", is_error: false, result: '[{"titulo": 5}]' }));
+    return;
+  }
+  if (modo === "vacio") {
+    console.log(JSON.stringify({ type: "result", is_error: false, result: "[]" }));
+    return;
+  }
   if (modo === "sin-sesion") {
     console.log(JSON.stringify({ type: "result", subtype: "success", is_error: true, result: "Not logged in · Please run /login" }));
     process.exit(1);

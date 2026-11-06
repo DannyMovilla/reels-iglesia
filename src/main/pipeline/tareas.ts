@@ -1,4 +1,4 @@
-import type { EstadoProyecto, NombrePaso, TipoTarea } from "@shared/tipos";
+import type { EstadoProyecto, NombrePaso, Tarea, TipoTarea } from "@shared/tipos";
 import type { ContextoTarea, Ejecutor } from "../cola/cola";
 import { ejecutarConProgreso } from "../procesos/lineas";
 import { guardarProyecto, leerProyecto } from "../proyectos/almacen";
@@ -27,10 +27,17 @@ export function crearEjecutores(deps: DepsPipeline): Record<TipoTarea, Ejecutor>
       modo, "--salida", carpetaProyecto(proyectoId), "--progreso-json",
     ];
     if (process.env.REELS_WHISPER_MODELO) args.push("--modelo", process.env.REELS_WHISPER_MODELO);
-    const r = await ejecutar(deps.python, args, { alProgreso: (x) => ctx.alProgreso(x.pct, x.texto), senal: ctx.senal });
+    // En Windows Python escribe en cp1252 cuando la salida es una tubería: se fuerza UTF-8 para acentos, ñ y emojis.
+    const env = { ...process.env, PYTHONUTF8: "1", PYTHONIOENCODING: "utf-8" };
+    let r;
+    try {
+      r = await ejecutar(deps.python, args, { env, alProgreso: (x) => ctx.alProgreso(x.pct, x.texto), senal: ctx.senal });
+    } catch (e) {
+      if ((e as NodeJS.ErrnoException).code === "ENOENT") throw new Error("Falta preparar el entorno de Python de la app. Abre Ajustes.");
+      throw e;
+    }
     if (r.codigo !== 0) {
-      const err = new Error(r.stderr.trim().split(/\r?\n/).slice(-5).join("\n") || `El proceso terminó con código ${r.codigo}.`);
-      throw err;
+      throw new Error(r.stderr.trim().split(/\r?\n/).slice(-5).join("\n") || `El proceso terminó con código ${r.codigo}.`);
     }
   }
 
@@ -63,4 +70,22 @@ export function crearEjecutores(deps: DepsPipeline): Record<TipoTarea, Ejecutor>
     caras: envolver("caras", (id, ctx) => python(id, "--solo-caras", ctx)),
     analizar: envolver("analizar", deps.analizar),
   };
+}
+
+/**
+ * Al abrir la app: los proyectos cuyas tareas quedaron interrumpidas (se cerró la app a mitad)
+ * pasan a "error" con un mensaje claro, para que no se vean "en curso" para siempre.
+ */
+export async function marcarInterrumpidos(tareas: Tarea[]): Promise<void> {
+  for (const t of tareas) {
+    if (t.estado !== "interrumpida") continue;
+    try {
+      const p = await leerProyecto(t.proyectoId);
+      p.pasos[PASO[t.tipo]] = { estado: "error", detalle: "Se interrumpió al cerrar la app." };
+      p.estado = "error";
+      await guardarProyecto(p);
+    } catch {
+      /* el proyecto ya no existe */
+    }
+  }
 }

@@ -11,9 +11,11 @@ interface Props {
   proyecto: Proyecto;
   tareas: Tarea[];
   alReintentar(idTarea: string): void;
+  /** Volver a procesar desde un paso que falló y ya no tiene tarea en la cola. */
+  alProcesar(desde: TipoTarea): void;
 }
 
-export function PanelProceso({ proyecto, tareas, alReintentar }: Props) {
+export function PanelProceso({ proyecto, tareas, alReintentar, alProcesar }: Props) {
   return (
     <ol className="pasos" aria-label="Proceso">
       {PASOS.map(({ paso, tipo, titulo }) => {
@@ -37,8 +39,10 @@ export function PanelProceso({ proyecto, tareas, alReintentar }: Props) {
                 {estado === "error" && (ultima?.estado === "interrumpida" ? "Se interrumpió al cerrar la app." : ultima?.error ?? p.detalle ?? "Falló")}
               </span>
             </div>
-            {estado === "error" && ultima && (
-              <button type="button" className="btn pequeno" onClick={() => alReintentar(ultima.id)}><RotateCcw size={13} aria-hidden="true" />Reintentar</button>
+            {estado === "error" && (
+              <button type="button" className="btn pequeno" onClick={() => (fallo && ultima ? alReintentar(ultima.id) : alProcesar(tipo))}>
+                <RotateCcw size={13} aria-hidden="true" />Reintentar
+              </button>
             )}
           </li>
         );

@@ -18,3 +18,12 @@ test("abortar mata el proceso", async () => {
   expect(r.codigo).not.toBe(0);
   expect(Date.now() - t0).toBeLessThan(2000);
 });
+
+test("escribir a la entrada de un proceso que termina enseguida no rompe la app (EPIPE)", async () => {
+  const r = await ejecutarConProgreso("node", ["-e", "process.exit(3)"], { entrada: "x".repeat(5_000_000) });
+  expect(r.codigo).toBe(3);
+});
+
+test("un comando que no existe rechaza con ENOENT en vez de romper la app", async () => {
+  await expect(ejecutarConProgreso("no-existe-reels-xyz", [], { entrada: "hola" })).rejects.toMatchObject({ code: "ENOENT" });
+});

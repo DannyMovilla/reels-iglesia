@@ -23,3 +23,14 @@ test("muestra cada chequeo y el botón de iniciar sesión solo cuando hace falta
   await userEvent.click(botones[0]);
   expect(accionSistema).toHaveBeenCalledWith("iniciar-sesion-claude");
 });
+
+test("las acciones que todavía no existen se explican con texto, sin botones que no hacen nada", async () => {
+  window.reels = {
+    verificarSistema: async () => ({ ...estado, python: { ok: false, detalle: "Falta preparar el entorno de Python de la app.", accion: "crear-venv" },
+      claude: { ok: true, detalle: "Sesión iniciada" } }),
+    accionSistema: vi.fn(),
+  } as unknown as ApiReels;
+  render(<Ajustes />);
+  expect(await screen.findByText(/python -m venv \.venv/)).toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "Preparar Python" })).toBeNull();
+});

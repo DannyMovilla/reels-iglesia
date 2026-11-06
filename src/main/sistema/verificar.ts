@@ -5,7 +5,8 @@ import { ejecutarConProgreso } from "../procesos/lineas";
 export interface DepsVerificar {
   python: string;
   claude: string;
-  ejecutar?: (cmd: string, args: string[]) => ReturnType<typeof ejecutarConProgreso>;
+  claudeArgs?: string[];
+  ejecutar?: (cmd: string, args: string[], op?: Parameters<typeof ejecutarConProgreso>[2]) => ReturnType<typeof ejecutarConProgreso>;
 }
 
 const SCRIPT_PYTHON = "import faster_whisper, cv2, ctranslate2; print(ctranslate2.get_cuda_device_count())";
@@ -23,7 +24,7 @@ async function revisarFfmpeg(ej: NonNullable<DepsVerificar["ejecutar"]>): Promis
 
 async function revisarPython(ej: NonNullable<DepsVerificar["ejecutar"]>, python: string): Promise<{ python: Chequeo; gpu: Chequeo }> {
   try {
-    const r = await ej(python, ["-c", SCRIPT_PYTHON]);
+    const r = await ej(python, ["-c", SCRIPT_PYTHON], { env: { ...process.env, PYTHONUTF8: "1" } });
     if (r.codigo === 0) {
       const gpus = Number(r.stdout.trim().split(/\r?\n/).pop());
       return {
@@ -40,10 +41,10 @@ async function revisarPython(ej: NonNullable<DepsVerificar["ejecutar"]>, python:
   };
 }
 
-async function revisarClaude(ej: NonNullable<DepsVerificar["ejecutar"]>, claude: string): Promise<Chequeo> {
+async function revisarClaude(ej: NonNullable<DepsVerificar["ejecutar"]>, claude: string, extra: string[]): Promise<Chequeo> {
   let r;
   try {
-    r = await ej(claude, ["-p", "ok", "--output-format", "json"]);
+    r = await ej(claude, [...extra, "-p", "ok", "--output-format", "json"]);
   } catch {
     return { ok: false, detalle: "Claude Code no está instalado en esta PC." };
   }
@@ -60,8 +61,8 @@ async function revisarClaude(ej: NonNullable<DepsVerificar["ejecutar"]>, claude:
 }
 
 export async function verificarSistema(deps: DepsVerificar): Promise<EstadoSistema> {
-  const ej = deps.ejecutar ?? ((c: string, a: string[]) => ejecutarConProgreso(c, a));
-  const [ffmpeg, py, claude] = await Promise.all([revisarFfmpeg(ej), revisarPython(ej, deps.python), revisarClaude(ej, deps.claude)]);
+  const ej = deps.ejecutar ?? ((c: string, a: string[], op?: Parameters<typeof ejecutarConProgreso>[2]) => ejecutarConProgreso(c, a, op));
+  const [ffmpeg, py, claude] = await Promise.all([revisarFfmpeg(ej), revisarPython(ej, deps.python), revisarClaude(ej, deps.claude, deps.claudeArgs ?? [])]);
   return { ffmpeg, python: py.python, gpu: py.gpu, claude };
 }
 

@@ -1,4 +1,4 @@
-import type { ClipSpec, Proyecto, Tarea, Transcripcion, VideoOrigen } from "./tipos";
+import type { ClipSpec, Proyecto, Tarea, TipoTarea, Transcripcion, VideoOrigen } from "./tipos";
 
 export interface Chequeo {
   ok: boolean;
@@ -27,7 +27,8 @@ export interface ApiReels {
   leerProyecto(id: string): Promise<Proyecto>;
   leerClips(id: string): Promise<ClipSpec[]>;
   leerTranscripcion(id: string): Promise<Transcripcion | null>;
-  procesar(id: string): Promise<void>;
+  /** Encola el procesamiento desde un paso (por defecto, desde la transcripción). */
+  procesar(id: string, desde?: TipoTarea): Promise<void>;
   tareas(): Promise<Tarea[]>;
   alCambiarTareas(cb: (t: Tarea[]) => void): () => void;
   reintentar(idTarea: string): Promise<void>;

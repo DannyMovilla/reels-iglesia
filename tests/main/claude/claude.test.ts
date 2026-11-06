@@ -1,7 +1,7 @@
 import { mkdtempSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { beforeEach, expect, test } from "vitest";
+import { beforeEach, describe, expect, test } from "vitest";
 import { analizarProyecto } from "../../../src/main/claude/analizar";
 import { extraerJson } from "../../../src/main/claude/analizar";
 import { RespuestaClaude } from "../../../src/main/claude/esquema";
@@ -82,6 +82,55 @@ describe("analizarProyecto con un claude falso", () => {
     process.env.FALSO_CLAUDE_MODO = "sin-sesion";
     await expect(analizarProyecto(id, ctx, { comando })).rejects.toThrow(
       "Claude no tiene sesión iniciada. Abre Ajustes → Iniciar sesión en Claude.",
+    );
+  });
+});
+
+test("el esquema tolera puntaje como texto y más de 3 ganchos alternativos", () => {
+  const r = RespuestaClaude.parse([{ ...JSON.parse(readFileSync(join(FIX, "claude/respuesta-ok.json"), "utf8"))[0],
+    puntaje: "92", ganchos_alternativos: ["a", "b", "c", "d"] }]);
+  expect(r[0].puntaje).toBe(92);
+  expect(r[0].ganchos_alternativos).toEqual(["a", "b", "c"]);
+});
+
+test("extraerJson busca la lista aunque Claude envuelva todo en un objeto", () => {
+  expect(extraerJson('{"clips":[{"a":1}]}')).toEqual([{ a: 1 }]);
+});
+
+describe("analizarProyecto: errores legibles", () => {
+  let id: string;
+  const comando = `node ${join(FIX, "claude/falso-claude.mjs")}`;
+  beforeEach(async () => {
+    process.env.REELS_IGLESIA_DATOS = mkdtempSync(join(tmpdir(), "reels-claude2-"));
+    const v = join(mkdtempSync(join(tmpdir(), "reels-v-")), "v.mp4");
+    writeFileSync(v, "x");
+    id = (await crearProyecto({ nombre: "Culto", video: { ruta: v, tamano: statSync(v).size, modificado: 0, duracion: 100 }, rango: { inicio: 0, fin: 75 } })).id;
+    await guardarJson(id, "transcripcion.json", muestra());
+    delete process.env.FALSO_CLAUDE_CONTADOR;
+  });
+
+  test("inválido dos veces: mensaje en español, no un volcado técnico", async () => {
+    process.env.FALSO_CLAUDE_MODO = "invalido-siempre";
+    await expect(analizarProyecto(id, ctx, { comando })).rejects.toThrow("Claude no devolvió una lista de clips válida. Toca Reintentar.");
+  });
+
+  test("cero clips útiles: error que lo explica", async () => {
+    process.env.FALSO_CLAUDE_MODO = "vacio";
+    await expect(analizarProyecto(id, ctx, { comando })).rejects.toThrow(
+      "Claude no encontró momentos de al menos 5 segundos. Revisa el rango de la prédica y toca Reintentar.",
+    );
+  });
+
+  test("si Claude se cuelga, se corta con un mensaje", async () => {
+    process.env.FALSO_CLAUDE_MODO = "colgado";
+    await expect(analizarProyecto(id, ctx, { comando, tiempoMaximoMs: 800 })).rejects.toThrow(
+      "Claude tardó demasiado en responder. Revisa tu conexión y toca Reintentar.",
+    );
+  });
+
+  test("si Claude Code no está instalado, el error está en español", async () => {
+    await expect(analizarProyecto(id, ctx, { comando: "no-existe-claude-xyz" })).rejects.toThrow(
+      "No encuentro Claude Code en esta PC. Revisa Ajustes.",
     );
   });
 });

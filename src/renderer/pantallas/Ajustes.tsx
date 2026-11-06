@@ -9,10 +9,14 @@ const NOMBRES: Record<keyof EstadoSistema, string> = {
   claude: "Claude (análisis de la prédica)",
 };
 
-const TEXTO_ACCION: Record<NonNullable<Chequeo["accion"]>, string> = {
+const TEXTO_ACCION: Partial<Record<NonNullable<Chequeo["accion"]>, string>> = {
   "iniciar-sesion-claude": "Iniciar sesión en Claude",
-  "crear-venv": "Preparar Python",
-  "instalar-ffmpeg": "Instalar FFmpeg",
+};
+
+/** Mientras el asistente de primer uso no exista (plan 3), se explica cómo hacerlo a mano. */
+const INSTRUCCIONES: Partial<Record<NonNullable<Chequeo["accion"]>, string>> = {
+  "crear-venv": String.raw`En una terminal, dentro de la carpeta de la app: python -m venv .venv y luego .venv\Scripts\python.exe -m pip install faster-whisper opencv-python-headless nvidia-cublas-cu12 nvidia-cudnn-cu12==9.*`,
+  "instalar-ffmpeg": "En una terminal: winget install Gyan.FFmpeg — después cierra y vuelve a abrir Reels Iglesia.",
 };
 
 export function Ajustes() {
@@ -53,8 +57,9 @@ export function Ajustes() {
               <div>
                 <b>{NOMBRES[k]}</b>
                 <span>{c ? c.detalle : "Revisando…"}</span>
+                {c?.accion && INSTRUCCIONES[c.accion] && <code className="instruccion">{INSTRUCCIONES[c.accion]}</code>}
               </div>
-              {c?.accion && (
+              {c?.accion && TEXTO_ACCION[c.accion] && (
                 <button type="button" className="btn primario" onClick={() => void window.reels?.accionSistema(c.accion!)}>
                   {TEXTO_ACCION[c.accion]}
                 </button>
