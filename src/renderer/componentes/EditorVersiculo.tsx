@@ -61,6 +61,21 @@ export function EditorVersiculo({ creacion, error, alVolver }: { creacion: Creac
     return () => clearTimeout(espera);
   }, [c, marca, formato]);
 
+  const [pidiendo, setPidiendo] = useState(false);
+  const [errorPedir, setErrorPedir] = useState<string | null>(null);
+  const pedirOtraVez = async () => {
+    setPidiendo(true);
+    setErrorPedir(null);
+    try {
+      await guardarYa();
+      setC(await window.reels!.escribirCreacion(c.id));
+    } catch (e) {
+      setErrorPedir((e instanceof Error ? e.message : String(e)).replace(/^Error invoking remote method '[^']+': (Error: )?/, ""));
+    } finally {
+      setPidiendo(false);
+    }
+  };
+
   const sinConfirmar = !c.versiculo.confirmado || !c.versiculo.texto.trim();
   const exportar = async () => {
     await guardarYa();
@@ -98,6 +113,15 @@ export function EditorVersiculo({ creacion, error, alVolver }: { creacion: Creac
           <div className="ia-campos">
             {pestana === "contenido" && (
               <>
+                {!c.versiculo.texto.trim() && (
+                  <div className="confirmar">
+                    <p>Claude todavía no escribió este versículo. Puedes escribirlo a mano o pedírselo otra vez.</p>
+                    <button type="button" className="btn pequeno primario" disabled={pidiendo} onClick={() => void pedirOtraVez()}>
+                      {pidiendo ? "Claude está escribiendo…" : "Pedir a Claude otra vez"}
+                    </button>
+                    {errorPedir && <p className="error" role="alert">{errorPedir}</p>}
+                  </div>
+                )}
                 <label className="campo">Gancho<input className="entrada" value={c.gancho} onChange={(e) => cambiar({ gancho: e.target.value })} /></label>
                 <label className="campo">Referencia<input className="entrada" value={c.versiculo.ref} placeholder="Juan 8:12"
                   onChange={(e) => cambiar({ versiculo: { ...c.versiculo, ref: e.target.value, confirmado: false } })} /></label>

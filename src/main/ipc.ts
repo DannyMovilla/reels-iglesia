@@ -44,7 +44,8 @@ export async function resolverMedio(tipo: string, valor: string): Promise<string
   if (tipo === "exportado") {
     const [id, archivo] = valor.split("/");
     if (!simple(id) || !simple(archivo)) return null;
-    return id.startsWith("ia:") ? join(carpetaCreacion(id.slice(3)), "exportados", archivo) : join(carpetaProyecto(id), "exportados", archivo);
+    if (id.startsWith("ia:")) return simple(id.slice(3)) ? join(carpetaCreacion(id.slice(3)), "exportados", archivo) : null;
+    return join(carpetaProyecto(id), "exportados", archivo);
   }
   if (tipo === "fondo-ia") {
     const [id, archivo] = valor.split("/");
@@ -150,8 +151,9 @@ export function registrarIpc(deps: DepsIpc): void {
   ipcMain.handle("exportar:listar", async () => [...(await listarExportados()), ...(await listarExportadosIa())]);
   ipcMain.handle("ia:musicaVista", async (_e, id: string, duracion: number) =>
     musicaVistaEn((await leerCreacion(id)).musica, carpetaCreacion(id), duracion).catch(() => null));
-  ipcMain.handle("ia:exportar", (_e, id: string, formatos: Formato[]) => {
-    for (const formato of formatos) cola.agregar(`ia:${id}`, "exportar-ia", { creacionId: id, formato });
+  ipcMain.handle("ia:exportar", async (_e, id: string, formatos: Formato[]) => {
+    const instantaneaIa = await leerCreacion(id);
+    for (const formato of formatos) cola.agregar(`ia:${id}`, "exportar-ia", { creacionId: id, formato, instantaneaIa });
   });
   ipcMain.handle("tareas:lista", () => cola.lista());
   ipcMain.handle("tareas:reintentar", (_e, id: string) => cola.reintentar(id));

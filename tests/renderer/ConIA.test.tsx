@@ -87,3 +87,23 @@ test("el editor: confirmar RVR1960 habilita exportar; fondo de escena, foto o de
   expect(a.exportarCreacion).toHaveBeenCalledWith("c1", ["9:16"]);
   await vi.waitFor(() => expect(a.guardarCreacion).toHaveBeenLastCalledWith(expect.objectContaining({ fondo: { tipo: "imagen", archivo: "C:/datos/ia/c1/fondo.jpg" } })));
 });
+
+test("revisión I3: si Claude no escribió el versículo, se le puede volver a pedir desde el editor", async () => {
+  const vacia = { ...structuredClone(base), versiculo: { ref: "", texto: "", confirmado: false } };
+  const a = api({ listarCreaciones: vi.fn(async () => [vacia]) });
+  render(<ConIA />);
+  await userEvent.click(await screen.findByRole("button", { name: /Juan 8:12/ }));
+  await userEvent.click(await screen.findByRole("button", { name: "Pedir a Claude otra vez" }));
+  expect(a.escribirCreacion).toHaveBeenCalledWith("c1");
+  expect(await screen.findByLabelText("Gancho")).toHaveValue("No camines a oscuras");
+});
+
+test("revisión: si no se puede crear el reel, se explica y el botón vuelve", async () => {
+  api({ crearCreacion: vi.fn(async () => { throw new Error("Error invoking remote method 'ia:crear': Error: EPERM"); }) });
+  render(<ConIA />);
+  await userEvent.click(await screen.findByRole("button", { name: "Nuevo reel de versículo" }));
+  await userEvent.type(screen.getByLabelText("Versículo"), "Juan 3:16");
+  await userEvent.click(screen.getByRole("button", { name: "Crear con Claude" }));
+  expect(await screen.findByRole("alert")).toHaveTextContent("EPERM");
+  expect(screen.getByRole("button", { name: "Crear con Claude" })).toBeEnabled();
+});

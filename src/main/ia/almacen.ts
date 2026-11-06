@@ -1,12 +1,16 @@
 import { existsSync } from "node:fs";
 import { copyFile, mkdir, readdir, readFile, rm, stat } from "node:fs/promises";
-import { extname, join } from "node:path";
+import { basename, extname, join } from "node:path";
 import type { Creacion } from "@shared/tipos";
 import { escribirAtomico } from "../proyectos/almacen";
 import { carpetaDatos } from "../rutas";
 
 export const carpetaIa = (): string => join(carpetaDatos(), "ia");
-export const carpetaCreacion = (id: string): string => join(carpetaIa(), id);
+/** Carpeta de una creación; un id con barras o «..» no se acepta (no se sale de <datos>/ia). */
+export function carpetaCreacion(id: string): string {
+  if (!id || id !== basename(id) || id.startsWith(".")) throw new Error("Ese reel no existe.");
+  return join(carpetaIa(), id);
+}
 
 const slug = (t: string) => t.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 50) || "versiculo";
 const fecha = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -37,6 +41,7 @@ export async function guardarCreacion(c: Creacion): Promise<void> {
 }
 
 export async function leerCreacion(id: string): Promise<Creacion> {
+  carpetaCreacion(id);
   return JSON.parse(await readFile(join(carpetaCreacion(id), "creacion.json"), "utf8")) as Creacion;
 }
 

@@ -20,12 +20,19 @@ export function ConIA() {
   const crear = async () => {
     setError(null);
     setEscribiendo(true);
-    const c = await window.reels!.crearCreacion({ tipo, texto: texto.trim() });
+    let c: Creacion;
+    try {
+      c = await window.reels!.crearCreacion({ tipo, texto: texto.trim() });
+    } catch (e) {
+      setError(limpiar(e));
+      setEscribiendo(false);
+      return;
+    }
     try {
       setAbierta(await window.reels!.escribirCreacion(c.id));
     } catch (e) {
       setError(limpiar(e));
-      setAbierta(c); // queda para escribirlo a mano
+      setAbierta(c); // queda para escribirlo a mano o pedírselo de nuevo a Claude
     } finally {
       setEscribiendo(false);
       setNuevo(false);
@@ -47,6 +54,7 @@ export function ConIA() {
       </div>
       <p className="ayuda">Un reel corto con un versículo en Reina-Valera 1960, una frase de reflexión, fondo animado y música. Claude lo prepara y tú revisas el texto antes de publicar.</p>
 
+      {error && <p className="error" role="alert">{error}</p>}
       {nuevo && (
         <div className="tarjeta-nuevo">
           <div className="fila" role="radiogroup" aria-label="Qué quieres">

@@ -36,3 +36,10 @@ test("si Claude no encuentra el versículo, error claro y la creación queda edi
   await expect(escribirCreacion(c.id, { comando: FALSO })).rejects.toThrow("Claude no encontró ese versículo. Escríbelo a mano o prueba con otra referencia.");
   expect((await leerCreacion(c.id)).estado).toBe("borrador");
 });
+
+test("revisión I4: datos raros de Claude (null, texto en vez de lista) no dan un error técnico", async () => {
+  const { leerRespuestaVersiculo } = await import("../../../src/main/ia/claude");
+  const r = leerRespuestaVersiculo({ ref: "Juan 8:12", texto: "Yo soy la luz", gancho: null, reflexion: 5, palabras_clave: "luz, vida", animo: "rarísimo", escena: null });
+  expect(r).toMatchObject({ ref: "Juan 8:12", gancho: "", reflexion: "", palabras_clave: [] });
+  expect(r.animo).toBeUndefined();
+});

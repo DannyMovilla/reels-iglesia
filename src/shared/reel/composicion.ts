@@ -190,7 +190,9 @@ export function construirMuestraMarca(e: { marca: Marca; recursos: EntradaCompos
 }
 
 export function documento(W: number, H: number, duracion: number, css: string, recursos: EntradaComposicion["recursos"], modo: "vista" | "render", el: string[], js: string[], scripts: string[] = []): string {
-  const runtime = (modo === "vista" && recursos.runtime ? `<script src="${recursos.runtime}"></script>\n` : "") + scripts.map((x) => `<script src="${x}"></script>\n`).join("");
+  const runtime = modo === "vista" && recursos.runtime ? `<script src="${recursos.runtime}"></script>\n` : "";
+  // Scripts que buscan elementos del reel al cargar (la librería de escenas busca su canvas): al final del body.
+  const alFinal = scripts.map((x) => `<script src="${x}"></script>\n`).join("");
   return `<!doctype html>
 <html lang="es">
 <head>
@@ -203,7 +205,7 @@ ${runtime}<script src="${recursos.gsap}"></script>
 <div id="root" data-composition-id="main" data-start="0" data-duration="${n(duracion)}" data-width="${W}" data-height="${H}">
 ${el.join("\n")}
 </div>
-<script>
+${alFinal}<script>
 const tl = gsap.timeline({ paused: true });
 ${js.join("\n")}
 window.__timelines = window.__timelines || {};

@@ -107,3 +107,8 @@ describe("composición", () => {
     expect(dom(cuadrado.html).querySelector("canvas")!.getAttribute("height")).toBe("1080");
   });
 });
+
+test("la librería de escenas se carga al final, cuando el canvas ya existe", () => {
+  const html = construir().html;
+  expect(html.indexOf('<script src="recursos/escenas/shaders.iife.js">')).toBeGreaterThan(html.indexOf("<canvas"));
+});

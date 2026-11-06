@@ -19,3 +19,13 @@ test("segunda pasada: −14 LUFS lineal con la medición, limitador y video sin 
     "-ar", "48000", "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", "C:/r/reel.norm.mp4",
   ]);
 });
+
+test("revisión C2: un reel sin pista de audio (sin música ni voz) no se normaliza y no falla", async () => {
+  const { normalizarAudio } = await import("../../../src/main/exportar/mezcla");
+  const llamadas: string[] = [];
+  await normalizarAudio("C:/r/reel.mp4", undefined, async (cmd, args) => {
+    llamadas.push(cmd);
+    return cmd === "ffprobe" ? { codigo: 0, stdout: "", stderr: "" } : { codigo: 1, stdout: "", stderr: "Output file does not contain any stream" };
+  });
+  expect(llamadas).toEqual(["ffprobe"]);
+});

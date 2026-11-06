@@ -33,3 +33,12 @@ test("sin exportaciones no muestra nada", () => {
   const { container } = render(<ColaExportacion proyectoId="p1" tareas={[]} alCancelar={() => {}} alAbrirCarpeta={() => {}} />);
   expect(container).toBeEmptyDOMElement();
 });
+
+test("revisión C1: también muestra las exportaciones de «Con IA» con su referencia", () => {
+  const ia = (estado: "corriendo" | "ok"): Tarea => ({ id: `i-${estado}`, proyectoId: "ia:c1", tipo: "exportar-ia", estado, pct: 40, creada: "", formato: "9:16", creacionId: "c1",
+    instantaneaIa: { versiculo: { ref: "Juan 8:12" } } as never });
+  const { rerender } = render(<ColaExportacion proyectoId="ia:c1" tareas={[ia("corriendo")]} alCancelar={() => {}} alAbrirCarpeta={() => {}} />);
+  expect(screen.getByText("«Juan 8:12» · 9:16")).toBeInTheDocument();
+  rerender(<ColaExportacion proyectoId="ia:c1" tareas={[ia("ok")]} alCancelar={() => {}} alAbrirCarpeta={() => {}} />);
+  expect(screen.getByText("1 reel listo")).toBeInTheDocument();
+});

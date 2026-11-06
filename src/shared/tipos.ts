@@ -63,8 +63,9 @@ export interface Tarea {
   clipId?: string;
   formato?: Formato;
   instantanea?: ClipSpec;
-  /** Solo "exportar-ia": qué reel de «Con IA» (proyectoId es "ia:<id>"). */
+  /** Solo "exportar-ia": qué reel de «Con IA» (proyectoId es "ia:<id>") y su copia al momento de encolar. */
   creacionId?: string;
+  instantaneaIa?: Creacion;
 }
 
 export type Animo = "reflexivo" | "esperanza" | "victoria" | "adoracion" | "tension";

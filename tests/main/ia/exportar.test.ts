@@ -75,3 +75,11 @@ test("exportar dos veces no pisa el archivo anterior", async () => {
   expect(mp4).toEqual(["juan-8-12-2-9x16.mp4", "juan-8-12-9x16.mp4"]);
   expect(existsSync(join(carpetaCreacion(c.id), "tmp"))).toBe(true);
 });
+
+test("revisión I5: exporta la versión que había al tocar Exportar, aunque después se siga editando", async () => {
+  const instantanea = { ...c, gancho: "Gancho al exportar" };
+  await guardarCreacion({ ...c, gancho: "Editado después", versiculo: { ...c.versiculo, confirmado: false } });
+  await crearEjecutorExportarIa(deps())({ ...tarea(), instantaneaIa: instantanea }, ctx());
+  expect(vistos[0].html).toContain("Gancho al exportar");
+  expect(vistos[0].html).not.toContain("Editado después");
+});

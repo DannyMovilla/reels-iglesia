@@ -58,3 +58,12 @@ test("el servidor de medios encuentra los archivos de «Con IA»", async () => {
   expect(await resolverMedio("fondo-ia", `${c.id}/fondo.jpg`)).toBe(join(datos, "ia", c.id, "fondo.jpg"));
   expect(await resolverMedio("fondo-ia", `${c.id}/../x`)).toBeNull();
 });
+
+test("revisión: un id con «..» o barras no sale de la carpeta de «Con IA»", async () => {
+  const { carpetaIa } = await import("../../../src/main/ia/almacen");
+  await crearCreacion({ tipo: "versiculo", texto: "Juan 3:16" });
+  await expect(borrarCreacion("..")).rejects.toThrow();
+  await expect(leerCreacion("../x")).rejects.toThrow();
+  expect((await listarCreaciones()).length).toBe(1);
+  expect(carpetaIa()).toContain("ia");
+});

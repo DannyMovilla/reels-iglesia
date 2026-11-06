@@ -11,7 +11,7 @@ export class AvisadorExportaciones {
   private tanda = new Map<string, Set<string>>();
 
   cambio(tareas: Tarea[]): AvisoExportacion[] {
-    const exportar = tareas.filter((t) => t.tipo === "exportar");
+    const exportar = tareas.filter((t) => t.tipo === "exportar" || t.tipo === "exportar-ia");
     for (const t of exportar) if (ACTIVAS.has(t.estado)) {
       if (!this.tanda.has(t.proyectoId)) this.tanda.set(t.proyectoId, new Set());
       this.tanda.get(t.proyectoId)!.add(t.id);

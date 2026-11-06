@@ -10,7 +10,7 @@ interface Props {
 
 /** Panel de exportaciones del proyecto: lo que se está exportando, lo que queda y el resultado. */
 export function ColaExportacion({ proyectoId, tareas, alCancelar, alAbrirCarpeta }: Props) {
-  const propias = tareas.filter((t) => t.tipo === "exportar" && t.proyectoId === proyectoId);
+  const propias = tareas.filter((t) => (t.tipo === "exportar" || t.tipo === "exportar-ia") && t.proyectoId === proyectoId);
   if (propias.length === 0) return null;
   const actual = propias.find((t) => t.estado === "corriendo");
   const enCola = propias.filter((t) => t.estado === "pendiente").length;
@@ -24,7 +24,7 @@ export function ColaExportacion({ proyectoId, tareas, alCancelar, alAbrirCarpeta
           <div className="cola-fila">
             <Cpu size={14} aria-hidden="true" />
             <b>Exportando</b>
-            <span className="cola-titulo">{actual ? `«${actual.instantanea?.titulo ?? "reel"}» · ${actual.formato}` : "En espera…"}</span>
+            <span className="cola-titulo">{actual ? `«${actual.instantanea?.titulo ?? actual.instantaneaIa?.versiculo.ref ?? "reel"}» · ${actual.formato}` : "En espera…"}</span>
             {actual && (
               <button type="button" className="btn pequeno fantasma" aria-label="Cancelar exportación" onClick={() => alCancelar(actual.id)}><X size={13} aria-hidden="true" /></button>
             )}

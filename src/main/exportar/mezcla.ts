@@ -29,6 +29,9 @@ export function argsNormalizar(entrada: string, salida: string, m: MedicionLoudn
 
 /** Deja el MP4 en −14 LUFS / −1 dBTP (reemplaza el archivo al terminar). */
 export async function normalizarAudio(mp4: string, senal?: AbortSignal, ejecutar: typeof ejecutarConProgreso = ejecutarConProgreso): Promise<void> {
+  // Un reel sin música ni voz no tiene pista de audio: no hay nada que normalizar.
+  const pistas = await ejecutar("ffprobe", ["-v", "error", "-select_streams", "a", "-show_entries", "stream=index", "-of", "csv=p=0", mp4], { senal });
+  if (pistas.codigo === 0 && !pistas.stdout.trim()) return;
   const medida = await ejecutar("ffmpeg", argsMedir(mp4), { senal });
   const m = leerMedicion(medida.stderr);
   if (medida.codigo !== 0 || !m) throw new Error("No se pudo medir el volumen del reel.");

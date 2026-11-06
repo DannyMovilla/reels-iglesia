@@ -38,7 +38,8 @@ export function crearEjecutorExportarIa(deps: DepsExportarIa = {}): Ejecutor {
 
   return async (t, ctx) => {
     if (!t.creacionId) throw new Error("La tarea no dice qué reel exportar.");
-    const c = await leerCreacion(t.creacionId);
+    // La versión que había al tocar Exportar (si la tarea la trae); si no, la guardada ahora.
+    const c = t.instantaneaIa ?? (await leerCreacion(t.creacionId));
     const formato = t.formato ?? "9:16";
     if (!c.versiculo.texto.trim() || !c.versiculo.confirmado) throw new Error(`Confirma el texto de ${c.versiculo.ref || "el versículo"} antes de exportar.`);
     ctx.alProgreso(1, "Preparando…");

@@ -19,20 +19,23 @@ const sinTildes = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLo
 const conHashtags = z.object({ texto: z.string().default(""), hashtags: z.array(z.string()).default([]) });
 
 const RespuestaVersiculo = z.object({
-  ref: z.string().default(""),
-  texto: z.string().default(""),
-  gancho: z.string().default(""),
-  reflexion: z.string().default(""),
-  palabras_clave: z.array(z.string()).default([]),
-  animo: z.preprocess((v) => (typeof v === "string" ? ANIMOS.find((a) => sinTildes(a) === sinTildes(v)) : undefined), z.enum(ANIMOS as unknown as [Animo, ...Animo[]]).optional()),
+  ref: z.string().catch(""),
+  texto: z.string().catch(""),
+  gancho: z.string().catch(""),
+  reflexion: z.string().catch(""),
+  palabras_clave: z.array(z.string()).catch([]),
+  animo: z.preprocess((v) => (typeof v === "string" ? ANIMOS.find((a) => sinTildes(a) === sinTildes(v)) : undefined), z.enum(ANIMOS as unknown as [Animo, ...Animo[]]).optional()).catch(undefined),
   escena: z.preprocess((v) => (typeof v === "string" ? (Object.keys(ESCENAS) as Escena[]).find((e) => sinTildes(e) === sinTildes(v)) : undefined),
-    z.enum(Object.keys(ESCENAS) as [Escena, ...Escena[]]).optional()),
+    z.enum(Object.keys(ESCENAS) as [Escena, ...Escena[]]).optional()).catch(undefined),
   redes: z.object({
     instagram: conHashtags, tiktok: conHashtags,
     facebook: z.object({ texto: z.string().default("") }),
     youtube: z.object({ titulo: z.string().default(""), texto: z.string().default("") }),
   }).optional().catch(undefined),
 });
+
+/** La respuesta de Claude ya validada: nunca lanza un error técnico por un campo raro. */
+export const leerRespuestaVersiculo = (v: unknown) => RespuestaVersiculo.parse(v && typeof v === "object" ? v : {});
 
 /** Prompt para el reel de un versículo (una sola consulta). */
 export function promptVersiculo(entrada: Creacion["entrada"]): string {
@@ -68,7 +71,7 @@ function extraerObjeto(texto: string): unknown {
       /* siguiente intento */
     }
   }
-  throw new Error("Claude no devolvió el reel en el formato esperado. Toca Reintentar.");
+  throw new Error("Claude no devolvió el reel en el formato esperado. Toca «Pedir a Claude otra vez».");
 }
 
 const DIEZ_MINUTOS = 10 * 60 * 1000;
@@ -82,9 +85,9 @@ export async function escribirCreacion(id: string, opciones: { comando?: string;
   const prompt = promptVersiculo(c.entrada);
   let r;
   try {
-    r = RespuestaVersiculo.parse(extraerObjeto(await preguntar(comando, prompt, senal, tiempo)));
+    r = leerRespuestaVersiculo(extraerObjeto(await preguntar(comando, prompt, senal, tiempo)));
   } catch {
-    r = RespuestaVersiculo.parse(extraerObjeto(await preguntar(comando, `${prompt}\n\nTu respuesta anterior no tenía el formato pedido. Responde solo con el objeto JSON.`, senal, tiempo)));
+    r = leerRespuestaVersiculo(extraerObjeto(await preguntar(comando, `${prompt}\n\nTu respuesta anterior no tenía el formato pedido. Responde solo con el objeto JSON.`, senal, tiempo)));
   }
   if (!r.ref.trim() || !r.texto.trim()) throw new Error("Claude no encontró ese versículo. Escríbelo a mano o prueba con otra referencia.");
   const nueva: Creacion = {
