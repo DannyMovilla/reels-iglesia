@@ -55,3 +55,11 @@ def test_detectar_caras_recorre_todo_el_tramo_y_termina(tmp_path):
               f"r = t.detectar_caras({str(video)!r}, 0.5, 3.5, gpu=False); print(len(r))")
     r = subprocess.run([sys.executable, "-c", codigo], capture_output=True, text=True, timeout=60)
     assert r.stdout.strip().splitlines()[-1] == "6"
+
+
+def test_caras_sin_gpu_por_defecto(monkeypatch):
+    """Medido con el culto real (10 min): GPU 54 s, CPU 30 s → por defecto CPU; REELS_CARAS_GPU=1 la activa."""
+    monkeypatch.delenv("REELS_CARAS_GPU", raising=False)
+    assert t.caras_con_gpu() is False
+    monkeypatch.setenv("REELS_CARAS_GPU", "1")
+    assert t.caras_con_gpu() is True

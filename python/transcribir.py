@@ -159,10 +159,15 @@ def args_ffmpeg_caras(video: str, inicio: float, fin: float, fps: float, ancho: 
                    "-an", "-vf", f"fps={fps},scale={ancho}:{alto}", "-f", "rawvideo", "-pix_fmt", "bgr24", "-"]
 
 
+def caras_con_gpu() -> bool:
+    """Decodificar con la GPU solo si REELS_CARAS_GPU=1: con el culto real fue más lenta (54 s contra 30 s en 10 min)."""
+    return os.environ.get("REELS_CARAS_GPU") == "1"
+
+
 def detectar_caras(video: str, inicio: float, fin: float, fps: float = 2.0, ancho: int = 640, gpu: bool | None = None):
     """Busca caras 2 veces por segundo. Devuelve [[t, [[x, y, w, score], ...]], ...] normalizado 0-1.
 
-    gpu=None prueba primero decodificar con la GPU y, si FFmpeg no entrega el primer cuadro, repite sin GPU.
+    gpu=None usa caras_con_gpu(); si con GPU FFmpeg no entrega el primer cuadro, repite sin GPU.
     """
     import cv2
     import numpy as np
@@ -175,7 +180,7 @@ def detectar_caras(video: str, inicio: float, fin: float, fps: float = 2.0, anch
     alto = int(round(ancho * vh / vw / 2)) * 2
     det = cv2.FaceDetectorYN.create(ruta_modelo_caras(), "", (ancho, alto), 0.6, 0.3, 50)
     tam = ancho * alto * 3
-    usar_gpu = gpu if gpu is not None else os.environ.get("REELS_CARAS_GPU", "1") != "0"
+    usar_gpu = gpu if gpu is not None else caras_con_gpu()
     proc = subprocess.Popen(args_ffmpeg_caras(video, inicio, fin, fps, ancho, alto, usar_gpu), stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
     primero = proc.stdout.read(tam)
     if len(primero) < tam and usar_gpu and gpu is None:
