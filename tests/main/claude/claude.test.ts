@@ -134,3 +134,16 @@ describe("analizarProyecto: errores legibles", () => {
     );
   });
 });
+
+test("el análisis llena el texto del versículo con la Reina-Valera 1909", async () => {
+  process.env.REELS_IGLESIA_DATOS = mkdtempSync(join(tmpdir(), "reels-biblia-"));
+  const v = join(mkdtempSync(join(tmpdir(), "reels-v-")), "v.mp4");
+  writeFileSync(v, "x");
+  const id = (await crearProyecto({ nombre: "Culto", video: { ruta: v, tamano: statSync(v).size, modificado: 0, duracion: 100 }, rango: { inicio: 0, fin: 75 } })).id;
+  await guardarJson(id, "transcripcion.json", muestra());
+  process.env.FALSO_CLAUDE_MODO = "ok";
+  delete process.env.FALSO_CLAUDE_CONTADOR;
+  await analizarProyecto(id, ctx, { comando: `node ${join(FIX, "claude/falso-claude.mjs")}` });
+  const clips = await leerJson<ClipSpec[]>(id, "clips.json");
+  expect(clips?.[0].versiculos[0].texto).toMatch(/^Los sacrificios de Dios son el espíritu quebrantado/);
+});
