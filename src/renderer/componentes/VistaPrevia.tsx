@@ -8,6 +8,7 @@ export interface ControlVistaPrevia {
   seek(t: number): void;
   play(): void;
   pause(): void;
+  alternar(): void;
 }
 
 interface Props {
@@ -42,6 +43,11 @@ export const VistaPrevia = forwardRef<ControlVistaPrevia, Props>(function VistaP
     seek: (t) => reproductor.current?.seek(t),
     play: () => reproductor.current?.play(),
     pause: () => reproductor.current?.pause(),
+    alternar: () => {
+      const r = reproductor.current as (Reproductor & { paused?: boolean }) | null;
+      if (r?.paused === false) r.pause();
+      else r?.play();
+    },
   }), []);
 
   useEffect(() => {

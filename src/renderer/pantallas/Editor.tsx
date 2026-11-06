@@ -2,7 +2,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { TriangleAlert } from "lucide-react";
 import type { Caras, ClipSpec, Marca, Proyecto, Tarea, Transcripcion } from "@shared/tipos";
 import { formatoTiempo } from "@shared/validar";
+import { palabrasDe } from "@shared/reel/tiempo";
 import { Inspector } from "../componentes/Inspector";
+import { LineaTiempo } from "../componentes/LineaTiempo";
 import { ListaClips } from "../componentes/ListaClips";
 import { PanelProceso } from "../componentes/PanelProceso";
 import { VistaPrevia, type ControlVistaPrevia } from "../componentes/VistaPrevia";
@@ -21,6 +23,7 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
   const [sel, setSel] = useState<string | undefined>();
   const [datos, setDatos] = useState<Datos>({ transcripcion: null, caras: null, marca: null, dimensiones: null });
   const [avisos, setAvisos] = useState<string[]>([]);
+  const [tiempo, setTiempo] = useState(0);
   const vista = useRef<ControlVistaPrevia>(null);
   const guardando = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -60,6 +63,12 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
     }, 400);
   };
 
+  /** Nuevo corte: el versículo se desplaza para seguir en el mismo momento del video. */
+  const cambiarCorte = (c: ClipSpec, inicio: number, fin: number) => {
+    const d = inicio - c.inicio;
+    cambiarClip({ ...c, inicio, fin, versiculos: c.versiculos.map((v) => ({ ...v, en: Math.max(0, Math.round((v.en - d) * 100) / 100) })) });
+  };
+
   if (!proyecto) return <div className="cargando">Cargando…</div>;
   const clip = clips.find((c) => c.id === sel);
   const listo = clip && datos.transcripcion && datos.marca && datos.dimensiones;
@@ -85,13 +94,21 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
         {clip && <div className="centro-cabeza"><h2>{clip.titulo}</h2><span>{clip.categoria} · {formatoTiempo(clip.fin - clip.inicio)}</span></div>}
         {listo && (
           <VistaPrevia ref={vista} proyectoId={proyecto.id} clip={clip} transcripcion={datos.transcripcion!} caras={datos.caras}
-            marca={datos.marca!} dimensiones={datos.dimensiones!} alAvisos={setAvisos} />
+            marca={datos.marca!} dimensiones={datos.dimensiones!} alAvisos={setAvisos} alTiempo={setTiempo} />
         )}
       </main>
 
       <aside className="editor-der" aria-label="Datos del clip">
         {clip ? <Inspector clip={clip} avisos={avisos} alCambiar={cambiarClip} /> : <p className="vacio">Elige un clip para editarlo.</p>}
       </aside>
+
+      <div className="editor-abajo">
+        {listo && (
+          <LineaTiempo clip={clip} palabras={palabrasDe(datos.transcripcion!)} tiempoActual={tiempo}
+            alBuscar={(t) => { setTiempo(t); vista.current?.seek(t); }}
+            alCambiarCorte={(i, f) => cambiarCorte(clip, i, f)} alAlternarReproduccion={() => vista.current?.alternar()} />
+        )}
+      </div>
     </div>
   );
 }

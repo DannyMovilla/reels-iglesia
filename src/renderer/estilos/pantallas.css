@@ -36,7 +36,9 @@
 .meta-video .mono { font-size: 12px; color: var(--text-3); overflow-wrap: anywhere; }
 
 /* Editor */
-.editor { height: 100%; display: grid; grid-template-columns: 300px minmax(0, 1fr) 328px; }
+.editor { height: 100%; display: grid; grid-template-columns: 300px minmax(0, 1fr) 328px; grid-template-rows: minmax(0, 1fr) 200px; grid-template-areas: "izq centro der" "izq abajo abajo"; }
+.editor-izq { grid-area: izq; } .editor-centro { grid-area: centro; } .editor-der { grid-area: der; }
+.editor-abajo { grid-area: abajo; min-width: 0; border-top: 1px solid var(--line); background: var(--bg-1); }
 .editor-izq { border-right: 1px solid var(--line); background: var(--bg-1); display: flex; flex-direction: column; min-height: 0; overflow-y: auto; }
 .editor-centro { display: flex; flex-direction: column; gap: 10px; padding: 14px; min-width: 0; background: radial-gradient(ellipse at 50% 40%, #151a2c 0%, var(--bg-0) 70%); }
 .editor-der { border-left: 1px solid var(--line); background: var(--bg-1); padding: 14px; display: flex; flex-direction: column; gap: 14px; overflow-y: auto; }
@@ -135,3 +137,35 @@
 .zs-abajo { left: 0; right: 0; bottom: 0; height: 18%; border-width: 1px 0 0 !important; }
 .zs-derecha { right: 0; top: 40%; bottom: 18%; width: 14%; border-width: 0 0 0 1px !important; }
 .zona-segura span { position: absolute; left: 8px; bottom: calc(18% + 6px); font: 500 10px var(--font-mono); color: var(--cielo); background: rgba(10,12,22,.75); padding: 1px 6px; border-radius: 4px; }
+
+/* Línea de tiempo */
+.linea-tiempo { height: 100%; display: grid; grid-template-rows: 1fr 40px; outline: none; }
+.linea-tiempo:focus-visible { box-shadow: inset 0 0 0 2px var(--luz); }
+.lt-pistas { display: grid; grid-template-columns: 92px 1fr; min-width: 0; padding-top: 6px; }
+.lt-etiquetas { display: flex; flex-direction: column; border-right: 1px solid var(--line); padding-top: 22px; }
+.lt-etiquetas div { height: 34px; display: flex; align-items: center; gap: 7px; padding: 0 12px; color: var(--text-3); font-size: 11.5px; font-weight: 500; }
+.lt-etiquetas div:first-child { height: 52px; }
+.lt-carriles { position: relative; margin: 0 14px; cursor: pointer; }
+.lt-regla { height: 22px; position: relative; border-bottom: 1px solid var(--line); }
+.lt-regla span { position: absolute; top: 4px; font: 400 10px var(--font-mono); color: var(--text-3); transform: translateX(-50%); }
+.lt-carril { height: 34px; position: relative; border-bottom: 1px solid rgba(255,255,255,.035); }
+.lt-carril.video { height: 52px; }
+.lt-parte { position: absolute; top: 6px; bottom: 6px; border-radius: 6px; }
+.lt-parte.apertura { background: repeating-linear-gradient(90deg, #3a3f52 0 4px, #2c3042 4px 8px); }
+.lt-parte.clip { background: linear-gradient(180deg, #2a3150, #1e2438); border: 2px solid var(--luz); }
+.lt-parte.cierre { background: #2b2440; }
+.asa { position: absolute; top: -2px; bottom: -2px; width: 10px; background: var(--luz); cursor: ew-resize; display: grid; place-items: center; touch-action: none; }
+.asa::after { content: ""; width: 2px; height: 14px; border-radius: 1px; background: var(--luz-ink); }
+.asa.izq { left: -6px; border-radius: 6px 0 0 6px; } .asa.der { right: -6px; border-radius: 0 6px 6px 0; }
+.lt-bloque { position: absolute; top: 6px; bottom: 6px; border-radius: 5px; font-size: 10.5px; font-weight: 600; display: flex; align-items: center; gap: 5px; padding: 0 7px; white-space: nowrap; overflow: hidden; }
+.lt-bloque.bn { background: repeating-linear-gradient(90deg, #3a3f52 0 4px, #2c3042 4px 8px); color: #e6e8ef; }
+.lt-bloque.versiculo { background: var(--luz); color: var(--luz-ink); }
+.lt-bloque.cierre { background: #2b2440; color: #d9cffa; }
+.lt-sub { position: absolute; top: 9px; bottom: 9px; border-radius: 4px; background: rgba(236,238,246,.16); }
+.lt-sub.clave { background: rgba(242,181,68,.5); }
+.lt-oculto { position: absolute; top: 6px; bottom: 6px; border-radius: 5px; border: 1px dashed rgba(242,181,68,.6); color: var(--luz); font-size: 10.5px; display: flex; align-items: center; justify-content: center; gap: 5px; overflow: hidden; white-space: nowrap; }
+.lt-cabezal { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--cielo); pointer-events: none; }
+.lt-cabezal::before { content: ""; position: absolute; top: 0; left: -5px; border: 6px solid transparent; border-top: 8px solid var(--cielo); }
+.lt-pie { display: flex; align-items: center; gap: 16px; padding: 0 14px; border-top: 1px solid var(--line); color: var(--text-2); font-size: 12px; }
+.lt-pie b { color: var(--text); font-weight: 500; }
+.ayuda-lt { color: var(--text-3); }
