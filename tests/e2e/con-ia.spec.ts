@@ -15,7 +15,7 @@ test("Con IA: Claude escribe el reel de un versículo, se confirma y se exporta"
   const v = await app.firstWindow();
   await v.getByRole("link", { name: "Con IA" }).click();
   await v.getByRole("button", { name: "Nuevo reel de versículo" }).click();
-  await v.getByLabel("Versículo").fill("Juan 8:12");
+  await v.getByLabel("Versículo", { exact: true }).fill("Juan 8:12");
   await v.getByRole("button", { name: "Crear con Claude" }).click();
   await expect(v.getByLabel("Gancho")).toHaveValue("No tienes que caminar a oscuras", { timeout: 60_000 });
   await expect(v.getByRole("button", { name: "Exportar" })).toBeDisabled();
