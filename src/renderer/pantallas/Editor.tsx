@@ -3,6 +3,7 @@ import { TriangleAlert } from "lucide-react";
 import type { Caras, ClipSpec, Marca, Proyecto, Tarea, Transcripcion } from "@shared/tipos";
 import { formatoTiempo } from "@shared/validar";
 import { palabrasDe } from "@shared/reel/tiempo";
+import { estiloDesdeClip } from "@shared/clip";
 import { Download } from "lucide-react";
 import { ColaExportacion } from "../componentes/ColaExportacion";
 import { Inspector } from "../componentes/Inspector";
@@ -74,6 +75,19 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
     if (!pendiente.current) guardando.current = null;
   };
 
+  const guardarEstilo = async (c: ClipSpec) => {
+    const m = await window.reels!.leerMarca();
+    const nueva = { ...m, estilo: estiloDesdeClip(c) };
+    await window.reels!.guardarMarca(nueva);
+    setDatos((d) => ({ ...d, marca: nueva }));
+  };
+
+  const aplicarEstilo = async () => {
+    await guardarYa();
+    await window.reels!.aplicarEstilo(proyectoId);
+    setClips(await window.reels!.leerClips(proyectoId));
+  };
+
   const exportar = async (id: string, clipIds: string[]) => {
     await guardarYa();
     await window.reels!.exportar(id, clipIds);
@@ -124,7 +138,7 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
       </main>
 
       <aside className="editor-der" aria-label="Datos del clip">
-        {clip ? <Inspector clip={clip} avisos={avisos} alCambiar={cambiarClip} /> : <p className="vacio">Elige un clip para editarlo.</p>}
+        {clip ? <Inspector clip={clip} avisos={avisos} alCambiar={cambiarClip} alGuardarEstilo={(c) => void guardarEstilo(c)} alAplicarEstilo={() => void aplicarEstilo()} /> : <p className="vacio">Elige un clip para editarlo.</p>}
         {clip && (
           <div className="inspector-pie">
             <button type="button" className="btn primario" disabled={clip.formatos.length === 0}

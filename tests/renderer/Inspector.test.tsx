@@ -53,3 +53,14 @@ test("en Estilo se cambia el estilo de subtítulos", async () => {
   await userEvent.click(screen.getByRole("button", { name: "Caja" }));
   expect(alCambiar.mock.calls.at(-1)![0].subtitulos.estilo).toBe("caja");
 });
+
+test("en Estilo se guarda el estilo de la iglesia o se aplica a todos los clips", async () => {
+  const alGuardarEstilo = vi.fn();
+  const alAplicarEstilo = vi.fn();
+  render(<Inspector clip={base} avisos={[]} alCambiar={() => {}} alGuardarEstilo={alGuardarEstilo} alAplicarEstilo={alAplicarEstilo} />);
+  await userEvent.click(screen.getByRole("tab", { name: "Estilo" }));
+  await userEvent.click(screen.getByRole("button", { name: "Guardar como estilo de la iglesia" }));
+  expect(alGuardarEstilo).toHaveBeenCalledWith(base);
+  await userEvent.click(screen.getByRole("button", { name: "Aplicar a todos los clips" }));
+  expect(alAplicarEstilo).toHaveBeenCalled();
+});

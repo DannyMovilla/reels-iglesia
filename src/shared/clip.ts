@@ -48,3 +48,28 @@ export function completarClip(entrada: unknown, estilo: EstiloIglesia): ClipSpec
     redes,
   };
 }
+
+/** El estilo de la iglesia que corresponde a un clip ("Guardar como estilo de la iglesia"). */
+export function estiloDesdeClip(c: ClipSpec): EstiloIglesia {
+  return structuredClone({
+    subtitulos: { estilo: c.subtitulos.estilo, tamano: c.subtitulos.tamano },
+    musica: { modo: c.musica.modo, volumen: c.musica.volumen },
+    cortes: c.cortes,
+    efectos: c.efectos,
+    cierre: c.cierre,
+    formatos: c.formatos,
+  });
+}
+
+/** Aplica el estilo de la iglesia a un clip (sin tocar su contenido: corte, textos, versículos, encuadre). */
+export function aplicarEstiloAClip(c: ClipSpec, e: EstiloIglesia): ClipSpec {
+  return structuredClone({
+    ...c,
+    subtitulos: { ...c.subtitulos, estilo: e.subtitulos.estilo, tamano: e.subtitulos.tamano },
+    musica: { ...c.musica, modo: e.musica.modo, volumen: e.musica.volumen },
+    cortes: e.cortes,
+    efectos: e.efectos,
+    cierre: e.cierre,
+    formatos: e.formatos,
+  });
+}

@@ -2,6 +2,7 @@ import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "re
 import "@hyperframes/player";
 import { Scan, Smartphone } from "lucide-react";
 import { ALTOS, construirComposicion } from "@shared/reel/composicion";
+import { urlLogoVista } from "../pantallas/Marca";
 import type { Caras, ClipSpec, Formato, Marca, Transcripcion } from "@shared/tipos";
 
 export interface ControlVistaPrevia {
@@ -55,7 +56,7 @@ export const VistaPrevia = forwardRef<ControlVistaPrevia, Props>(function VistaP
       const comp = construirComposicion({
         clip: p.clip, transcripcion: p.transcripcion, caras: p.caras, marca: p.marca, formato, dimensiones: p.dimensiones,
         fuenteVideo: window.reels!.urlVideo(p.proyectoId),
-        recursos: { gsap: "recursos/gsap.min.js", fuentes: "recursos/fuentes", runtime: "recursos/hyperframe.runtime.iife.js" },
+        recursos: { gsap: "recursos/gsap.min.js", fuentes: "recursos/fuentes", runtime: "recursos/hyperframe.runtime.iife.js", logo: urlLogoVista(p.marca.logo) },
         modo: "vista",
       });
       p.alAvisos?.(comp.avisos);

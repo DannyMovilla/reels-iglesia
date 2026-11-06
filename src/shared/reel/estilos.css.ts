@@ -37,6 +37,8 @@ html, body { width: ${p.ancho}px; height: ${p.alto}px; overflow: hidden; backgro
   background: radial-gradient(circle at 50% 40%, #2a2340 0%, #0b0b14 70%); color: #fff; text-align: center; }
 .cierre .logo { width: 220px; height: 220px; border-radius: 50%; background: var(--marca); color: #111; display: grid; place-items: center; font: 900 120px Montserrat, sans-serif; overflow: hidden; }
 .cierre .logo img { width: 100%; height: 100%; object-fit: contain; }
+.cierre .logo.con-imagen { border-radius: 0; background: none; overflow: visible; }
+.muestra-fondo { position: absolute; inset: 0; background: radial-gradient(circle at 50% 35%, #2a3352, #0a0c16 70%); }
 .cierre h2 { font: 900 76px/1.1 Montserrat, sans-serif; padding: 0 40px; }
 .cierre p { font: 700 44px Figtree, sans-serif; color: var(--marca); padding: 0 40px; }
 `;

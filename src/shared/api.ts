@@ -31,6 +31,11 @@ export interface ApiReels {
   /** Guarda un clip editado (reemplaza el de mismo id en clips.json). */
   guardarClip(proyectoId: string, clip: ClipSpec): Promise<void>;
   leerMarca(): Promise<Marca>;
+  guardarMarca(m: Marca): Promise<void>;
+  /** Abre el diálogo para elegir el logo, lo copia a la carpeta de la marca y devuelve su ruta (null si se cancela). */
+  elegirLogo(): Promise<string | null>;
+  /** Aplica el estilo de la iglesia a los clips sin exportar del proyecto. */
+  aplicarEstilo(proyectoId: string): Promise<void>;
   /** Ancho y alto del video original (para encuadrar). */
   infoVideo(id: string): Promise<{ ancho: number; alto: number }>;
   /** Encola el procesamiento desde un paso (por defecto, desde la transcripción). */

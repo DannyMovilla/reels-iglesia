@@ -187,3 +187,17 @@
 .grupo-exportados ul { list-style: none; display: flex; flex-direction: column; gap: 4px; }
 .grupo-exportados li { display: flex; justify-content: space-between; gap: 12px; font-size: 12.5px; }
 .tenue { color: var(--text-3); }
+
+/* Marca */
+.marca-grid { display: grid; grid-template-columns: minmax(320px, 520px) minmax(240px, 340px); gap: 32px; align-items: start; margin-top: 8px; }
+.marca-form { display: flex; flex-direction: column; gap: 16px; }
+.marca-form .campo .valor { margin-left: auto; font-family: var(--font-mono); color: var(--text-3); }
+.marca-form input[type="color"] { width: 44px; height: 34px; padding: 2px; border: 1px solid var(--line-2); border-radius: var(--r-sm); background: var(--bg-2); cursor: pointer; }
+.marca-form input[type="range"] { accent-color: var(--luz); }
+.entrada.corta { min-width: 0; width: 110px; }
+.grupo-redes { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; border: 1px solid var(--line); border-radius: var(--r-md); padding: 12px 14px 14px; margin: 0; }
+.grupo-redes legend { padding: 0 6px; font-size: 12px; font-weight: 600; color: var(--text-2); }
+.marca-vista { position: sticky; top: 16px; }
+.marca-vista .pantalla-reel { width: 100%; border-radius: var(--r-lg); overflow: hidden; background: #000; box-shadow: 0 18px 50px rgba(0, 0, 0, .45); }
+.fila-botones { display: flex; flex-wrap: wrap; gap: 8px; }
+@media (max-width: 900px) { .marca-grid { grid-template-columns: 1fr; } .marca-vista { position: static; max-width: 320px; } }

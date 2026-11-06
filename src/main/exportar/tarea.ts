@@ -64,13 +64,15 @@ export function crearEjecutorExportar(deps: DepsExportar = {}): Ejecutor {
     // HyperFrames corta el src en "#" o "?": esas rutas van como un enlace dentro de la carpeta temporal.
     const enlazar = /[#?%]/.test(proyecto.video.ruta);
     const fuenteVideo = enlazar ? `video${extname(proyecto.video.ruta).toLowerCase()}` : proyecto.video.ruta.replace(/\\/g, "/");
+    const marca = await leerMarca();
+    const logo = marca.logo && existsSync(marca.logo) ? `recursos/logo${extname(marca.logo).toLowerCase()}` : undefined;
     const comp = construirComposicion({
       clip, transcripcion, formato,
       caras: await leerJson<Caras>(t.proyectoId, "caras.json"),
-      marca: await leerMarca(),
+      marca,
       dimensiones: await dimensiones(proyecto.video.ruta),
       fuenteVideo,
-      recursos: { gsap: "recursos/gsap.min.js", fuentes: "recursos/fuentes" },
+      recursos: { gsap: "recursos/gsap.min.js", fuentes: "recursos/fuentes", logo },
       modo: "render",
     });
     const carpeta = carpetaProyecto(t.proyectoId);
@@ -78,6 +80,7 @@ export function crearEjecutorExportar(deps: DepsExportar = {}): Ejecutor {
     const exportados = join(carpeta, "exportados");
     try {
       await prepararCarpeta(tmp, comp.html);
+      if (logo && marca.logo) await copyFile(marca.logo, join(tmp, logo));
       if (enlazar) await link(proyecto.video.ruta, join(tmp, fuenteVideo)).catch(() => copyFile(proyecto.video.ruta, join(tmp, fuenteVideo)));
       const existentes = new Set(existsSync(exportados) ? await readdir(exportados) : []);
       const nombre = nombreSalida(clip.titulo, formato, existentes);

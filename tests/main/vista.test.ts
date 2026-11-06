@@ -21,3 +21,12 @@ test("no deja salir de las carpetas permitidas", () => {
   expect(rutaRecurso("recursos/otra-cosa.js", RAIZ)).toBeNull();
   expect(rutaRecurso("../secreto.txt", RAIZ)).toBeNull();
 });
+
+test("sirve el logo de la marca y nada más de la carpeta de datos", () => {
+  const DATOS = "C:/datos";
+  expect(rutaRecurso("marca/logo.png", RAIZ, DATOS)).toBe(join(DATOS, "marca", "logo.png"));
+  expect(rutaRecurso("marca/logo.svg", RAIZ, DATOS)).toBe(join(DATOS, "marca", "logo.svg"));
+  expect(rutaRecurso("marca/otro.png", RAIZ, DATOS)).toBeNull();
+  expect(rutaRecurso("marca/../marca.json", RAIZ, DATOS)).toBeNull();
+  expect(rutaRecurso("marca/logo.png", RAIZ)).toBeNull();
+});

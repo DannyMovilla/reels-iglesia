@@ -4,12 +4,12 @@ import { extname, join } from "node:path";
 import { Readable } from "node:stream";
 import { dialog, ipcMain, protocol, shell, type BrowserWindow } from "electron";
 import type { DatosNuevoProyecto, EstadoSistema } from "@shared/api";
-import type { Caras, ClipSpec, Formato, TipoTarea, Transcripcion } from "@shared/tipos";
+import type { Caras, ClipSpec, Formato, Marca, TipoTarea, Transcripcion } from "@shared/tipos";
 import type { Cola } from "./cola/cola";
 import { dimensionesVideo, duracionVideo } from "./procesos/video";
-import { carpetaProyecto, raizApp } from "./rutas";
+import { carpetaDatos, carpetaProyecto, raizApp } from "./rutas";
 import { esquemaVista, registrarComposicion, servirVista } from "./vista";
-import { crearProyecto, guardarClip, leerClips, leerJson, leerMarca, leerProyecto, listarExportados, listarProyectos } from "./proyectos/almacen";
+import { aplicarEstilo, copiarLogo, crearProyecto, guardarClip, guardarMarca, leerClips, leerJson, leerMarca, leerProyecto, listarExportados, listarProyectos } from "./proyectos/almacen";
 
 export interface DepsIpc {
   cola: Cola;
@@ -65,7 +65,7 @@ function servirVideo(): void {
 
 export function registrarIpc(deps: DepsIpc): void {
   servirVideo();
-  servirVista(raizApp());
+  servirVista(raizApp(), carpetaDatos);
   ipcMain.handle("vista:registrar", (_e, id: string, html: string) => registrarComposicion(id, html));
   const { cola } = deps;
   cola.on("cambio", (t) => {
@@ -96,6 +96,12 @@ export function registrarIpc(deps: DepsIpc): void {
   ipcMain.handle("proyectos:caras", (_e, id: string) => leerJson<Caras>(id, "caras.json"));
   ipcMain.handle("proyectos:guardarClip", (_e, id: string, clip: ClipSpec) => guardarClip(id, clip));
   ipcMain.handle("marca:leer", () => leerMarca());
+  ipcMain.handle("marca:guardar", (_e, m: Marca) => guardarMarca(m));
+  ipcMain.handle("marca:elegirLogo", async () => {
+    const r = await dialog.showOpenDialog({ title: "Elige el logo de la iglesia", properties: ["openFile"], filters: [{ name: "Imágenes", extensions: ["png", "jpg", "jpeg", "svg", "webp"] }] });
+    return r.canceled || !r.filePaths[0] ? null : copiarLogo(r.filePaths[0]);
+  });
+  ipcMain.handle("proyectos:aplicarEstilo", (_e, id: string) => aplicarEstilo(id));
   const dims = new Map<string, Promise<{ ancho: number; alto: number }>>();
   ipcMain.handle("proyectos:infoVideo", async (_e, id: string) => {
     if (!dims.has(id)) dims.set(id, leerProyecto(id).then((p) => dimensionesVideo(p.video.ruta)));

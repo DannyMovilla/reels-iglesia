@@ -6,6 +6,10 @@ interface Props {
   clip: ClipSpec;
   avisos: string[];
   alCambiar(c: ClipSpec): void;
+  /** "Guardar como estilo de la iglesia" con este clip. */
+  alGuardarEstilo?(c: ClipSpec): void;
+  /** "Aplicar a todos los clips" el estilo de la iglesia. */
+  alAplicarEstilo?(): void;
 }
 
 type Pestana = "clip" | "estilo" | "publicar";
@@ -24,7 +28,7 @@ function Segmentos<T extends string>({ opciones, valor, etiqueta, alCambiar }: {
 
 const FORMATOS: [Formato, string, string][] = [["9:16", "Reels · TikTok", "12px 21px"], ["4:5", "Feed IG · FB", "15px 19px"], ["1:1", "Cuadrado", "17px 17px"]];
 
-export function Inspector({ clip: c, avisos, alCambiar }: Props) {
+export function Inspector({ clip: c, avisos, alCambiar, alGuardarEstilo, alAplicarEstilo }: Props) {
   const [pestana, setPestana] = useState<Pestana>("clip");
   const cambiar = (parcial: Partial<ClipSpec>) => alCambiar({ ...c, ...parcial });
   const cambiarVersiculo = (i: number, parcial: Partial<ClipSpec["versiculos"][number]>) =>
@@ -135,6 +139,15 @@ export function Inspector({ clip: c, avisos, alCambiar }: Props) {
                 <input type="range" min={1} max={2} step={0.05} value={c.encuadre.zoom} onChange={(e) => cambiar({ encuadre: { ...c.encuadre, zoom: Number(e.target.value) } })} />
               </label>
             </div>
+            {(alGuardarEstilo || alAplicarEstilo) && (
+              <div className="grupo"><h3>Estilo de la iglesia</h3>
+                <p className="ayuda">Guarda cómo se ve este clip para que los próximos salgan igual.</p>
+                <div className="fila-botones">
+                  {alGuardarEstilo && <button type="button" className="btn pequeno" onClick={() => alGuardarEstilo(c)}>Guardar como estilo de la iglesia</button>}
+                  {alAplicarEstilo && <button type="button" className="btn pequeno fantasma" onClick={() => alAplicarEstilo()}>Aplicar a todos los clips</button>}
+                </div>
+              </div>
+            )}
           </>
         )}
 

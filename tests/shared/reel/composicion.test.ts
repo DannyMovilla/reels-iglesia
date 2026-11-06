@@ -113,3 +113,26 @@ test("avisos: versículo sin texto o sin confirmar", () => {
   const sinConfirmar = construirComposicion(entrada("9:16", clip({ versiculos: [{ ref: "Juan 3:16", texto: TEXTO, en: 3, activo: true, confirmado: false }] })));
   expect(sinConfirmar.avisos).toContain("Confirma el texto RVR1960 de Juan 3:16 antes de exportar.");
 });
+
+test("el logo del cierre no se recorta y su tamaño sigue a la marca", async () => {
+  const conLogo = (logoEscala: number) => dom(construirComposicion({
+    ...entrada(), marca: { ...entrada().marca, logo: "C:/datos/marca/logo.png", logoEscala },
+    recursos: { gsap: "recursos/gsap.min.js", fuentes: "recursos/fuentes", logo: "recursos/logo.png" },
+  }).html).querySelector("#cierre .logo") as HTMLElement;
+  const grande = conLogo(1.5);
+  expect(grande.classList.contains("con-imagen")).toBe(true);
+  expect(grande.getAttribute("style")).toContain("width:390px");
+  expect(grande.querySelector("img")!.getAttribute("src")).toBe("recursos/logo.png");
+  expect(conLogo(0.5).getAttribute("style")).toContain("width:130px");
+  const { cssComposicion } = await import("../../../src/shared/reel/estilos.css");
+  expect(cssComposicion({ ancho: 1080, alto: 1920, color: "#fff", fuentes: "f", tamanoSub: 70, estiloSub: "pop" })).toMatch(/\.logo\.con-imagen\s*\{[^}]*border-radius:\s*0/);
+});
+
+test("muestra de la marca: el cierre con nombre e invitación", async () => {
+  const { construirMuestraMarca } = await import("../../../src/shared/reel/composicion");
+  const r = construirMuestraMarca({ marca: entrada().marca, recursos: { gsap: "g", fuentes: "f" }, formato: "9:16", modo: "vista" });
+  const d = dom(r.html);
+  expect(d.querySelector("#cierre h2")!.textContent).toBe("Iglesia Familia");
+  expect(d.querySelector("#cierre p")!.textContent).toBe("Síguenos · Domingos 10:00 AM");
+  expect(r.duracion).toBeGreaterThan(2);
+});

@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
-import { mkdir, readdir, readFile, rename, rm, stat, writeFile } from "node:fs/promises";
-import { join } from "node:path";
-import { completarClip, ESTILO_POR_DEFECTO } from "@shared/clip";
+import { copyFile, mkdir, readdir, readFile, rename, rm, stat, writeFile } from "node:fs/promises";
+import { extname, join } from "node:path";
+import { aplicarEstiloAClip, completarClip, ESTILO_POR_DEFECTO } from "@shared/clip";
 import type { ClipSpec, Marca, Proyecto, VideoOrigen } from "@shared/tipos";
 import { validarRango } from "@shared/validar";
 import { carpetaDatos, carpetaProyecto, carpetaProyectos } from "../rutas";
@@ -117,6 +117,32 @@ export async function leerMarca(): Promise<Marca> {
   }
   const estilo = { ...ESTILO_POR_DEFECTO, ...(guardada.estilo ?? {}) };
   return structuredClone({ ...MARCA_POR_DEFECTO, ...guardada, redes: guardada.redes ?? {}, estilo });
+}
+
+export async function guardarMarca(m: Marca): Promise<void> {
+  await mkdir(carpetaDatos(), { recursive: true });
+  await escribirAtomico(join(carpetaDatos(), "marca.json"), m);
+}
+
+const EXT_LOGO = [".png", ".jpg", ".jpeg", ".svg", ".webp"];
+
+/** Copia el logo elegido a <datos>/marca/logo.<ext> (borra el anterior) y devuelve su ruta. */
+export async function copiarLogo(origen: string): Promise<string> {
+  const ext = extname(origen).toLowerCase();
+  if (!EXT_LOGO.includes(ext)) throw new Error("El logo tiene que ser una imagen PNG, JPG, SVG o WEBP.");
+  const dir = join(carpetaDatos(), "marca");
+  await mkdir(dir, { recursive: true });
+  for (const e of EXT_LOGO) await rm(join(dir, `logo${e}`), { force: true });
+  const destino = join(dir, `logo${ext}`);
+  await copyFile(origen, destino);
+  return destino;
+}
+
+/** "Aplicar a todos los clips": el estilo de la iglesia en los clips que aún no se exportaron. */
+export async function aplicarEstilo(proyectoId: string): Promise<void> {
+  const { estilo } = await leerMarca();
+  const clips = await leerClips(proyectoId);
+  await guardarJson(proyectoId, "clips.json", clips.map((c) => (c.estado === "exportado" ? c : aplicarEstiloAClip(c, estilo))));
 }
 
 /** clips.json completado al formato actual (clips de versiones anteriores incluidos). */

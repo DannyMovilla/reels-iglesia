@@ -18,7 +18,8 @@ export interface EntradaComposicion {
   dimensiones: { ancho: number; alto: number };
   /** reels-video://… en la vista previa; ruta absoluta del archivo original en el render. */
   fuenteVideo: string;
-  recursos: { gsap: string; fuentes: string; runtime?: string };
+  /** Rutas relativas a la carpeta del reel (o a reels-comp:// en la vista previa). `logo` solo si la marca tiene logo. */
+  recursos: { gsap: string; fuentes: string; runtime?: string; logo?: string };
   modo: "vista" | "render";
 }
 
@@ -134,22 +135,42 @@ export function construirComposicion(e: EntradaComposicion): { html: string; dur
   js.push(`tl.fromTo("#prog", { scaleX: 0 }, { scaleX: 1, duration: ${n(finVideo)}, ease: "none" }, 0);`);
 
   const cierre = partes.find((p) => p.tipo === "cierre");
-  if (cierre) {
-    const logo = marca.logo ? `<img src="${esc(marca.logo)}" alt="">` : esc((marca.nombre.trim()[0] ?? "").toUpperCase());
-    el.push(`<div id="cierre" class="clip cierre" data-start="${n(cierre.inicioReel)}" data-duration="${n(cierre.duracion)}"><div class="logo">${logo}</div><h2>${esc(marca.nombre)}</h2><p>${esc(marca.invitacion)}</p></div>`);
-    js.push(`tl.from("#cierre", { opacity: 0, duration: 0.3 }, ${n(cierre.inicioReel)});`);
-    js.push(`tl.from("#cierre .logo", { scale: 0.4, opacity: 0, duration: 0.5, ease: "back.out(2)" }, ${n(cierre.inicioReel + 0.1)});`);
-    js.push(`tl.from("#cierre h2, #cierre p", { y: 40, opacity: 0, duration: 0.45, stagger: 0.12, ease: "power3.out" }, ${n(cierre.inicioReel + 0.3)});`);
-  }
+  if (cierre) agregarCierre(el, js, marca, e.recursos, cierre.inicioReel, cierre.duracion);
 
   const css = cssComposicion({ ancho: W, alto: H, color: marca.color, fuentes: e.recursos.fuentes, tamanoSub: TAMANOS[c.subtitulos.estilo][c.subtitulos.tamano], estiloSub: c.subtitulos.estilo });
-  const runtime = e.modo === "vista" && e.recursos.runtime ? `<script src="${e.recursos.runtime}"></script>\n` : "";
-  const html = `<!doctype html>
+  return { html: documento(W, H, duracion, css, e.recursos, e.modo, el, js), duracion, ancho: W, alto: H, avisos };
+}
+
+/** Tarjeta de cierre: logo (sin recortar, tamaño según la marca) o inicial, nombre e invitación. */
+function agregarCierre(el: string[], js: string[], marca: Marca, recursos: EntradaComposicion["recursos"], inicio: number, dur: number): void {
+  const lado = Math.round(260 * Math.min(1.5, Math.max(0.5, marca.logoEscala ?? 1)));
+  const logo = recursos.logo
+    ? `<div class="logo con-imagen" style="width:${lado}px;height:${lado}px"><img src="${esc(recursos.logo)}" alt=""></div>`
+    : `<div class="logo">${esc((marca.nombre.trim()[0] ?? "").toUpperCase())}</div>`;
+  el.push(`<div id="cierre" class="clip cierre" data-start="${n(inicio)}" data-duration="${n(dur)}">${logo}<h2>${esc(marca.nombre)}</h2><p>${esc(marca.invitacion)}</p></div>`);
+  js.push(`tl.from("#cierre", { opacity: 0, duration: 0.3 }, ${n(inicio)});`);
+  js.push(`tl.from("#cierre .logo", { scale: 0.4, opacity: 0, duration: 0.5, ease: "back.out(2)" }, ${n(inicio + 0.1)});`);
+  js.push(`tl.from("#cierre h2, #cierre p", { y: 40, opacity: 0, duration: 0.45, stagger: 0.12, ease: "power3.out" }, ${n(inicio + 0.3)});`);
+}
+
+/** Muestra de la marca para la pantalla Marca: la tarjeta de cierre sobre un fondo de ejemplo. */
+export function construirMuestraMarca(e: { marca: Marca; recursos: EntradaComposicion["recursos"]; formato: Formato; modo: "vista" | "render" }): { html: string; duracion: number; alto: number } {
+  const W = ANCHO, H = ALTOS[e.formato], duracion = 3;
+  const el = [`<div id="fondo" class="clip muestra-fondo" data-start="0" data-duration="${duracion}"></div>`];
+  const js: string[] = [];
+  agregarCierre(el, js, e.marca, e.recursos, 0, duracion);
+  const css = cssComposicion({ ancho: W, alto: H, color: e.marca.color, fuentes: e.recursos.fuentes, tamanoSub: POP.m, estiloSub: "pop" });
+  return { html: documento(W, H, duracion, css, e.recursos, e.modo, el, js), duracion, alto: H };
+}
+
+function documento(W: number, H: number, duracion: number, css: string, recursos: EntradaComposicion["recursos"], modo: "vista" | "render", el: string[], js: string[]): string {
+  const runtime = modo === "vista" && recursos.runtime ? `<script src="${recursos.runtime}"></script>\n` : "";
+  return `<!doctype html>
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=${W}, height=${H}" />
-${runtime}<script src="${e.recursos.gsap}"></script>
+${runtime}<script src="${recursos.gsap}"></script>
 <style>${css}</style>
 </head>
 <body>
@@ -166,5 +187,4 @@ tl.seek(0);
 </body>
 </html>
 `;
-  return { html, duracion, ancho: W, alto: H, avisos };
 }

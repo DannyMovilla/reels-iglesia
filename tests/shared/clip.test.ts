@@ -46,3 +46,13 @@ test("un clip ya completo no cambia", () => {
   const completo: ClipSpec = completarClip(viejo, ESTILO_POR_DEFECTO);
   expect(completarClip(structuredClone(completo), ESTILO_POR_DEFECTO)).toEqual(completo);
 });
+
+test("el estilo de la iglesia se toma de un clip", async () => {
+  const { estiloDesdeClip } = await import("../../src/shared/clip");
+  const c = completarClip({ ...viejo, subtitulos: { activos: true, estilo: "neon", tamano: "l", altura: 0.7 }, cierre: false, formatos: ["1:1"] }, ESTILO_POR_DEFECTO);
+  expect(estiloDesdeClip(c)).toEqual({
+    subtitulos: { estilo: "neon", tamano: "l" }, musica: { modo: "auto", volumen: 0.12 },
+    cortes: { pausas: true, muletillas: true }, efectos: { transicion: "destello", grano: false, rotulo: true },
+    cierre: false, formatos: ["1:1"],
+  });
+});

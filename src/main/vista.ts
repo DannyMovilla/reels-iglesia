@@ -18,7 +18,8 @@ export function registrarComposicion(id: string, html: string): string {
 export const composicionRegistrada = (id: string): string | undefined => composiciones.get(id);
 
 /** Ruta del archivo local para un recurso pedido, o null si no está permitido. */
-export function rutaRecurso(ruta: string, raiz: string): string | null {
+export function rutaRecurso(ruta: string, raiz: string, datos?: string): string | null {
+  if (ruta.startsWith("marca/")) return datos && /^marca\/logo\.(png|jpe?g|svg|webp)$/.test(ruta) ? join(datos, "marca", ruta.slice(6)) : null;
   const nm = join(raiz, "node_modules");
   const fijos: Record<string, string> = {
     "recursos/gsap.min.js": join(nm, "gsap", "dist", "gsap.min.js"),
@@ -32,13 +33,15 @@ export function rutaRecurso(ruta: string, raiz: string): string | null {
   return archivo.startsWith(base + sep) && archivo.endsWith(".woff2") ? archivo : null;
 }
 
-const TIPOS: Record<string, string> = { ".js": "text/javascript", ".woff2": "font/woff2" };
+const TIPOS: Record<string, string> = {
+  ".js": "text/javascript", ".woff2": "font/woff2", ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".svg": "image/svg+xml", ".webp": "image/webp",
+};
 const CSP = "default-src 'self' reels-comp: reels-video:; script-src 'self' 'unsafe-inline' reels-comp:; style-src 'self' 'unsafe-inline' reels-comp:; font-src reels-comp: data:; media-src reels-video: reels-comp: blob:; img-src reels-comp: data: blob:";
 
 /** Debe registrarse antes de app.ready (junto con reels-video). */
 export const esquemaVista = { scheme: "reels-comp", privileges: { standard: true, secure: true, supportFetchAPI: true, stream: true } };
 
-export function servirVista(raiz: string): void {
+export function servirVista(raiz: string, datos: () => string): void {
   protocol.handle("reels-comp", async (req) => {
     const url = new URL(req.url);
     const ruta = decodeURIComponent(url.pathname).replace(/^\/+/, "");
@@ -47,7 +50,7 @@ export function servirVista(raiz: string): void {
       const html = composiciones.get(url.hostname);
       return html ? new Response(html, { headers: encabezados("text/html; charset=utf-8") }) : new Response("No existe", { status: 404 });
     }
-    const archivo = rutaRecurso(ruta, raiz);
+    const archivo = rutaRecurso(ruta, raiz, datos());
     if (!archivo) return new Response("No permitido", { status: 404 });
     try {
       return new Response(await readFile(archivo), { headers: encabezados(TIPOS[extname(archivo)] ?? "application/octet-stream") });

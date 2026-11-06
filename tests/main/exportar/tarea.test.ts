@@ -95,6 +95,23 @@ describe("ejecutor exportar", () => {
     expect(intentos).toBeGreaterThan(1);
   });
 
+  test("el logo de la marca viaja a la carpeta del reel y el cierre lo usa", async () => {
+    const { copiarLogo, guardarMarca, leerMarca } = await import("../../../src/main/proyectos/almacen");
+    const origen = join(mkdtempSync(join(tmpdir(), "logo-")), "logo.png");
+    writeFileSync(origen, "png");
+    await guardarMarca({ ...(await leerMarca()), logo: await copiarLogo(origen) });
+    let html = "", hayLogo = false;
+    await crearEjecutorExportar(deps({
+      renderizar: async (dir, salida) => {
+        html = readFileSync(join(dir, "index.html"), "utf8");
+        hayLogo = existsSync(join(dir, "recursos", "logo.png"));
+        writeFileSync(salida, "mp4");
+      },
+    }))(tarea(clip), ctx());
+    expect(html).toContain('<img src="recursos/logo.png"');
+    expect(hayLogo).toBe(true);
+  });
+
   test("sin GPU NVIDIA exporta sin --gpu", async () => {
     await crearEjecutorExportar(deps({ gpu: async () => false }))(tarea(clip), ctx());
     expect(llamadas[0].gpu).toBe(false);
