@@ -218,3 +218,11 @@
 /* Exportados: portada */
 .grupo-exportados li { display: flex; align-items: center; gap: 12px; }
 .grupo-exportados .portada { width: 36px; height: 64px; object-fit: cover; border-radius: 6px; background: var(--bg-3); flex-shrink: 0; }
+
+/* Nueva prédica: archivo o enlace */
+.pestanas.origen { display: inline-flex; gap: 4px; padding: 4px; border-radius: var(--r-md); background: var(--bg-1); border: 1px solid var(--line); margin-bottom: 14px; }
+.pestanas.origen button { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: var(--r-sm); border: 0; background: none; color: var(--text-2); font: inherit; cursor: pointer; }
+.pestanas.origen button[aria-selected="true"] { background: var(--bg-3); color: var(--text); }
+.zona-enlace { display: flex; flex-direction: column; gap: 12px; max-width: 680px; padding: 22px; border: 1px dashed var(--line-2); border-radius: var(--r-lg); background: var(--bg-1); }
+.barra-descarga { flex: 1; min-width: 200px; height: 8px; border-radius: 99px; background: var(--bg-3); overflow: hidden; }
+.barra-descarga i { display: block; height: 100%; background: var(--luz); transition: width .3s ease; }

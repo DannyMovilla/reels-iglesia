@@ -4,6 +4,7 @@ import { basename, extname, join } from "node:path";
 import { Readable } from "node:stream";
 import { dialog, ipcMain, protocol, shell, type BrowserWindow } from "electron";
 import type { DatosNuevoProyecto, EstadoSistema } from "@shared/api";
+import { descargarVideo } from "./descargas/ytdlp";
 import { agregarPista, cambiarAnimo, carpetaMusica, listarPistas } from "./musica/banco";
 import type { Animo, Caras, ClipSpec, Formato, Marca, TipoTarea, Transcripcion } from "@shared/tipos";
 import type { Cola } from "./cola/cola";
@@ -84,6 +85,20 @@ export function registrarIpc(deps: DepsIpc): void {
     if (v && !v.isDestroyed()) v.webContents.send("tareas:cambio", t);
   });
 
+  let descarga: AbortController | null = null;
+  ipcMain.handle("video:descargar", async (e, url: string) => {
+    descarga?.abort();
+    descarga = new AbortController();
+    const ruta = await descargarVideo(url, join(carpetaDatos(), "videos"), {
+      senal: descarga.signal,
+      alProgreso: (p) => e.sender.send("video:progresoDescarga", p),
+    });
+    descarga = null;
+    elegidos.add(ruta);
+    const st = await stat(ruta);
+    return { ruta, tamano: st.size, modificado: st.mtimeMs, duracion: await duracionVideo(ruta) };
+  });
+  ipcMain.handle("video:cancelarDescarga", () => descarga?.abort());
   ipcMain.handle("video:elegir", async () => {
     let ruta = process.env.REELS_VIDEO_PRUEBA; // solo pruebas E2E: el diálogo nativo no se puede automatizar
     if (!ruta) {

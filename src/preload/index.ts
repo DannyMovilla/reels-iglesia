@@ -4,6 +4,13 @@ import type { Tarea } from "@shared/tipos";
 
 const api: ApiReels = {
   elegirVideo: () => ipcRenderer.invoke("video:elegir"),
+  descargarVideo: (url) => ipcRenderer.invoke("video:descargar", url),
+  cancelarDescarga: () => ipcRenderer.invoke("video:cancelarDescarga"),
+  alProgresoDescarga: (cb) => {
+    const oyente = (_e: unknown, p: number) => cb(p);
+    ipcRenderer.on("video:progresoDescarga", oyente);
+    return () => ipcRenderer.removeListener("video:progresoDescarga", oyente);
+  },
   crearProyecto: (d) => ipcRenderer.invoke("proyectos:crear", d),
   listarProyectos: () => ipcRenderer.invoke("proyectos:listar"),
   leerProyecto: (id) => ipcRenderer.invoke("proyectos:leer", id),

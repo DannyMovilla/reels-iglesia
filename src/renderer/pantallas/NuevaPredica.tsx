@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Film, Flag, FlagTriangleRight, LoaderCircle } from "lucide-react";
+import { Download, Film, Flag, FlagTriangleRight, Link2, LoaderCircle } from "lucide-react";
 import type { Proyecto, VideoOrigen } from "@shared/tipos";
 import { formatoTiempo, leerTiempo, tiempoConHoras, validarRango } from "@shared/validar";
 
@@ -25,10 +25,20 @@ export function NuevaPredica({ videoInicial, alCrear, alCancelar }: Props) {
   const [errorCrear, setErrorCrear] = useState<string | null>(null);
   const [errorVideo, setErrorVideo] = useState<string | null>(null);
   const reproductor = useRef<HTMLVideoElement>(null);
+  const [origen, setOrigen] = useState<"archivo" | "enlace">("archivo");
+  const [enlace, setEnlace] = useState("");
+  const [descarga, setDescarga] = useState<number | null>(null);
+  const enlaceValido = /^(https?:\/\/)?([a-z0-9-]+\.)+[a-z]{2,}(\/\S*)?$/i.test(enlace.trim());
 
   const error = video ? validarRango(leerTiempo(inicio), leerTiempo(fin), video.duracion) : null;
 
   const limpiar = (e: unknown) => (e instanceof Error ? e.message : String(e)).replace(/^Error invoking remote method '[^']+': (Error: )?/, "");
+
+  const usarVideo = (v: VideoOrigen) => {
+    setVideo(v);
+    setInicio("0:00:00");
+    setFin(tiempoConHoras(v.duracion));
+  };
 
   async function elegir() {
     setErrorVideo(null);
@@ -39,10 +49,21 @@ export function NuevaPredica({ videoInicial, alCrear, alCancelar }: Props) {
       setErrorVideo(limpiar(e));
       return;
     }
-    if (!v) return;
-    setVideo(v);
-    setInicio("0:00:00");
-    setFin(tiempoConHoras(v.duracion));
+    if (v) usarVideo(v);
+  }
+
+  async function descargar() {
+    setErrorVideo(null);
+    setDescarga(0);
+    const quitar = window.reels!.alProgresoDescarga((p) => setDescarga(p));
+    try {
+      usarVideo(await window.reels!.descargarVideo(enlace.trim()));
+    } catch (e) {
+      setErrorVideo(limpiar(e));
+    } finally {
+      quitar();
+      setDescarga(null);
+    }
   }
 
   async function procesar() {
@@ -73,11 +94,39 @@ export function NuevaPredica({ videoInicial, alCrear, alCancelar }: Props) {
 
       {errorVideo && <p className="error" role="alert">{errorVideo}</p>}
       {!video ? (
-        <button type="button" className="zona-video" onClick={() => void elegir()}>
-          <Film size={28} aria-hidden="true" />
-          <b>Elige el video del culto</b>
-          <span>MP4 o MOV. El video no se copia ni se sube: se usa desde donde está.</span>
-        </button>
+        <>
+          <div className="pestanas origen" role="tablist" aria-label="De dónde viene el video">
+            <button type="button" role="tab" aria-selected={origen === "archivo"} onClick={() => setOrigen("archivo")}><Film size={14} aria-hidden="true" />Archivo</button>
+            <button type="button" role="tab" aria-selected={origen === "enlace"} onClick={() => setOrigen("enlace")}><Link2 size={14} aria-hidden="true" />Enlace</button>
+          </div>
+          {origen === "archivo" ? (
+            <button type="button" className="zona-video" onClick={() => void elegir()}>
+              <Film size={28} aria-hidden="true" />
+              <b>Elige el video del culto</b>
+              <span>MP4 o MOV. El video no se copia ni se sube: se usa desde donde está.</span>
+            </button>
+          ) : (
+            <div className="zona-enlace">
+              <label className="campo">
+                <span>Enlace del video del culto</span>
+                <input className="entrada" value={enlace} placeholder="https://www.facebook.com/…/videos/…" disabled={descarga !== null}
+                  onChange={(e) => setEnlace(e.target.value)} />
+              </label>
+              <p className="ayuda">Facebook, YouTube y otras páginas. Solo videos que la iglesia tiene permiso de usar. Se guarda en la carpeta de Reels Iglesia.</p>
+              {descarga === null ? (
+                <button type="button" className="btn primario" disabled={!enlaceValido} onClick={() => void descargar()}><Download size={15} aria-hidden="true" />Descargar</button>
+              ) : (
+                <div className="fila">
+                  <div className="barra-descarga" role="progressbar" aria-label="Descarga del video" aria-valuemin={0} aria-valuemax={100} aria-valuenow={descarga}>
+                    <i style={{ width: `${descarga}%` }} />
+                  </div>
+                  <span className="mono">{descarga.toFixed(0)} %</span>
+                  <button type="button" className="btn pequeno fantasma" onClick={() => void window.reels!.cancelarDescarga()}>Cancelar descarga</button>
+                </div>
+              )}
+            </div>
+          )}
+        </>
       ) : (
         <>
           <div className="video-elegido">

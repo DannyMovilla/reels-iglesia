@@ -24,6 +24,10 @@ export interface DatosNuevoProyecto {
 /** API que el preload expone al renderer como `window.reels`. */
 export interface ApiReels {
   elegirVideo(): Promise<VideoOrigen | null>;
+  /** Descarga el video del culto desde un enlace (yt-dlp) a la carpeta de datos. */
+  descargarVideo(url: string): Promise<VideoOrigen>;
+  cancelarDescarga(): Promise<void>;
+  alProgresoDescarga(cb: (pct: number) => void): () => void;
   crearProyecto(d: DatosNuevoProyecto): Promise<Proyecto>;
   listarProyectos(): Promise<Proyecto[]>;
   leerProyecto(id: string): Promise<Proyecto>;
