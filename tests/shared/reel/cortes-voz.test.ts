@@ -78,3 +78,10 @@ test("revisión I1: con tiempos pegados (como los da Whisper) no queda nada del 
   expect(t[0].fin).toBeLessThanOrEqual(1.0);
   expect(t[1].inicio).toBeGreaterThanOrEqual(1.5);
 });
+
+test("menor: un «eh» al inicio o al final del clip también se quita, y el silencio de los bordes se acorta", () => {
+  const ws: Palabra[] = [w(10.4, 10.7, "eh"), w(11, 12, "Dios"), w(12.1, 13, "es"), w(13.1, 14, "fiel."), w(14.3, 14.6, "mmm")];
+  const t = tramosDelClip(clip({ inicio: 9, fin: 16, cortes: { pausas: true, muletillas: true } }), ws);
+  expect(t[0].inicio).toBeCloseTo(10.875, 3); // sin el silencio ni el «eh» del inicio
+  expect(t.at(-1)!.fin).toBeCloseTo(14.125, 3); // sin el «mmm» ni el silencio del final
+});

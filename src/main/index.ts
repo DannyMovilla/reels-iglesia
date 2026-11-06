@@ -37,6 +37,7 @@ function crearVentana(): BrowserWindow {
   return v;
 }
 
+let preparando: AbortController | null = null;
 const comandoClaude = (): string => process.env.REELS_CLAUDE_COMANDO ?? "claude";
 
 app.whenReady().then(async () => {
@@ -65,11 +66,15 @@ app.whenReady().then(async () => {
     },
     accionSistema: async (accion, alProgreso) => {
       if (accion === "iniciar-sesion-claude") return abrirInicioSesionClaude(comandoClaude());
+      if (accion === "cancelar") return void preparando?.abort();
       if (accion === "crear-venv") {
+        preparando = new AbortController();
+        const hayNvidia = await ejecutarConProgreso("nvidia-smi", ["-L"]).then((r) => r.codigo === 0).catch(() => false);
         const cli = join(raizApp(), "node_modules", "hyperframes", "bin", "hyperframes.mjs");
         return prepararEntorno({
           destino: rutaEntorno(), requisitos: join(raizRecursos(), "python", "requirements.txt"),
-          navegador: [process.execPath, [cli, "browser", "ensure"]], senal: new AbortController().signal,
+          requisitosGpu: join(raizRecursos(), "python", "requirements-gpu.txt"), gpu: hayNvidia,
+          navegador: [process.execPath, [cli, "browser", "ensure"]], senal: preparando.signal,
           alProgreso: (pct, texto) => alProgreso({ pct, texto }),
         });
       }

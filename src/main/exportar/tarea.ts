@@ -31,6 +31,9 @@ export function slugTitulo(titulo: string): string {
   return titulo.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 60).replace(/^-+|-+$/g, "") || "reel";
 }
 
+/** "fe-2-9x16.mp4" → "fe-2-textos.txt" (los formatos del mismo clip comparten archivo; otro clip con el mismo título, no). */
+export const textosNombre = (mp4: string): string => mp4.replace(/-(9x16|4x5|1x1)\.mp4$/i, "-textos.txt");
+
 /** FFmpeg: un cuadro del reel en JPG de alta calidad (la portada). */
 export const argsPortada = (mp4: string, t: number, salida: string): string[] =>
   ["-v", "error", "-y", "-ss", t.toFixed(2), "-i", mp4, "-frames:v", "1", "-q:v", "2", salida];
@@ -132,7 +135,8 @@ export function crearEjecutorExportar(deps: DepsExportar = {}): Ejecutor {
     const carpeta = carpetaProyecto(t.proyectoId);
     const voz = join(carpeta, "voz.m4a");
     if (!existsSync(voz)) await crearVoz(proyecto, voz, ctx.senal);
-    const pista = await elegirMusica(clip, proyecto, duracionReel(clip, palabrasDe(transcripcion)));
+    // Si la música no se puede preparar (p. ej. falla Python al crear el pad), el reel sale igual, sin música.
+    const pista = await elegirMusica(clip, proyecto, duracionReel(clip, palabrasDe(transcripcion))).catch(() => null);
     const musica = pista ? `musica${extname(pista).toLowerCase()}` : undefined;
     const marca = await leerMarca();
     const logo = marca.logo && existsSync(marca.logo) ? `recursos/logo${extname(marca.logo).toLowerCase()}` : undefined;
@@ -170,7 +174,7 @@ export function crearEjecutorExportar(deps: DepsExportar = {}): Ejecutor {
       // Portada: con el gancho a la vista (mitad de su entrada, como mucho 1,2 s).
       const durGancho = clip.apertura?.activa ? clip.apertura.fin - clip.apertura.inicio : Math.min(4.5, clip.fin - clip.inicio);
       await portada(salida, clip.gancho.trim() ? Math.min(1.2, durGancho / 2) : 1.2, salida.replace(/\.mp4$/i, "-portada.jpg"));
-      await writeFile(join(exportados, `${slugTitulo(clip.titulo)}-textos.txt`), textosDelClip(clip), "utf8");
+      await writeFile(join(exportados, textosNombre(nombre)), textosDelClip(clip), "utf8");
       const clips = await leerClips(t.proyectoId);
       await guardarJson(t.proyectoId, "clips.json", clips.map((c) => (c.id === clip.id ? { ...c, estado: "exportado" } : c)));
       ctx.alProgreso(100, nombre);

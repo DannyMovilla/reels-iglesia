@@ -171,6 +171,15 @@ describe("ejecutor exportar", () => {
     for (const t of ["Instagram", "TikTok", "Facebook", "YouTube Shorts", "Texto IG", "#fe", "Título YT"]) expect(textos).toContain(t);
   });
 
+  test("menor: si no se puede crear la música, el reel se exporta igual, sin música", async () => {
+    let html = "";
+    await crearEjecutorExportar(deps({
+      musica: async () => { throw new Error("No se pudo crear la música de fondo (pad)."); },
+      renderizar: async (dir, salida) => { html = readFileSync(join(dir, "index.html"), "utf8"); writeFileSync(salida, "mp4"); },
+    }))(tarea(clip), ctx());
+    expect(html).not.toContain('id="musica"');
+  });
+
   test("sin GPU NVIDIA exporta sin --gpu", async () => {
     await crearEjecutorExportar(deps({ gpu: async () => false }))(tarea(clip), ctx());
     expect(llamadas[0].gpu).toBe(false);
@@ -198,4 +207,11 @@ test("revisión I3: la voz limpia se escribe en un temporal y solo queda como vo
   expect(existsSync(destino)).toBe(false);
   await crearVozSegura(destino, async (tmp) => { writeFileSync(tmp, "completa"); return 0; });
   expect(readFileSync(destino, "utf8")).toBe("completa");
+});
+
+test("menor: dos clips con el mismo título no se pisan el archivo de textos", async () => {
+  const { textosNombre } = await import("../../../src/main/exportar/tarea");
+  expect(textosNombre("fe-9x16.mp4")).toBe("fe-textos.txt");
+  expect(textosNombre("fe-4x5.mp4")).toBe("fe-textos.txt");
+  expect(textosNombre("fe-2-9x16.mp4")).toBe("fe-2-textos.txt");
 });

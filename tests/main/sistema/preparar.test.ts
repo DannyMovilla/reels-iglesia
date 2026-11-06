@@ -69,3 +69,18 @@ test("revisión M7: Python 3.10 no sirve (los paquetes fijados piden 3.11 o más
   expect(await buscarPython(async () => ({ codigo: 0, stdout: "Python 3.10.11", stderr: "" }))).toBeNull();
   expect(await buscarPython(async () => ({ codigo: 0, stdout: "Python 3.11.9", stderr: "" }))).toEqual(["py", ["-3.12"]]);
 });
+
+test("menor: sin tarjeta NVIDIA no instala los componentes de CUDA; con NVIDIA sí", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "reels-env-"));
+  writeFileSync(join(dir, "requirements.txt"), "numpy" + String.fromCharCode(10));
+  writeFileSync(join(dir, "requirements-gpu.txt"), "nvidia-cublas-cu12" + String.fromCharCode(10));
+  const correr = async (gpu: boolean) => {
+    const pips: string[] = [];
+    const ej = async (_c: string, args: string[]) => { if (args.includes("pip")) pips.push(args.at(-1)!); return ok("Python 3.12.1"); };
+    await prepararEntorno({ ejecutar: ej, destino: join(dir, "venv"), requisitos: join(dir, "requirements.txt"), requisitosGpu: join(dir, "requirements-gpu.txt"), gpu,
+      navegador: ["n", []], senal: new AbortController().signal, alProgreso: () => {} });
+    return pips;
+  };
+  expect(await correr(false)).toEqual([join(dir, "requirements.txt")]);
+  expect(await correr(true)).toEqual([join(dir, "requirements.txt"), join(dir, "requirements-gpu.txt")]);
+});

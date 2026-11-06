@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { TriangleAlert } from "lucide-react";
 import type { Caras, ClipSpec, Marca, Proyecto, Tarea, Transcripcion } from "@shared/tipos";
 import { formatoTiempo } from "@shared/validar";
-import { palabrasDe } from "@shared/reel/tiempo";
+import { duracionReel, palabrasDe } from "@shared/reel/tiempo";
 import { estiloDesdeClip, moverVersiculos } from "@shared/clip";
 import type { Pista } from "@shared/reel/pistas";
 import { Download } from "lucide-react";
@@ -144,7 +144,7 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
             <button type="button" className="btn pequeno" onClick={() => void ubicar()}>Ubicar el video</button></p>
         )}
         {errorUbicar && <p className="error" role="alert">{errorUbicar}</p>}
-        {clip && <div className="centro-cabeza"><h2>{clip.titulo}</h2><span>{clip.categoria} · {formatoTiempo(clip.fin - clip.inicio)}</span></div>}
+        {clip && <div className="centro-cabeza"><h2>{clip.titulo}</h2><span>{clip.categoria} · {formatoTiempo(datos.transcripcion ? duracionReel(clip, palabrasDe(datos.transcripcion)) : clip.fin - clip.inicio)}</span></div>}
         {listo && (
           <VistaPrevia ref={vista} proyectoId={proyecto.id} clip={clip} transcripcion={datos.transcripcion!} caras={datos.caras}
             marca={datos.marca!} dimensiones={datos.dimensiones!} predicador={proyecto.predicador ?? datos.marca?.predicador}

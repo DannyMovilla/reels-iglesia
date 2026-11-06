@@ -35,12 +35,13 @@ export function useSistema() {
     }
   };
 
-  return { estado, enCurso, error, revisar, accion };
+  const cancelar = () => void window.reels!.accionSistema("cancelar" as never);
+  return { estado, enCurso, error, revisar, accion, cancelar };
 }
 
 /** Asistente de primer uso: aparece al abrir la app si falta algo; se puede saltar. */
 export function PrimerUso({ alListo }: { alListo(): void }) {
-  const { estado, enCurso, error, revisar, accion } = useSistema();
+  const { estado, enCurso, error, revisar, accion, cancelar } = useSistema();
   const todoListo = !!estado && estado.python.ok && estado.ffmpeg.ok;
   return (
     <section className="pantalla primer-uso" aria-labelledby="t-primer-uso">
@@ -49,7 +50,7 @@ export function PrimerUso({ alListo }: { alListo(): void }) {
         Reels Iglesia necesita estas piezas. Toca cada botón y la app lo instala sola; la primera vez descarga unos 3 GB (los modelos para
         transcribir), así que conviene tener buen internet.
       </p>
-      <Chequeos estado={estado} enCurso={enCurso} alAccion={(a) => void accion(a)} />
+      <Chequeos estado={estado} enCurso={enCurso} alAccion={(a) => void accion(a)} alCancelar={cancelar} />
       {error && <p className="error" role="alert">{error}</p>}
       <div className="fila">
         <button type="button" className="btn primario" disabled={!!enCurso} onClick={alListo}>{todoListo ? "Empezar" : "Saltar por ahora"}</button>

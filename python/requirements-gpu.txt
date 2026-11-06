@@ -1,0 +1,3 @@
+# Solo con tarjeta NVIDIA: transcripción en la GPU (lo instala el asistente si encuentra nvidia-smi).
+nvidia-cublas-cu12==12.9.2.10
+nvidia-cudnn-cu12==9.28.0.42

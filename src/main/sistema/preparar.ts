@@ -30,6 +30,9 @@ function traducirPip(stderr: string): string {
 export interface OpcionesPreparar {
   destino: string;
   requisitos: string;
+  /** Paquetes de CUDA: solo si hay tarjeta NVIDIA. */
+  requisitosGpu?: string;
+  gpu?: boolean;
   /** Comando que deja listo el navegador del render de HyperFrames (hyperframes browser ensure). */
   navegador: [string, string[]];
   senal: AbortSignal;
@@ -62,6 +65,11 @@ export async function prepararEntorno(op: OpcionesPreparar): Promise<void> {
     },
   });
   if (pip.codigo !== 0) throw new Error(traducirPip(pip.stderr));
+  if (op.gpu && op.requisitosGpu) {
+    op.alProgreso(80, "Instalando lo necesario para la tarjeta NVIDIA…");
+    const cuda = await ej(join(op.destino, "Scripts", "python.exe"), ["-m", "pip", "install", "--progress-bar", "off", "-r", op.requisitosGpu], { senal: op.senal });
+    if (cuda.codigo !== 0) throw new Error(traducirPip(cuda.stderr));
+  }
 
   op.alProgreso(88, "Preparando el navegador del render…");
   const nav = await ej(op.navegador[0], op.navegador[1], { senal: op.senal, env: { ...process.env, ELECTRON_RUN_AS_NODE: "1" } });

@@ -21,10 +21,12 @@ interface Props {
   /** Acción en curso (su fila muestra el progreso). */
   enCurso: { accion: string; pct: number; texto?: string } | null;
   alAccion(accion: NonNullable<Chequeo["accion"]>): void;
+  /** Cancelar la acción en curso (preparar el entorno). */
+  alCancelar?(): void;
 }
 
 /** Lista de lo que necesita la app, con el botón que lo arregla. */
-export function Chequeos({ estado, enCurso, alAccion }: Props) {
+export function Chequeos({ estado, enCurso, alAccion, alCancelar }: Props) {
   return (
     <ul className="chequeos">
       {(Object.keys(NOMBRES_CHEQUEO) as (keyof EstadoSistema)[]).map((k) => {
@@ -44,6 +46,9 @@ export function Chequeos({ estado, enCurso, alAccion }: Props) {
                 </div>
               )}
             </div>
+            {corriendo && c?.accion === "crear-venv" && alCancelar && (
+              <button type="button" className="btn pequeno fantasma" onClick={alCancelar}>Cancelar</button>
+            )}
             {c?.accion && !corriendo && (
               <button type="button" className={`btn pequeno${c.ok ? " fantasma" : " primario"}`} disabled={!!enCurso} onClick={() => alAccion(c.accion!)}>
                 {TEXTO_ACCION[c.accion]}

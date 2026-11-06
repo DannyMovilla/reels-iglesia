@@ -4,7 +4,7 @@ import { Chequeos } from "../componentes/Chequeos";
 import { useSistema } from "./PrimerUso";
 
 export function Ajustes() {
-  const { estado, enCurso, error, revisar, accion } = useSistema();
+  const { estado, enCurso, error, revisar, accion, cancelar } = useSistema();
   const [revisando, setRevisando] = useState(false);
   const volver = async () => {
     setRevisando(true);
@@ -24,7 +24,7 @@ export function Ajustes() {
         </button>
       </div>
       <p className="ayuda">Reels Iglesia necesita estas piezas en tu computadora. Si alguna falta, toca su botón y la app la instala.</p>
-      <Chequeos estado={estado} enCurso={enCurso} alAccion={(a) => void accion(a)} />
+      <Chequeos estado={estado} enCurso={enCurso} alAccion={(a) => void accion(a)} alCancelar={cancelar} />
       {error && <p className="error" role="alert">{error}</p>}
     </section>
   );

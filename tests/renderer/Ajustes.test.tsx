@@ -40,3 +40,15 @@ test("preparar el entorno se hace con un botón y muestra el progreso", async ()
   expect(screen.getByText("Instalando numpy…")).toBeInTheDocument();
   await act(async () => terminar());
 });
+
+test("menor: preparar el entorno se puede cancelar", async () => {
+  const accionSistema = vi.fn((a: string) => (a === "cancelar" ? Promise.resolve() : new Promise<void>(() => {})));
+  window.reels = {
+    verificarSistema: async () => ({ ...estado, python: { ok: false, detalle: "Falta preparar el entorno", accion: "crear-venv" }, claude: { ok: true, detalle: "ok" } }),
+    accionSistema, alProgresoSistema: () => () => {},
+  } as unknown as ApiReels;
+  render(<Ajustes />);
+  await userEvent.click(await screen.findByRole("button", { name: "Preparar el entorno" }));
+  await userEvent.click(screen.getByRole("button", { name: "Cancelar" }));
+  expect(accionSistema).toHaveBeenCalledWith("cancelar");
+});

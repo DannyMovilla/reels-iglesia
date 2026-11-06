@@ -25,7 +25,14 @@ export function tramosDelClip(c: ClipSpec, palabras: Palabra[]): { inicio: numbe
   if (!pausas && !muletillas) return [{ inicio: c.inicio, fin: c.fin }];
   const ws = palabras.filter((w) => w.s >= c.inicio && w.e <= c.fin && w.t.trim());
   const tramos: { inicio: number; fin: number }[] = [];
+  // Inicio: sin el silencio largo ni las muletillas antes de la primera palabra que se conserva.
+  const primera = ws.findIndex((_, i) => !(muletillas && esMuletillaSuelta(ws, i)));
   let inicio = c.inicio;
+  if (primera >= 0) {
+    const p = ws[primera];
+    const antes = primera > 0 ? ws[primera - 1].e : c.inicio;
+    if (primera > 0 || (pausas && p.s - c.inicio > PAUSA_MAXIMA)) inicio = r3(Math.max(c.inicio, p.s - Math.min(MARGEN, Math.max(0, (p.s - antes) / 2))));
+  }
   let previa: Palabra | null = null;
   // Muletillas quitadas entre la palabra anterior y la actual (desde el inicio de la primera hasta el fin de la última).
   let quitadaIni = Infinity, quitadaFin = -Infinity;
@@ -49,7 +56,14 @@ export function tramosDelClip(c: ClipSpec, palabras: Palabra[]): { inicio: numbe
     quitadaIni = Infinity;
     quitadaFin = -Infinity;
   });
-  if (c.fin - inicio > 0.05) tramos.push({ inicio, fin: c.fin });
+  // Final: sin las muletillas ni el silencio largo después de la última palabra que se conserva.
+  let fin = c.fin;
+  if (previa) {
+    const u: Palabra = previa;
+    const despues = quitadaFin > -Infinity ? quitadaIni : c.fin;
+    if (quitadaFin > -Infinity || (pausas && c.fin - u.e > PAUSA_MAXIMA)) fin = r3(Math.min(c.fin, u.e + Math.min(MARGEN, Math.max(0, (despues - u.e) / 2))));
+  }
+  if (fin - inicio > 0.05) tramos.push({ inicio, fin });
   return tramos.length ? tramos : [{ inicio: c.inicio, fin: c.fin }];
 }
 

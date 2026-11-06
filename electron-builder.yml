@@ -16,7 +16,7 @@ asarUnpack:
 extraResources:
   - from: python
     to: python
-    filter: ["*.py", "requirements.txt"]
+    filter: ["*.py", "requirements*.txt"]
   - from: modelos
     to: modelos
 win:
