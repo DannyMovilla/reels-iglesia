@@ -11,7 +11,7 @@ const base: Omit<ClipSpec, "id" | "titulo" | "puntaje" | "versiculos"> = {
 };
 const clips: ClipSpec[] = [
   { ...base, id: "a", titulo: "Bajo", puntaje: 70, versiculos: [] },
-  { ...base, id: "b", titulo: "Alto", puntaje: 92, versiculos: [{ ref: "Salmo 51:17", texto: "", en: 3, activo: true }] },
+  { ...base, id: "b", titulo: "Alto", puntaje: 92, versiculos: [{ ref: "Salmos 51:17", texto: "", en: 3, activo: true, confirmado: false }] },
   { ...base, id: "c", titulo: "Medio", puntaje: 85, versiculos: [] },
 ];
 
@@ -22,5 +22,5 @@ test("ordena por puntaje, muestra el anillo accesible y filtra los que tienen ve
   expect(screen.getByLabelText("Puntaje 92")).toBeInTheDocument();
   await userEvent.click(screen.getByRole("button", { name: "Con versículo" }));
   expect(within(lista).getAllByRole("heading").map((h) => h.textContent)).toEqual(["Alto"]);
-  expect(screen.getByText("Salmo 51:17")).toBeInTheDocument();
+  expect(screen.getByText("Salmos 51:17")).toBeInTheDocument();
 });

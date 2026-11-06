@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { parsearReferencia, textoVersiculo } from "../../../src/main/biblia/biblia";
+import { formatearReferencia, parsearReferencia } from "../../../src/main/biblia/biblia";
 
 test("reconoce Salmo y Salmos", () => {
   expect(parsearReferencia("Salmo 51:17")).toEqual({ libro: "Salmos", capitulo: 51, desde: 17, hasta: 17 });
@@ -19,14 +19,9 @@ test("rechaza lo que no es una referencia", () => {
   expect(parsearReferencia("Juan")).toBeNull();
 });
 
-test("devuelve el texto de la Reina-Valera 1909", () => {
-  expect(textoVersiculo("Juan 3:16")).toMatch(/^Porque de tal manera amó Dios al mundo/);
-  expect(textoVersiculo("Salmo 51:17")).toMatch(/^Los sacrificios de Dios son el espíritu quebrantado/);
-  expect(textoVersiculo("Salmos 151:1")).toBeNull();
-});
-
-test("un rango une los versículos", () => {
-  const t = textoVersiculo("1 Corintios 13:4-5")!;
-  expect(t).toMatch(/^La caridad es sufrida/);
-  expect(t.split(" ").length).toBeGreaterThan(20);
+test("formatea la referencia con el nombre canónico del libro", () => {
+  expect(formatearReferencia("Salmo 51:17")).toBe("Salmos 51:17");
+  expect(formatearReferencia("1 Co 13:4-7")).toBe("1 Corintios 13:4-7");
+  expect(formatearReferencia("San Juan 3:16")).toBe("Juan 3:16");
+  expect(formatearReferencia("Hola 1:1")).toBe("Hola 1:1");
 });

@@ -22,6 +22,7 @@ test("construirPrompt incluye marcas H:MM:SS y pide ganchos alternativos y vers�
   expect(p).toContain("[1:44:44 - 1:44:51] Hermanos");
   expect(p).toContain("ganchos_alternativos");
   expect(p).toContain("versiculos");
+  expect(p).toContain("Reina-Valera 1960");
 });
 
 test("extraerJson saca el JSON de un bloque de código rodeado de texto", () => {
@@ -45,7 +46,8 @@ test("normalizarClips ajusta a los segmentos, ubica la apertura y aplica los val
   expect(c.ganchosAlternativos).toEqual(["Cuando te humillas, Dios responde", "¿Oras o solo hablas?"]);
   expect(c.formatos).toEqual(["9:16", "4:5"]);
   expect(c.encuadre).toEqual({ modo: "auto", x: 0.5, zoom: 1.25 });
-  expect(c.versiculos[0]).toMatchObject({ ref: "Salmo 51:17", texto: "", activo: true });
+  expect(c.versiculos[0]).toMatchObject({ ref: "Salmos 51:17", activo: true, confirmado: false });
+  expect(c.versiculos[0].texto).toMatch(/^Los sacrificios de Dios/);
   expect(c.versiculos[0].en).toBe(16.29); // "cuando" se dice en 47.22; el clip empieza en 30.93
   expect(c.estado).toBe("sugerido");
 });
@@ -135,7 +137,7 @@ describe("analizarProyecto: errores legibles", () => {
   });
 });
 
-test("el análisis llena el texto del versículo con la Reina-Valera 1909", async () => {
+test("el análisis guarda el texto RVR1960 de Claude sin confirmar y con la referencia canónica", async () => {
   process.env.REELS_IGLESIA_DATOS = mkdtempSync(join(tmpdir(), "reels-biblia-"));
   const v = join(mkdtempSync(join(tmpdir(), "reels-v-")), "v.mp4");
   writeFileSync(v, "x");
@@ -145,5 +147,6 @@ test("el análisis llena el texto del versículo con la Reina-Valera 1909", asyn
   delete process.env.FALSO_CLAUDE_CONTADOR;
   await analizarProyecto(id, ctx, { comando: `node ${join(FIX, "claude/falso-claude.mjs")}` });
   const clips = await leerJson<ClipSpec[]>(id, "clips.json");
-  expect(clips?.[0].versiculos[0].texto).toMatch(/^Los sacrificios de Dios son el espíritu quebrantado/);
+  expect(clips?.[0].versiculos[0]).toMatchObject({ ref: "Salmos 51:17", confirmado: false, activo: true });
+  expect(clips?.[0].versiculos[0].texto).toMatch(/^Los sacrificios de Dios/);
 });

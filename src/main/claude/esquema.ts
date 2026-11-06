@@ -18,7 +18,7 @@ export const ClipClaude = z.object({
   fin: z.string(),
   intro_frase: z.string().optional(),
   palabras_clave: z.array(z.string()).default([]),
-  versiculos: z.array(z.object({ ref: z.string(), cita: z.string() })).default([]),
+  versiculos: z.array(z.object({ ref: z.string(), cita: z.string(), texto: z.string().default("") })).default([]),
   puntaje: z.coerce.number().min(0).max(100),
   razon: z.string().default(""),
   descripcion: z.string().default(""),

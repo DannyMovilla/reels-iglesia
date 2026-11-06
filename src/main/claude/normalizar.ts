@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { ClipSpec, Transcripcion } from "@shared/tipos";
+import { formatearReferencia } from "../biblia/biblia";
 import type { ClipClaude } from "./esquema";
 
 interface Palabra { s: number; e: number; t: string }
@@ -51,7 +52,7 @@ export function normalizarClips(r: ClipClaude[], t: Transcripcion): ClipSpec[] {
       : null;
     const versiculos = c.versiculos.map((v) => {
       const cita = ubicarFrase(ws, v.cita.split(/\s+/).slice(0, 8).join(" "), inicio, fin);
-      return { ref: v.ref, texto: "", en: cita ? Math.round((cita.s - inicio) * 100) / 100 : 3, activo: true };
+      return { ref: formatearReferencia(v.ref), texto: v.texto.trim(), en: cita ? Math.round((cita.s - inicio) * 100) / 100 : 3, activo: true, confirmado: false };
     });
     clips.push({
       id: randomUUID(),

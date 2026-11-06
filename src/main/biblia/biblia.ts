@@ -1,8 +1,4 @@
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
-import { raizApp } from "../rutas";
-
-type Biblia = Record<string, Record<string, Record<string, string>>>;
+/** Referencias bíblicas: reconocer "Salmo 51:17", "1 Co 13:4-7", etc. y escribirlas con el nombre canónico. */
 
 export interface Referencia {
   libro: string;
@@ -10,9 +6,6 @@ export interface Referencia {
   desde: number;
   hasta: number;
 }
-
-let biblia: Biblia | null = null;
-const cargar = (): Biblia => (biblia ??= JSON.parse(readFileSync(join(raizApp(), "resources", "biblia", "rv1909.json"), "utf8")) as Biblia);
 
 const LIBROS = [
   "Génesis", "Éxodo", "Levítico", "Números", "Deuteronomio", "Josué", "Jueces", "Rut", "1 Samuel", "2 Samuel",
@@ -71,13 +64,9 @@ export function parsearReferencia(ref: string): Referencia | null {
   return { libro, capitulo: Number(m[2]), desde, hasta };
 }
 
-/** Texto de la Reina-Valera 1909, o null si la referencia no existe. */
-export function textoVersiculo(ref: string): string | null {
+/** "Salmo 51:17" → "Salmos 51:17"; si no se reconoce, devuelve el texto tal cual. */
+export function formatearReferencia(ref: string): string {
   const r = parsearReferencia(ref);
-  if (!r) return null;
-  const cap = cargar()[r.libro]?.[String(r.capitulo)];
-  if (!cap?.[String(r.desde)]) return null;
-  const partes: string[] = [];
-  for (let v = r.desde; v <= r.hasta && cap[String(v)]; v++) partes.push(cap[String(v)]);
-  return partes.join(" ");
+  if (!r) return ref.trim();
+  return `${r.libro} ${r.capitulo}:${r.desde}${r.hasta > r.desde ? `-${r.hasta}` : ""}`;
 }

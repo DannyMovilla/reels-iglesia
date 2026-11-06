@@ -2,17 +2,33 @@
   {
     "titulo": "El quebrantamiento activa la gloria",
     "gancho": "Tu quebranto abre el cielo",
-    "ganchos_alternativos": ["Cuando te humillas, Dios responde", "¿Oras o solo hablas?"],
+    "ganchos_alternativos": [
+      "Cuando te humillas, Dios responde",
+      "¿Oras o solo hablas?"
+    ],
     "categoria": "Exhortación",
     "inicio": "0:00:31",
     "fin": "0:01:04",
     "intro_frase": "ese quebrantamiento terrenal va a activar la gloria celestial",
-    "palabras_clave": ["quebrantamiento", "gloria", "oración"],
-    "versiculos": [{ "ref": "Salmo 51:17", "cita": "cuando tú estás quebrantado orando" }],
+    "palabras_clave": [
+      "quebrantamiento",
+      "gloria",
+      "oración"
+    ],
+    "versiculos": [
+      {
+        "ref": "Salmo 51:17",
+        "cita": "cuando tú estás quebrantado orando",
+        "texto": "Los sacrificios de Dios son el espíritu quebrantado; al corazón contrito y humillado no despreciarás tú, oh Dios."
+      }
+    ],
     "puntaje": 92,
     "razon": "Frase memorable y un llamado claro a orar con humildad.",
     "descripcion": "¿Cuándo fue la última vez que oraste así?",
-    "hashtags": ["#oracion", "#fe"]
+    "hashtags": [
+      "#oracion",
+      "#fe"
+    ]
   },
   {
     "titulo": "Muy corto",

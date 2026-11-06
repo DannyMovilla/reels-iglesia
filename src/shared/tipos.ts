@@ -74,7 +74,8 @@ export interface ClipSpec {
   fin: number;
   apertura: { activa: boolean; inicio: number; fin: number; frase: string } | null;
   palabrasClave: string[];
-  versiculos: { ref: string; texto: string; en: number; activo: boolean }[];
+  /** Texto en Reina-Valera 1960, escrito por Claude; no se exporta hasta que la persona lo confirma. */
+  versiculos: { ref: string; texto: string; en: number; activo: boolean; confirmado: boolean }[];
   puntaje: number;
   razon: string;
   descripcion: string;

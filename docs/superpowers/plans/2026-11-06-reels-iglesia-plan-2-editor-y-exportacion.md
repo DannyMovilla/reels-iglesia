@@ -17,7 +17,7 @@
 - Formatos: 9:16 = 1080×1920, 4:5 = 1080×1350, 1:1 = 1080×1080; H.264, ~10 Mb/s (`--video-bitrate 10M`), audio con pico ≤ −1 dB.
 - Archivos de salida: `exportados/<slug-del-titulo>-9x16.mp4`, `-4x5`, `-1x1`.
 - Regla del versículo: mientras la tarjeta está visible no hay subtítulos; un bloque que empieza antes se corta al entrar la tarjeta (si quedaría < 0,3 s, se omite); duración de la tarjeta = 0,5 s + 0,3 s por palabra, entre 4 y 8 s; tarjeta debajo de la cara (en 9:16, top 62 % del alto; en 4:5 y 1:1, 60 %).
-- Texto bíblico solo de la Reina-Valera 1909 local; si la referencia no se encuentra, la tarjeta muestra solo la referencia y el inspector lo avisa.
+- Texto bíblico: Reina-Valera 1960 escrito por Claude en el análisis, `confirmado: false` hasta que la persona lo confirma en el inspector; exportar un clip con un versículo activo sin confirmar falla con "Confirma el texto de <ref> antes de exportar." La tarjeta muestra la referencia y "RVR1960". (Cambio del 2026-11-06, ver ledger.)
 - Apertura: B/N (`grayscale(1) contrast(1.15) brightness(0.95)`) + viñeta, gancho encima, destello blanco 0,3 s al pasar al clip.
 - Gancho: si la cara (mediana del clip) está en la mitad superior del cuadro, centro del gancho al 53 % del alto (solo 9:16); si no, 12 %.
 - Subtítulos: estilos `pop` (Montserrat 900, contorno 12 px, palabra dicha con escala 1,18→1 en 0,18 s y color de marca), `caja`, `limpio`; máx. 3 palabras / 16 caracteres (pop/caja) o 6 / 30 (limpio); palabras clave siempre en color de marca.

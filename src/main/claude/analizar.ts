@@ -1,5 +1,4 @@
 import type { Transcripcion } from "@shared/tipos";
-import { textoVersiculo } from "../biblia/biblia";
 import type { ContextoTarea } from "../cola/cola";
 import { ejecutarConProgreso } from "../procesos/lineas";
 import { guardarJson, leerJson } from "../proyectos/almacen";
@@ -91,8 +90,6 @@ export async function analizarProyecto(
   }
   const normalizados = normalizarClips(clips, t);
   if (normalizados.length === 0) throw new Error(ERROR_SIN_CLIPS);
-  // El texto bíblico nunca lo escribe Claude: sale de la Reina-Valera 1909 local ("" si no se encuentra).
-  for (const c of normalizados) for (const v of c.versiculos) v.texto = textoVersiculo(v.ref) ?? "";
   await guardarJson(id, "clips.json", normalizados);
   ctx.alProgreso(100);
 }

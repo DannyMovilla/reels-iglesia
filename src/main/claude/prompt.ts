@@ -24,13 +24,13 @@ Prioriza: la verdad central del mensaje, frases memorables, explicaciones claras
 "inicio" debe ser el inicio de una línea de la transcripción y "fin" el final de una línea (usa exactamente esas marcas, en formato H:MM:SS).
 
 Responde solo con un arreglo JSON, de mayor a menor puntaje, con esta forma:
-[{"titulo":"La fidelidad de Dios en todo tiempo","gancho":"Tu prueba no es el final","ganchos_alternativos":["Dios no ha terminado contigo","¿Sientes que todo se acabó?"],"categoria":"Esperanza","inicio":"0:18:32","fin":"0:19:26","intro_frase":"Dios no ha terminado contigo","palabras_clave":["Dios","prueba","fiel"],"versiculos":[{"ref":"Romanos 8:28","cita":"todas las cosas les ayudan a bien"}],"puntaje":92,"razon":"Por qué generaría interacción, en una oración.","descripcion":"Texto para publicar, 1 o 2 oraciones, que termine con una pregunta que invite a comentar.","hashtags":["#fe","#esperanza"]}]
+[{"titulo":"La fidelidad de Dios en todo tiempo","gancho":"Tu prueba no es el final","ganchos_alternativos":["Dios no ha terminado contigo","¿Sientes que todo se acabó?"],"categoria":"Esperanza","inicio":"0:18:32","fin":"0:19:26","intro_frase":"Dios no ha terminado contigo","palabras_clave":["Dios","prueba","fiel"],"versiculos":[{"ref":"Romanos 8:28","cita":"todas las cosas les ayudan a bien","texto":"Y sabemos que a los que aman a Dios, todas las cosas les ayudan a bien, esto es, a los que conforme a su propósito son llamados."}],"puntaje":92,"razon":"Por qué generaría interacción, en una oración.","descripcion":"Texto para publicar, 1 o 2 oraciones, que termine con una pregunta que invite a comentar.","hashtags":["#fe","#esperanza"]}]
 
 "gancho": máximo 8 palabras, va escrito como título en los primeros segundos.
 "ganchos_alternativos": otras 2 opciones de gancho con un enfoque distinto.
 "intro_frase": la frase más fuerte que se dice DENTRO del clip, copiada palabra por palabra de la transcripción, de 5 a 15 palabras (unos 3 a 6 segundos hablados). Se mostrará al inicio del reel, en blanco y negro, como adelanto antes del clip.
 "palabras_clave": de 3 a 6 palabras importantes que se dicen en el clip, para resaltarlas en los subtítulos.
-"versiculos": solo los pasajes bíblicos que el predicador menciona o lee DENTRO del clip. "ref" es la referencia (libro capítulo:versículo) y "cita" son 4 a 10 palabras exactas de la transcripción donde lo menciona. Nunca inventes versículos; si no menciona ninguno, usa [].
+"versiculos": solo los pasajes bíblicos que el predicador menciona o lee DENTRO del clip. "ref" es la referencia (libro capítulo:versículo) y "cita" son 4 a 10 palabras exactas de la transcripción donde lo menciona y "texto" es el versículo completo en la Reina-Valera 1960, palabra por palabra (la persona lo revisará antes de publicar). Nunca inventes versículos; si no menciona ninguno, usa [].
 "categoria": una de Enseñanza, Reflexión, Exhortación, Esperanza, Testimonio, Llamado.
 "puntaje": de 0 a 100, qué tanto crees que va a funcionar.
 

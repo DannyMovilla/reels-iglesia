@@ -175,8 +175,11 @@ cuadro), respeta "reducir movimiento".
    - **mientras la tarjeta está visible no se muestran subtítulos**; un bloque de subtítulo que
      empiece antes se corta en el momento en que entra la tarjeta (si quedaría < 0,3 s, se omite);
    - duración de la tarjeta = tiempo de lectura (0,5 s + 0,3 s por palabra), entre 4 y 8 s;
-   - texto bíblico: **Reina-Valera 1909** (dominio público), tomado de un archivo incluido en la app
-     por referencia — Claude solo identifica la referencia y el momento, no escribe el texto.
+   - texto bíblico: **Reina-Valera 1960** (la versión que usa la iglesia). Como tiene derechos de
+     autor, la app no incluye la Biblia: Claude escribe el texto RVR1960 del versículo citado en el
+     mismo análisis y la tarjeta queda **sin confirmar** hasta que la persona lo revisa o corrige en el
+     editor. Un reel con un versículo activo sin confirmar no se exporta. La tarjeta muestra "RVR1960".
+     (Decisión del 2026-11-06; el archivo es_rv1960.bib de la persona está cifrado y no se usa.)
 5. **Encuadre:** sigue la cara del predicador (zona muerta, cortes secos en cambios de cámara),
    zoom 1,0–2,0 (por defecto 1,25), recalculado para cada formato.
 6. **Cierre (opcional, activo por defecto):** 2,5 s con logo, nombre e invitación de la marca.
@@ -206,7 +209,7 @@ cuadro), respeta "reducir movimiento".
 | Video sin caras detectadas | Encuadre fijo al centro; el usuario ajusta con el control. |
 | Claude sin sesión / límite alcanzado | Mensaje claro con la acción a tomar; el proyecto queda en "Listo para analizar". |
 | Respuesta de Claude inválida | Reintento automático una vez; luego error con "Reintentar". |
-| Versículo no encontrado en RV1909 | La tarjeta muestra solo la referencia y avisa en el inspector. |
+| Versículo sin texto o sin confirmar | El inspector pide escribir o confirmar el texto RVR1960; exportar queda bloqueado con ese mensaje. |
 | Video original movido o borrado | Se pide ubicarlo; la transcripción y los clips se conservan. |
 | Render falla | La tarea queda en rojo con el detalle y "Reintentar"; el resto de la cola sigue. |
 | Disco lleno | Se detiene la cola y se avisa antes de empezar si no hay espacio estimado suficiente. |
@@ -246,4 +249,4 @@ macOS/Linux, edición multicámara, traducción de subtítulos.
 | Mezcla de música con bajada bajo la voz en HyperFrames no probada | Probar su carril de volumen al inicio de la etapa 6; alternativa: mezclar con FFmpeg (`sidechaincompress`) después del render. |
 | Empaquetar Python + CUDA (~2 GB) | Fase 1: el asistente de primer uso crea el `.venv` e instala dependencias; el instalador no las incluye. |
 | Límite de uso de la suscripción | Una llamada por proyecto; mostrar el error de límite con claridad. |
-| Texto bíblico | Solo Reina-Valera 1909 (dominio público) incluida localmente; se cita la versión en la tarjeta si el usuario lo activa. |
+| Texto bíblico (RVR1960 con derechos de autor) | No se incluye la Biblia; Claude propone cada versículo citado y la persona lo confirma; la tarjeta indica "RVR1960". |
