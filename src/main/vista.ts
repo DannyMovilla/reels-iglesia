@@ -10,8 +10,13 @@ import { protocol } from "electron";
  */
 const composiciones = new Map<string, string>();
 
+/** Cuántas composiciones de vista previa se guardan (cada cambio registra una nueva). */
+const MAXIMO = 8;
+
 export function registrarComposicion(id: string, html: string): string {
+  composiciones.delete(id);
   composiciones.set(id, html);
+  while (composiciones.size > MAXIMO) composiciones.delete(composiciones.keys().next().value!);
   return `reels-comp://${id}/index.html`;
 }
 

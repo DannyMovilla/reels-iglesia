@@ -3,7 +3,7 @@ import { TriangleAlert } from "lucide-react";
 import type { Caras, ClipSpec, Marca, Proyecto, Tarea, Transcripcion } from "@shared/tipos";
 import { formatoTiempo } from "@shared/validar";
 import { palabrasDe } from "@shared/reel/tiempo";
-import { estiloDesdeClip } from "@shared/clip";
+import { estiloDesdeClip, moverVersiculos } from "@shared/clip";
 import type { Pista } from "@shared/reel/pistas";
 import { Download } from "lucide-react";
 import { ColaExportacion } from "../componentes/ColaExportacion";
@@ -78,6 +78,16 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
     if (!pendiente.current) guardando.current = null;
   };
 
+  const [errorUbicar, setErrorUbicar] = useState<string | null>(null);
+  const ubicar = async () => {
+    setErrorUbicar(null);
+    try {
+      if (await window.reels!.ubicarVideo(proyectoId)) await recargar();
+    } catch (e) {
+      setErrorUbicar((e instanceof Error ? e.message : String(e)).replace(/^Error invoking remote method '[^']+': (Error: )?/, ""));
+    }
+  };
+
   const guardarEstilo = async (c: ClipSpec) => {
     const m = await window.reels!.leerMarca();
     const nueva = { ...m, estilo: estiloDesdeClip(c) };
@@ -98,8 +108,7 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
 
   /** Nuevo corte: el versículo se desplaza para seguir en el mismo momento del video. */
   const cambiarCorte = (c: ClipSpec, inicio: number, fin: number) => {
-    const d = inicio - c.inicio;
-    cambiarClip({ ...c, inicio, fin, versiculos: c.versiculos.map((v) => ({ ...v, en: Math.max(0, Math.round((v.en - d) * 100) / 100) })) });
+    cambiarClip({ ...c, inicio, fin, versiculos: moverVersiculos(c.versiculos, c.inicio, c.fin, inicio, fin) });
   };
 
   if (!proyecto) return <div className="cargando">Cargando…</div>;
@@ -131,8 +140,10 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
 
       <main className="editor-centro" aria-label="Vista previa">
         {!proyecto.videoDisponible && (
-          <p className="aviso" role="alert"><TriangleAlert size={16} aria-hidden="true" />No encuentro el video original en «{proyecto.video.ruta}». Si lo moviste, vuelve a ponerlo ahí. La transcripción y los clips se conservan.</p>
+          <p className="aviso" role="alert"><TriangleAlert size={16} aria-hidden="true" />No encuentro el video original en «{proyecto.video.ruta}». La transcripción y los clips se conservan.
+            <button type="button" className="btn pequeno" onClick={() => void ubicar()}>Ubicar el video</button></p>
         )}
+        {errorUbicar && <p className="error" role="alert">{errorUbicar}</p>}
         {clip && <div className="centro-cabeza"><h2>{clip.titulo}</h2><span>{clip.categoria} · {formatoTiempo(clip.fin - clip.inicio)}</span></div>}
         {listo && (
           <VistaPrevia ref={vista} proyectoId={proyecto.id} clip={clip} transcripcion={datos.transcripcion!} caras={datos.caras}

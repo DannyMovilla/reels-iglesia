@@ -65,6 +65,16 @@ export async function crearProyecto(
   return proyecto;
 }
 
+/** "Ubicar el video": el mismo archivo (mismo tamaño) en otra ruta. */
+export async function reubicarVideo(id: string, ruta: string): Promise<Proyecto> {
+  const p = await leerProyecto(id);
+  const st = await stat(ruta);
+  if (st.size !== p.video.tamano) throw new Error("Ese archivo no es el mismo video del culto (tiene otro tamaño). Elige el video original.");
+  p.video = { ...p.video, ruta, modificado: st.mtimeMs };
+  await guardarProyecto(p);
+  return leerProyecto(id);
+}
+
 export async function guardarProyecto(p: Proyecto): Promise<void> {
   const { videoDisponible: _omitido, ...guardable } = p;
   await escribirAtomico(join(carpetaProyecto(p.id), "proyecto.json"), guardable);
@@ -158,7 +168,8 @@ export async function leerClips(proyectoId: string): Promise<ClipSpec[]> {
 export async function guardarClip(proyectoId: string, clip: ClipSpec): Promise<void> {
   const clips = (await leerJson<ClipSpec[]>(proyectoId, "clips.json")) ?? [];
   if (!clips.some((c) => c.id === clip.id)) return;
-  await guardarJson(proyectoId, "clips.json", clips.map((c) => (c.id === clip.id ? clip : c)));
+  // Una edición que llega después de exportar (guardado diferido) no le quita el estado "exportado".
+  await guardarJson(proyectoId, "clips.json", clips.map((c) => (c.id === clip.id ? { ...clip, estado: c.estado === "exportado" ? "exportado" : clip.estado } : c)));
 }
 
 export interface ExportadosProyecto { proyectoId: string; nombre: string; archivos: { nombre: string; tamano: number; portada?: string }[] }

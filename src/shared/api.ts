@@ -50,6 +50,8 @@ export interface ApiReels {
   aplicarEstilo(proyectoId: string): Promise<void>;
   /** Ancho y alto del video original (para encuadrar). */
   infoVideo(id: string): Promise<{ ancho: number; alto: number }>;
+  /** Elegir de nuevo el video original si se movió (mismo archivo). null si se cancela. */
+  ubicarVideo(id: string): Promise<Proyecto | null>;
   /** Encola el procesamiento desde un paso (por defecto, desde la transcripción). */
   procesar(id: string, desde?: TipoTarea): Promise<void>;
   /** Encola una exportación por clip y formato (por defecto, los formatos marcados en cada clip). */

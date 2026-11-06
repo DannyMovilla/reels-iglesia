@@ -73,3 +73,16 @@ export function aplicarEstiloAClip(c: ClipSpec, e: EstiloIglesia): ClipSpec {
     formatos: e.formatos,
   });
 }
+
+/**
+ * Al cambiar el corte de [ini0, fin0] a [ini1, fin1], cada versículo sigue en el mismo momento del video.
+ * Si ese momento quedó fuera del clip, el versículo se apaga y se marca "fuera" (el inspector lo avisa).
+ */
+export function moverVersiculos(vs: ClipSpec["versiculos"], ini0: number, _fin0: number, ini1: number, fin1: number): ClipSpec["versiculos"] {
+  return vs.map((v) => {
+    const momento = ini0 + v.en;
+    const en = Math.round((momento - ini1) * 100) / 100;
+    if (momento < ini1 || momento > fin1) return { ...v, en: Math.max(0, Math.min(en, fin1 - ini1)), activo: false, fuera: true };
+    return { ...v, en, fuera: false };
+  });
+}

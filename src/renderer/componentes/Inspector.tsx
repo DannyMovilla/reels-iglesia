@@ -77,7 +77,8 @@ export function Inspector({ clip: c, avisos, alCambiar, alGuardarEstilo, alAplic
             {c.versiculos.map((v, i) => (
               <div key={v.ref + i} className="tarjeta">
                 <div className="tarjeta-cabeza"><BookOpen size={16} aria-hidden="true" /><b>{v.ref}</b><span className="mono">RVR1960</span>
-                  <Interruptor activo={v.activo} etiqueta={`Mostrar ${v.ref}`} alCambiar={(activo) => cambiarVersiculo(i, { activo })} /></div>
+                  <Interruptor activo={v.activo} etiqueta={`Mostrar ${v.ref}`} alCambiar={(activo) => cambiarVersiculo(i, { activo, fuera: false })} /></div>
+                {v.fuera && !v.activo && <p className="aviso-chico"><TriangleAlert size={13} aria-hidden="true" />Quedó fuera del corte: el predicador lo cita en una parte que ya no está en el clip.</p>}
                 <label className="campo">
                   <span className="sr">Texto RVR1960 de {v.ref}</span>
                   <textarea className="entrada texto-versiculo" rows={3} value={v.texto} onChange={(e) => cambiarVersiculo(i, { texto: e.target.value })} />

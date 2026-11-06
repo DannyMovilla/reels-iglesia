@@ -28,6 +28,7 @@ const api: ApiReels = {
   elegirLogo: () => ipcRenderer.invoke("marca:elegirLogo"),
   aplicarEstilo: (id) => ipcRenderer.invoke("proyectos:aplicarEstilo", id),
   infoVideo: (id) => ipcRenderer.invoke("proyectos:infoVideo", id),
+  ubicarVideo: (id) => ipcRenderer.invoke("proyectos:ubicarVideo", id),
   procesar: (id, desde) => ipcRenderer.invoke("proyectos:procesar", id, desde),
   exportar: (id, clipIds, formatos) => ipcRenderer.invoke("exportar:encolar", id, clipIds, formatos),
   abrirCarpetaExportados: (id) => ipcRenderer.invoke("exportar:abrir", id),

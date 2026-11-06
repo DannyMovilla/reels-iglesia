@@ -12,6 +12,8 @@ export function leerTiempo(texto: string): number {
   if (!t) return NaN;
   const partes = t.split(":").map(Number);
   if (partes.length > 3 || partes.some((p) => !Number.isFinite(p) || p < 0)) return NaN;
+  // En "H:MM:SS" y en los segundos de "MM:SS", minutos y segundos van de 0 a 59.
+  if (partes.slice(1).some((p) => p >= 60)) return NaN;
   return partes.reduce((a, p) => a * 60 + p, 0);
 }
 

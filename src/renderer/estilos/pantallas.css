@@ -231,3 +231,4 @@
 .primer-uso { max-width: 760px; }
 .chequeo { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; }
 .chequeo .barra-descarga { margin-top: 8px; }
+.aviso-chico { display: flex; align-items: center; gap: 6px; color: var(--warn); font-size: 12px; margin: 0; }

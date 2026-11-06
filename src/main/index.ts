@@ -27,7 +27,7 @@ function crearVentana(): BrowserWindow {
     backgroundColor: "#0a0c16",
     title: "Reels Iglesia",
     show: false,
-    webPreferences: { preload: join(__dirname, "../preload/index.js"), contextIsolation: true, sandbox: false },
+    webPreferences: { preload: join(__dirname, "../preload/index.js"), contextIsolation: true, sandbox: true },
   });
   protegerNavegacion(v.webContents);
   v.once("ready-to-show", () => v.show());

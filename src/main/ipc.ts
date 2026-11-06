@@ -11,7 +11,8 @@ import type { Cola } from "./cola/cola";
 import { dimensionesVideo, duracionVideo } from "./procesos/video";
 import { carpetaDatos, carpetaProyecto, raizApp } from "./rutas";
 import { esquemaVista, registrarComposicion, servirVista } from "./vista";
-import { aplicarEstilo, copiarLogo, crearProyecto, guardarClip, guardarMarca, leerClips, leerJson, leerMarca, leerProyecto, listarExportados, listarProyectos } from "./proyectos/almacen";
+import { cacheSinErrores } from "./util/cache";
+import { aplicarEstilo, copiarLogo, reubicarVideo, crearProyecto, guardarClip, guardarMarca, leerClips, leerJson, leerMarca, leerProyecto, listarExportados, listarProyectos } from "./proyectos/almacen";
 
 export interface DepsIpc {
   cola: Cola;
@@ -136,10 +137,11 @@ export function registrarIpc(deps: DepsIpc): void {
     return r.canceled || !r.filePaths[0] ? null : copiarLogo(r.filePaths[0]);
   });
   ipcMain.handle("proyectos:aplicarEstilo", (_e, id: string) => aplicarEstilo(id));
-  const dims = new Map<string, Promise<{ ancho: number; alto: number }>>();
-  ipcMain.handle("proyectos:infoVideo", async (_e, id: string) => {
-    if (!dims.has(id)) dims.set(id, leerProyecto(id).then((p) => dimensionesVideo(p.video.ruta)));
-    return dims.get(id);
+  const dims = cacheSinErrores((id) => leerProyecto(id).then((p) => dimensionesVideo(p.video.ruta)));
+  ipcMain.handle("proyectos:infoVideo", (_e, id: string) => dims(id));
+  ipcMain.handle("proyectos:ubicarVideo", async (_e, id: string) => {
+    const r = await dialog.showOpenDialog({ title: "Ubica el video del culto", properties: ["openFile"], filters: [{ name: "Videos", extensions: ["mp4", "mov", "m4v", "mkv", "webm"] }] });
+    return r.canceled || !r.filePaths[0] ? null : reubicarVideo(id, r.filePaths[0]);
   });
   ipcMain.handle("proyectos:procesar", (_e, id: string, desde?: TipoTarea) => void cola.agregar(id, desde ?? "transcribir"));
   ipcMain.handle("exportar:encolar", async (_e, id: string, clipIds: string[], formatos?: Formato[]) => {

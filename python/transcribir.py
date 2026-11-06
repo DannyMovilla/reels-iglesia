@@ -213,6 +213,9 @@ def detectar_caras(video: str, inicio: float, fin: float, fps: float = 2.0, anch
             else:
                 print(f"\r  Caras: {pct:5.1f}%", end="", flush=True)
     proc.wait()
+    if proc.returncode != 0 and usar_gpu and gpu is None:
+        # La GPU falló a mitad: se repite todo en CPU para no perder caras.
+        return detectar_caras(video, inicio, fin, fps, ancho, gpu=False)
     if PROGRESO_JSON:
         emitir_progreso("caras", 100)
     else:

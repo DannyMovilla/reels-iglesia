@@ -63,3 +63,24 @@ def test_caras_sin_gpu_por_defecto(monkeypatch):
     assert t.caras_con_gpu() is False
     monkeypatch.setenv("REELS_CARAS_GPU", "1")
     assert t.caras_con_gpu() is True
+
+
+def test_si_la_gpu_falla_a_mitad_repite_todo_en_cpu(tmp_path, monkeypatch):
+    """La decodificación por GPU entrega 2 cuadros y se cae: se repite completa en CPU (sin caras perdidas)."""
+    import subprocess
+    import sys
+
+    video = tmp_path / "prueba.mp4"
+    subprocess.run(["ffmpeg", "-v", "error", "-f", "lavfi", "-i", "testsrc=size=320x180:rate=10", "-t", "4",
+                    "-pix_fmt", "yuv420p", str(video)], check=True)
+    original = t.args_ffmpeg_caras
+
+    def falso(v, inicio, fin, fps, ancho, alto, gpu):
+        if gpu:
+            codigo = f"import sys; sys.stdout.buffer.write(bytes({ancho * alto * 3 * 2})); sys.exit(1)"
+            return [sys.executable, "-c", codigo]
+        return original(v, inicio, fin, fps, ancho, alto, gpu)
+
+    monkeypatch.setattr(t, "args_ffmpeg_caras", falso)
+    monkeypatch.setenv("REELS_CARAS_GPU", "1")
+    assert len(t.detectar_caras(str(video), 0.5, 3.5)) == 6

@@ -14,6 +14,19 @@ export function progresoHyperframes(linea: string): number | null {
   }
 }
 
+/** Lo que imprime HyperFrames al fallar → mensaje para la persona (el detalle técnico va al final). */
+export function traducirErrorRender(texto: string): string {
+  const t = texto.trim();
+  if (/ffmpeg[^\n]*(ENOENT|not found|no se reconoce)/i.test(t)) return "Falta FFmpeg. Abre Ajustes y toca «Instalar FFmpeg».";
+  if (/requires Node\.js/i.test(t)) return "Hay que actualizar Reels Iglesia para exportar (versión de Node). Instala la última versión.";
+  if (/ENOSPC|no space left/i.test(t)) return "No hay espacio en el disco para exportar el reel. Libera espacio y reintenta.";
+  if (/refused to start the browser|failed to launch the browser|could not find (chrome|browser)|spawn UNKNOWN/i.test(t)) {
+    return "No se pudo abrir el navegador del render. Abre Ajustes y toca «Preparar el entorno».";
+  }
+  const ultima = t.split(/\r?\n/).filter((l) => l.trim()).at(-1) ?? "";
+  return `No se pudo exportar el reel.\n\nDetalle: ${ultima}`;
+}
+
 export interface OpcionesRender {
   gpu: boolean;
   senal: AbortSignal;
@@ -37,7 +50,6 @@ export async function renderizar(dir: string, salida: string, op: OpcionesRender
     },
   });
   if (r.codigo !== 0) {
-    const ultimas = `${r.stderr}\n${r.stdout}`.trim().split(/\r?\n/).filter(Boolean).slice(-4).join("\n");
-    throw new Error(`No se pudo exportar el reel.\n${ultimas}`);
+    throw new Error(traducirErrorRender(`${r.stderr}\n${r.stdout}`));
   }
 }

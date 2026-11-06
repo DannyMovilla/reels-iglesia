@@ -149,3 +149,9 @@ describe("Publicar", () => {
     expect(await screen.findByText("Copiado")).toBeInTheDocument();
   });
 });
+
+test("un versículo que quedó fuera del corte lo avisa", async () => {
+  const c = { ...base, versiculos: [{ ...base.versiculos[0], activo: false, fuera: true }] };
+  render(<Inspector clip={c} avisos={[]} alCambiar={() => {}} />);
+  expect(screen.getByText(/Quedó fuera del corte/)).toBeInTheDocument();
+});
