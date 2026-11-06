@@ -209,3 +209,8 @@
 .pista-datos b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pista-datos .mono { color: var(--text-3); font-size: 12px; }
 .pista audio { width: 100%; height: 32px; }
+
+/* Publicar */
+.contador { font-family: var(--font-mono); font-size: 11px; color: var(--text-3); }
+.contador.pasado { color: var(--bad); font-weight: 600; }
+.ok-texto { color: var(--ok); font-size: 12px; font-weight: 600; }

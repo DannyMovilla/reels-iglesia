@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { BookOpen, Check, Contrast, Copy, FileText, Flag, Send, Sparkles, TrendingUp, TriangleAlert, Type } from "lucide-react";
-import { ANIMOS, type Animo, type ClipSpec, type EstiloSub, type Formato } from "@shared/tipos";
+import { ANIMOS, type Animo, type ClipSpec, type EstiloSub, type Formato, type Redes } from "@shared/tipos";
 import { ESTILOS_SUB, NOMBRE_ESTILO } from "@shared/reel/estilos-sub";
+import { LIMITES_REDES, NOMBRE_RED, textoParaPublicar } from "@shared/redes";
 import type { Pista } from "@shared/reel/pistas";
 import { NOMBRE_ANIMO } from "../pantallas/Musica";
 
@@ -40,7 +41,6 @@ export function Inspector({ clip: c, avisos, alCambiar, alGuardarEstilo, alAplic
   const cambiar = (parcial: Partial<ClipSpec>) => alCambiar({ ...c, ...parcial });
   const cambiarVersiculo = (i: number, parcial: Partial<ClipSpec["versiculos"][number]>) =>
     cambiar({ versiculos: c.versiculos.map((v, j) => (j === i ? { ...v, ...parcial } : v)) });
-  const textoPublicar = [c.descripcion, c.versiculos.filter((v) => v.activo).map((v) => `${v.ref} (RVR1960)`).join(" · "), c.hashtags.join(" ")].filter(Boolean).join("\n\n");
 
   return (
     <div className="inspector">
@@ -201,18 +201,58 @@ export function Inspector({ clip: c, avisos, alCambiar, alGuardarEstilo, alAplic
           </>
         )}
 
-        {pestana === "publicar" && (
-          <>
-            <label className="campo">Descripción
-              <textarea className="entrada" rows={4} value={c.descripcion} onChange={(e) => cambiar({ descripcion: e.target.value })} />
-            </label>
-            <label className="campo">Hashtags
-              <input className="entrada" value={c.hashtags.join(" ")} onChange={(e) => cambiar({ hashtags: e.target.value.split(/\s+/).filter(Boolean) })} />
-            </label>
-            <button type="button" className="btn" onClick={() => void navigator.clipboard?.writeText(textoPublicar)}><Copy size={14} aria-hidden="true" />Copiar texto para publicar</button>
-          </>
-        )}
+        {pestana === "publicar" && <Publicar redes={c.redes} alCambiar={(redes) => cambiar({ redes })} />}
       </div>
     </div>
+  );
+}
+
+/** Contador "n / límite" que se pone en rojo al pasarse. */
+function Contador({ n, max }: { n: number; max: number }) {
+  return <span className={`contador${n > max ? " pasado" : ""}`}>{n} / {max}</span>;
+}
+
+/** Pestaña Publicar: el texto de cada red, con su límite y un botón para copiarlo. */
+function Publicar({ redes, alCambiar }: { redes: Redes; alCambiar(r: Redes): void }) {
+  const [red, setRed] = useState<keyof Redes>("instagram");
+  const [copiado, setCopiado] = useState(false);
+  const nombre = NOMBRE_RED[red];
+  const L = LIMITES_REDES;
+  const cambiarRed = <K extends keyof Redes>(k: K, v: Partial<Redes[K]>) => alCambiar({ ...redes, [k]: { ...redes[k], ...v } });
+  const actual = redes[red] as { texto: string; hashtags?: string[]; titulo?: string };
+  const limiteTexto = L[red].texto;
+  const copiar = async () => {
+    await navigator.clipboard?.writeText(textoParaPublicar(redes, red));
+    setCopiado(true);
+    setTimeout(() => setCopiado(false), 1800);
+  };
+  return (
+    <>
+      <Segmentos etiqueta="Red" valor={red} opciones={(Object.keys(NOMBRE_RED) as (keyof Redes)[]).map((k) => [k, NOMBRE_RED[k]] as [keyof Redes, string])}
+        alCambiar={(r) => { setRed(r); setCopiado(false); }} />
+      {red === "youtube" && (
+        <div className="campo">
+          <span className="campo-cabeza">Título <Contador n={redes.youtube.titulo.length} max={L.youtube.titulo} /></span>
+          <input className="entrada" aria-label={`Título para ${nombre}`} aria-invalid={redes.youtube.titulo.length > L.youtube.titulo}
+            value={redes.youtube.titulo} onChange={(e) => cambiarRed("youtube", { titulo: e.target.value })} />
+        </div>
+      )}
+      <div className="campo">
+        <span className="campo-cabeza">Texto <Contador n={actual.texto.length} max={limiteTexto} /></span>
+        <textarea className="entrada" rows={6} aria-label={`Texto para ${nombre}`} aria-invalid={actual.texto.length > limiteTexto}
+          value={actual.texto} onChange={(e) => cambiarRed(red, { texto: e.target.value } as Partial<Redes[typeof red]>)} />
+      </div>
+      {(red === "instagram" || red === "tiktok") && (
+        <div className="campo">
+          <span className="campo-cabeza">Hashtags {red === "instagram" && <Contador n={redes.instagram.hashtags.length} max={L.instagram.hashtags} />}</span>
+          <input className="entrada" aria-label={`Hashtags para ${nombre}`} value={redes[red].hashtags.join(" ")}
+            onChange={(e) => cambiarRed(red, { hashtags: e.target.value.split(/\s+/).filter(Boolean) })} />
+        </div>
+      )}
+      <div className="fila">
+        <button type="button" className="btn" onClick={() => void copiar()}><Copy size={14} aria-hidden="true" />Copiar para {nombre}</button>
+        {copiado && <span className="ok-texto" role="status">Copiado</span>}
+      </div>
+    </>
   );
 }

@@ -1,7 +1,7 @@
-import { render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
-import { vi } from "vitest";
+import { describe, vi } from "vitest";
 import { Inspector } from "../../src/renderer/componentes/Inspector";
 import type { ClipSpec } from "../../src/shared/tipos";
 import { PLAN3 } from "../ayuda/plan3";
@@ -109,4 +109,43 @@ test("en Estilo se eligen los efectos: transición, grano y rótulo del predicad
   expect(alCambiar.mock.calls.at(-1)![0].efectos.grano).toBe(!base.efectos.grano);
   await userEvent.click(screen.getByRole("switch", { name: "Nombre del predicador" }));
   expect(alCambiar.mock.calls.at(-1)![0].efectos.rotulo).toBe(!base.efectos.rotulo);
+});
+
+describe("Publicar", () => {
+  const conRedes = { ...base, redes: { instagram: { texto: "Texto IG", hashtags: ["#fe"] }, tiktok: { texto: "Texto TT", hashtags: ["#oracion"] },
+    facebook: { texto: "Texto FB" }, youtube: { titulo: "Título YT", texto: "Texto YT" } } };
+  function PruebaRedes({ alCambiar }: { alCambiar: (c: ClipSpec) => void }) {
+    const [c, setC] = useState<ClipSpec>(conRedes);
+    return <Inspector clip={c} avisos={[]} alCambiar={(n) => { setC(n); alCambiar(n); }} />;
+  }
+
+  test("cada red tiene su texto; YouTube además su título", async () => {
+    render(<PruebaRedes alCambiar={() => {}} />);
+    await userEvent.click(screen.getByRole("tab", { name: "Publicar" }));
+    expect(screen.getByLabelText("Texto para Instagram")).toHaveValue("Texto IG");
+    await userEvent.click(within(screen.getByRole("group", { name: "Red" })).getByRole("button", { name: "TikTok" }));
+    expect(screen.getByLabelText("Texto para TikTok")).toHaveValue("Texto TT");
+    await userEvent.click(within(screen.getByRole("group", { name: "Red" })).getByRole("button", { name: "YouTube Shorts" }));
+    expect(screen.getByLabelText("Título para YouTube Shorts")).toHaveValue("Título YT");
+  });
+
+  test("pasarse del límite marca el campo y el contador en rojo", async () => {
+    render(<PruebaRedes alCambiar={() => {}} />);
+    await userEvent.click(screen.getByRole("tab", { name: "Publicar" }));
+    await userEvent.click(within(screen.getByRole("group", { name: "Red" })).getByRole("button", { name: "YouTube Shorts" }));
+    const titulo = screen.getByLabelText("Título para YouTube Shorts");
+    fireEvent.change(titulo, { target: { value: "x".repeat(105) } });
+    expect(titulo).toHaveAttribute("aria-invalid", "true");
+    expect(screen.getByText("105 / 100")).toHaveClass("pasado");
+  });
+
+  test("Copiar deja en el portapapeles el texto y los hashtags", async () => {
+    const escribir = vi.fn(async () => {});
+    Object.defineProperty(navigator, "clipboard", { value: { writeText: escribir }, configurable: true });
+    render(<PruebaRedes alCambiar={() => {}} />);
+    await userEvent.click(screen.getByRole("tab", { name: "Publicar" }));
+    await userEvent.click(screen.getByRole("button", { name: /Copiar para Instagram/ }));
+    expect(escribir).toHaveBeenCalledWith("Texto IG\n\n#fe");
+    expect(await screen.findByText("Copiado")).toBeInTheDocument();
+  });
 });
