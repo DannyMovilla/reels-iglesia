@@ -1,3 +1,5 @@
+import { cssEstilosSub } from "./estilos-sub";
+
 /** CSS de la composición del reel (HyperFrames). Las fuentes vienen de la carpeta local de recursos. */
 export function cssComposicion(p: { ancho: number; alto: number; color: string; fuentes: string; tamanoSub: number; estiloSub: string }): string {
   const f = p.fuentes;
@@ -41,5 +43,6 @@ html, body { width: ${p.ancho}px; height: ${p.alto}px; overflow: hidden; backgro
 .muestra-fondo { position: absolute; inset: 0; background: radial-gradient(circle at 50% 35%, #2a3352, #0a0c16 70%); }
 .cierre h2 { font: 900 76px/1.1 Montserrat, sans-serif; padding: 0 40px; }
 .cierre p { font: 700 44px Figtree, sans-serif; color: var(--marca); padding: 0 40px; }
+${cssEstilosSub(p.tamanoSub)}
 `;
 }

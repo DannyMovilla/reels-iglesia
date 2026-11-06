@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { vi } from "vitest";
@@ -86,4 +86,15 @@ test("en Estilo se apagan los cortes de pausas y muletillas", async () => {
   await userEvent.click(screen.getByRole("tab", { name: "Estilo" }));
   await userEvent.click(screen.getByRole("switch", { name: "Quitar muletillas" }));
   expect(alCambiar.mock.calls.at(-1)![0].cortes.muletillas).toBe(!base.cortes.muletillas);
+});
+
+test("en Estilo hay 7 estilos de subtítulos con nombre en español", async () => {
+  const alCambiar = vi.fn();
+  render(<Prueba alCambiar={alCambiar} />);
+  await userEvent.click(screen.getByRole("tab", { name: "Estilo" }));
+  const grupo = screen.getByRole("group", { name: "Estilo de subtítulos" });
+  const nombres = within(grupo).getAllByRole("button").map((b) => b.textContent);
+  expect(nombres).toEqual(["Pop", "Caja", "Limpio", "Resaltado", "Karaoke", "Impacto", "Neón"]);
+  await userEvent.click(within(grupo).getByRole("button", { name: "Karaoke" }));
+  expect(alCambiar.mock.calls.at(-1)![0].subtitulos.estilo).toBe("karaoke");
 });

@@ -7,6 +7,7 @@ import { bloquesSubtitulos } from "./subtitulos";
 import { palabrasDe, partesDelReel, r2 } from "./tiempo";
 import { ventanaVersiculo } from "./versiculo";
 import { curvaMusica, tramosDeVoz } from "./musica";
+import { animarBloque, htmlBloque } from "./estilos-sub";
 
 
 export interface EntradaComposicion {
@@ -111,20 +112,8 @@ export function construirComposicion(e: EntradaComposicion): { html: string; dur
     const estilo = c.subtitulos.estilo;
     const top = r2((formato === "9:16" ? c.subtitulos.altura : 0.8) * H);
     bloquesSubtitulos(c, palabras, partes).forEach((b, i) => {
-      const spans = b.palabras.map((w, j) => `<span id="b${i}w${j}" class="w${w.clave ? " clave" : ""}">${esc(estilo === "limpio" ? w.texto : w.texto.toUpperCase())}</span>`).join(" ");
-      el.push(`<div id="b${i}" class="clip sub ${estilo}" data-start="${n(b.desde)}" data-duration="${n(Math.max(0.2, b.hasta - b.desde))}" style="top:${top}px">${spans}</div>`);
-      js.push(`tl.from("#b${i}", { opacity: 0, y: 16, duration: 0.12 }, ${n(b.desde)});`);
-      b.palabras.forEach((w, j) => {
-        if (w.desde < b.desde) return;
-        const sel = `"#b${i}w${j}"`;
-        if (estilo === "caja") {
-          js.push(`tl.set(${sel}, { backgroundColor: "${marca.color}", color: "#111111" }, ${n(w.desde)});`);
-          js.push(`tl.set(${sel}, { backgroundColor: "rgba(0,0,0,0)", color: "${w.clave ? marca.color : "#ffffff"}" }, ${n(w.hasta + 0.05)});`);
-        } else {
-          js.push(`tl.fromTo(${sel}, { scale: ${estilo === "pop" ? 1.18 : 1.06}, color: "${marca.color}" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, ${n(w.desde)});`);
-          if (!w.clave) js.push(`tl.to(${sel}, { color: "#ffffff", duration: 0.05 }, ${n(w.hasta + 0.05)});`);
-        }
-      });
+      el.push(`<div id="b${i}" class="clip sub ${estilo}" data-start="${n(b.desde)}" data-duration="${n(Math.max(0.2, b.hasta - b.desde))}" style="top:${top}px">${htmlBloque(estilo, b, i)}</div>`);
+      js.push(...animarBloque(estilo, b, i, marca.color));
     });
   }
 

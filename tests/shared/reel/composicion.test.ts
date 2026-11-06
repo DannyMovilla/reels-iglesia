@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { expect, test } from "vitest";
+import { describe, expect, test } from "vitest";
 import { construirComposicion, type EntradaComposicion } from "../../../src/shared/reel/composicion";
 import { partesDelReel } from "../../../src/shared/reel/tiempo";
 import { ventanaVersiculo } from "../../../src/shared/reel/versiculo";
@@ -164,4 +164,41 @@ test("la música lleva el carril de volumen de curvaMusica durante todo el reel"
   expect(carril.lanes[0].target).toBe("volume");
   expect(carril.lanes[0].points[0]).toEqual({ t: 0, v: 0.5 });
   expect(carril.lanes[0].points.at(-1)).toEqual({ t: r.duracion, v: 0 });
+});
+
+describe("estilos de subtítulos", () => {
+  const ESTILOS = ["pop", "caja", "limpio", "resaltado", "karaoke", "impacto", "neon"] as const;
+  const conEstilo = (estilo: (typeof ESTILOS)[number]) =>
+    construirComposicion(entrada("9:16", clip({ subtitulos: { activos: true, estilo, tamano: "m", altura: 0.74 } })));
+
+  test.each(ESTILOS)("%s: la palabra clave lleva el color de la marca", (estilo) => {
+    const r = conEstilo(estilo);
+    const d = dom(r.html);
+    const clave = [...d.querySelectorAll(".sub .w")].find((w) => /QUEBRANTAMIENTO/i.test(w.textContent ?? ""));
+    expect(clave?.classList.contains("clave")).toBe(true);
+    expect(r.html).toMatch(/\.sub \.clave[^{]*\{[^}]*var\(--marca\)|#f5c542/);
+  });
+
+  test.each(ESTILOS)("%s: mientras se ve el versículo no hay subtítulos", (estilo) => {
+    const r = conEstilo(estilo);
+    const d = dom(r.html);
+    const vers = d.querySelector(".vers")!;
+    const v0 = Number(vers.getAttribute("data-start")), v1 = v0 + Number(vers.getAttribute("data-duration"));
+    for (const s of d.querySelectorAll(".sub")) {
+      const s0 = Number(s.getAttribute("data-start"));
+      expect(s0 >= v0 && s0 < v1).toBe(false);
+    }
+  });
+
+  test.each(ESTILOS)("%s: no anima left ni top (HyperFrames lo marca como error)", (estilo) => {
+    expect(conEstilo(estilo).html).not.toMatch(/tl\.(to|from|fromTo)\([^)]*\b(left|top)\s*:/);
+  });
+
+  test("cada estilo nuevo tiene su forma: resaltado con fondo por palabra, karaoke en píldora, impacto palabra por palabra, neón con brillo", () => {
+    expect(dom(conEstilo("resaltado").html).querySelector(".sub.resaltado .w .fondo")).not.toBeNull();
+    expect(dom(conEstilo("karaoke").html).querySelector(".sub.karaoke .pildora .w")).not.toBeNull();
+    const impacto = conEstilo("impacto").html;
+    expect(impacto).toMatch(/tl\.fromTo\("#b0w1", \{[^}]*opacity: 0/);
+    expect(conEstilo("neon").html).toMatch(/\.sub\.neon[^{]*\{[^}]*text-shadow/);
+  });
 });

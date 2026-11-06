@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { BookOpen, Check, Contrast, Copy, FileText, Flag, Send, Sparkles, TrendingUp, TriangleAlert, Type } from "lucide-react";
-import { ANIMOS, type Animo, type ClipSpec, type Formato } from "@shared/tipos";
+import { ANIMOS, type Animo, type ClipSpec, type EstiloSub, type Formato } from "@shared/tipos";
+import { ESTILOS_SUB, NOMBRE_ESTILO } from "@shared/reel/estilos-sub";
 import type { Pista } from "@shared/reel/pistas";
 import { NOMBRE_ANIMO } from "../pantallas/Musica";
 
@@ -125,7 +126,7 @@ export function Inspector({ clip: c, avisos, alCambiar, alGuardarEstilo, alAplic
           <>
             <div className="grupo"><h3>Subtítulos</h3>
               <div className="fila"><Interruptor activo={c.subtitulos.activos} etiqueta="Mostrar subtítulos" alCambiar={(activos) => cambiar({ subtitulos: { ...c.subtitulos, activos } })} /> Mostrar subtítulos</div>
-              <Segmentos etiqueta="Estilo de subtítulos" valor={c.subtitulos.estilo} opciones={[["pop", "Pop"], ["caja", "Caja"], ["limpio", "Limpio"]]}
+              <Segmentos etiqueta="Estilo de subtítulos" valor={c.subtitulos.estilo} opciones={ESTILOS_SUB.map((e) => [e, NOMBRE_ESTILO[e]] as [EstiloSub, string])}
                 alCambiar={(estilo) => cambiar({ subtitulos: { ...c.subtitulos, estilo } })} />
               <Segmentos etiqueta="Tamaño de subtítulos" valor={c.subtitulos.tamano} opciones={[["s", "Chico"], ["m", "Medio"], ["l", "Grande"]]}
                 alCambiar={(tamano) => cambiar({ subtitulos: { ...c.subtitulos, tamano } })} />
