@@ -1,7 +1,7 @@
 import type { Transcripcion } from "@shared/tipos";
 import type { ContextoTarea } from "../cola/cola";
 import { ejecutarConProgreso } from "../procesos/lineas";
-import { guardarJson, leerJson } from "../proyectos/almacen";
+import { guardarJson, leerJson, leerMarca } from "../proyectos/almacen";
 import { resolverComandoClaude } from "../sistema/claude-cmd";
 import { RespuestaClaude } from "./esquema";
 import { normalizarClips } from "./normalizar";
@@ -88,7 +88,7 @@ export async function analizarProyecto(
       throw new Error(ERROR_FORMATO);
     }
   }
-  const normalizados = normalizarClips(clips, t);
+  const normalizados = normalizarClips(clips, t, (await leerMarca()).estilo);
   if (normalizados.length === 0) throw new Error(ERROR_SIN_CLIPS);
   await guardarJson(id, "clips.json", normalizados);
   ctx.alProgreso(100);

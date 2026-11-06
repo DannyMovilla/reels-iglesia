@@ -6,6 +6,7 @@ import { LineaTiempo } from "../../src/renderer/componentes/LineaTiempo";
 import { ajustarCorte } from "../../src/shared/reel/cortes";
 import { palabrasDe } from "../../src/shared/reel/tiempo";
 import type { ClipSpec, Transcripcion } from "../../src/shared/tipos";
+import { PLAN3, SIN_MUSICA } from "../ayuda/plan3";
 
 const muestra: Transcripcion = JSON.parse(readFileSync(join(resolve(__dirname, "../fixtures"), "transcripcion-muestra.json"), "utf8"));
 const palabras = palabrasDe(muestra);
@@ -13,7 +14,7 @@ const clip = (extra: Partial<ClipSpec> = {}): ClipSpec => ({
   id: "c", titulo: "T", gancho: "G", ganchosAlternativos: [], categoria: "Exhortación", inicio: 30.93, fin: 63.46, apertura: null,
   palabrasClave: ["quebrantamiento"], versiculos: [], puntaje: 90, razon: "", descripcion: "", hashtags: [],
   encuadre: { modo: "auto", x: 0.5, zoom: 1.25 }, subtitulos: { activos: true, estilo: "pop", tamano: "m", altura: 0.74 },
-  musica: { pista: null, volumen: 0 }, cierre: true, formatos: ["9:16"], estado: "sugerido", ...extra,
+  ...PLAN3, musica: SIN_MUSICA, cierre: true, formatos: ["9:16"], estado: "sugerido", ...extra,
 });
 
 test("la tecla O marca el fin en el cabezal, ajustado al final de una palabra", () => {

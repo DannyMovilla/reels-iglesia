@@ -2,11 +2,12 @@ import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ListaClips } from "../../src/renderer/componentes/ListaClips";
 import type { ClipSpec } from "../../src/shared/tipos";
+import { PLAN3 } from "../ayuda/plan3";
 
 const base: Omit<ClipSpec, "id" | "titulo" | "puntaje" | "versiculos"> = {
   gancho: "", ganchosAlternativos: [], categoria: "Esperanza", inicio: 10, fin: 50, apertura: null, palabrasClave: [],
   razon: "", descripcion: "", hashtags: [], encuadre: { modo: "auto", x: 0.5, zoom: 1.25 },
-  subtitulos: { activos: true, estilo: "pop", tamano: "m", altura: 0.74 }, musica: { pista: "auto", volumen: 0.12 },
+  subtitulos: { activos: true, estilo: "pop", tamano: "m", altura: 0.74 }, ...PLAN3,
   cierre: true, formatos: ["9:16", "4:5"], estado: "sugerido",
 };
 const clips: ClipSpec[] = [

@@ -7,6 +7,7 @@ import { aplicarReglaVersiculo, bloquesSubtitulos } from "../../../src/shared/re
 import { duracionReel, palabrasDe, partesDelReel } from "../../../src/shared/reel/tiempo";
 import { duracionLectura, ventanaVersiculo } from "../../../src/shared/reel/versiculo";
 import type { Caras, ClipSpec, Transcripcion } from "../../../src/shared/tipos";
+import { PLAN3 } from "../../ayuda/plan3";
 
 const muestra: Transcripcion = JSON.parse(readFileSync(join(resolve(__dirname, "../../fixtures"), "transcripcion-muestra.json"), "utf8"));
 const palabras = palabrasDe(muestra);
@@ -15,7 +16,7 @@ const clip = (extra: Partial<ClipSpec> = {}): ClipSpec => ({
   id: "c", titulo: "T", gancho: "G", ganchosAlternativos: [], categoria: "Exhortación", inicio: 30.93, fin: 63.46,
   apertura: { activa: true, inicio: 39.02, fin: 44.8, frase: "ese quebrantamiento" }, palabrasClave: ["quebrantamiento"],
   versiculos: [], puntaje: 90, razon: "", descripcion: "", hashtags: [], encuadre: { modo: "auto", x: 0.5, zoom: 1.25 },
-  subtitulos: { activos: true, estilo: "pop", tamano: "m", altura: 0.74 }, musica: { pista: "auto", volumen: 0.12 },
+  subtitulos: { activos: true, estilo: "pop", tamano: "m", altura: 0.74 }, ...PLAN3,
   cierre: true, formatos: ["9:16"], estado: "sugerido", ...extra,
 });
 

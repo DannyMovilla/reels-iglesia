@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
 import { Editor } from "../../src/renderer/pantallas/Editor";
 import type { ClipSpec, Proyecto } from "../../src/shared/tipos";
+import { PLAN3 } from "../ayuda/plan3";
 
 const clip: ClipSpec = {
   id: "c", titulo: "El quebrantamiento", gancho: "Tu quebranto abre el cielo", ganchosAlternativos: [],
@@ -10,7 +11,7 @@ const clip: ClipSpec = {
   versiculos: [{ ref: "Salmos 51:17", texto: "Los sacrificios de Dios son el espíritu quebrantado", en: 12, activo: true, confirmado: false }],
   puntaje: 92, razon: "", descripcion: "", hashtags: [],
   encuadre: { modo: "auto", x: 0.5, zoom: 1.25 }, subtitulos: { activos: true, estilo: "pop", tamano: "m", altura: 0.74 },
-  musica: { pista: "auto", volumen: 0.12 }, cierre: true, formatos: ["9:16"], estado: "sugerido",
+  ...PLAN3, cierre: true, formatos: ["9:16"], estado: "sugerido",
 };
 const proyecto = {
   id: "p", nombre: "Culto", creado: "2026-11-06T00:00:00Z", video: { ruta: "C:/v.mp4", nombre: "v.mp4", tamano: 1, duracion: 100 },

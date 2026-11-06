@@ -4,6 +4,7 @@ import { useState } from "react";
 import { vi } from "vitest";
 import { Inspector } from "../../src/renderer/componentes/Inspector";
 import type { ClipSpec } from "../../src/shared/tipos";
+import { PLAN3 } from "../ayuda/plan3";
 
 const base: ClipSpec = {
   id: "c", titulo: "El quebrantamiento", gancho: "Tu quebranto abre el cielo", ganchosAlternativos: ["¿Oras o solo hablas?", "Cuando te humillas, Dios responde"],
@@ -11,7 +12,7 @@ const base: ClipSpec = {
   versiculos: [{ ref: "Salmos 51:17", texto: "Los sacrificios de Dios son el espíritu quebrantado", en: 12, activo: true, confirmado: false }],
   puntaje: 92, razon: "Frase memorable.", descripcion: "¿Cuándo oraste así?", hashtags: ["#fe"],
   encuadre: { modo: "auto", x: 0.5, zoom: 1.25 }, subtitulos: { activos: true, estilo: "pop", tamano: "m", altura: 0.74 },
-  musica: { pista: "auto", volumen: 0.12 }, cierre: true, formatos: ["9:16", "4:5"], estado: "sugerido",
+  ...PLAN3, cierre: true, formatos: ["9:16", "4:5"], estado: "sugerido",
 };
 
 /** Envoltura con estado para ver los cambios como los vería el editor. */

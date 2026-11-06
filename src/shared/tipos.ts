@@ -20,6 +20,7 @@ export interface Proyecto {
   creado: string;
   video: VideoOrigen;
   rango: { inicio: number; fin: number };
+  predicador?: string;
   estado: EstadoProyecto;
   pasos: Record<NombrePaso, Paso>;
   videoDisponible?: boolean;
@@ -64,7 +65,39 @@ export interface Tarea {
   instantanea?: ClipSpec;
 }
 
-export interface Marca { nombre: string; color: string; invitacion: string; logo?: string }
+export type Animo = "reflexivo" | "esperanza" | "victoria" | "adoracion" | "tension";
+export const ANIMOS: readonly Animo[] = ["reflexivo", "esperanza", "victoria", "adoracion", "tension"];
+export type EstiloSub = "pop" | "caja" | "limpio" | "resaltado" | "karaoke" | "impacto" | "neon";
+export type ModoMusica = "auto" | "pista" | "pad" | "ninguna";
+
+export interface Redes {
+  instagram: { texto: string; hashtags: string[] };
+  tiktok: { texto: string; hashtags: string[] };
+  facebook: { texto: string };
+  youtube: { titulo: string; texto: string };
+}
+
+/** Lo que la iglesia guarda una vez y se aplica a cada clip nuevo. */
+export interface EstiloIglesia {
+  subtitulos: { estilo: EstiloSub; tamano: "s" | "m" | "l" };
+  musica: { modo: ModoMusica; volumen: number };
+  cortes: { pausas: boolean; muletillas: boolean };
+  efectos: { transicion: "destello" | "luz" | "ninguna"; grano: boolean; rotulo: boolean };
+  cierre: boolean;
+  formatos: Formato[];
+}
+
+export interface Marca {
+  nombre: string;
+  color: string;
+  invitacion: string;
+  logo?: string;
+  /** 0,5–1,5 (1 = tamaño normal). */
+  logoEscala: number;
+  redes: { instagram?: string; tiktok?: string; facebook?: string; youtube?: string };
+  predicador?: string;
+  estilo: EstiloIglesia;
+}
 
 export const CATEGORIAS = ["Enseñanza", "Reflexión", "Exhortación", "Esperanza", "Testimonio", "Llamado"] as const;
 export type Categoria = (typeof CATEGORIAS)[number];
@@ -87,8 +120,11 @@ export interface ClipSpec {
   descripcion: string;
   hashtags: string[];
   encuadre: { modo: "auto" | "fijo"; x: number; zoom: number };
-  subtitulos: { activos: boolean; estilo: "pop" | "caja" | "limpio"; tamano: "s" | "m" | "l"; altura: number };
-  musica: { pista: string | null; volumen: number };
+  subtitulos: { activos: boolean; estilo: EstiloSub; tamano: "s" | "m" | "l"; altura: number };
+  musica: { modo: ModoMusica; pista: string | null; animo: Animo; tonalidad: string; volumen: number };
+  cortes: EstiloIglesia["cortes"];
+  efectos: EstiloIglesia["efectos"];
+  redes: Redes;
   cierre: boolean;
   formatos: Formato[];
   estado: "sugerido" | "editado" | "exportado";

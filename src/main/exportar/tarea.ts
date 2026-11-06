@@ -5,7 +5,7 @@ import { construirComposicion } from "@shared/reel/composicion";
 import type { Caras, ClipSpec, Formato, Transcripcion } from "@shared/tipos";
 import type { Ejecutor } from "../cola/cola";
 import { dimensionesVideo, hayNvenc } from "../procesos/video";
-import { guardarJson, leerJson, leerMarca, leerProyecto } from "../proyectos/almacen";
+import { guardarJson, leerClips, leerJson, leerMarca, leerProyecto } from "../proyectos/almacen";
 import { carpetaProyecto } from "../rutas";
 import { prepararCarpeta } from "./preparar";
 import { renderizar as renderizarReal, type OpcionesRender } from "./render";
@@ -86,7 +86,7 @@ export function crearEjecutorExportar(deps: DepsExportar = {}): Ejecutor {
         senal: ctx.senal,
         alProgreso: (pct) => ctx.alProgreso(Math.max(2, Math.min(99, pct)), nombre),
       });
-      const clips = (await leerJson<ClipSpec[]>(t.proyectoId, "clips.json")) ?? [];
+      const clips = await leerClips(t.proyectoId);
       await guardarJson(t.proyectoId, "clips.json", clips.map((c) => (c.id === clip.id ? { ...c, estado: "exportado" } : c)));
       ctx.alProgreso(100, nombre);
     } finally {

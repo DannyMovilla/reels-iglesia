@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
-import type { ClipSpec, Transcripcion } from "@shared/tipos";
+import { completarClip, ESTILO_POR_DEFECTO } from "@shared/clip";
+import type { ClipSpec, EstiloIglesia, Transcripcion } from "@shared/tipos";
 import { formatearReferencia } from "../biblia/biblia";
 import type { ClipClaude } from "./esquema";
 
@@ -38,7 +39,7 @@ export function ubicarFrase(ws: Palabra[], frase: string, a: number, b: number):
   return { s: cand[mejor].s, e: cand[ult].e, frase: cand.slice(mejor, ult + 1).map((w) => w.t).join(" ") };
 }
 
-export function normalizarClips(r: ClipClaude[], t: Transcripcion): ClipSpec[] {
+export function normalizarClips(r: ClipClaude[], t: Transcripcion, estilo: EstiloIglesia = ESTILO_POR_DEFECTO): ClipSpec[] {
   const ws = palabras(t);
   const clips: ClipSpec[] = [];
   for (const c of r) {
@@ -54,7 +55,7 @@ export function normalizarClips(r: ClipClaude[], t: Transcripcion): ClipSpec[] {
       const cita = ubicarFrase(ws, v.cita.split(/\s+/).slice(0, 8).join(" "), inicio, fin);
       return { ref: formatearReferencia(v.ref), texto: v.texto.trim(), en: cita ? Math.round((cita.s - inicio) * 100) / 100 : 3, activo: true, confirmado: false };
     });
-    clips.push({
+    clips.push(completarClip({
       id: randomUUID(),
       titulo: c.titulo,
       gancho: c.gancho,
@@ -70,12 +71,12 @@ export function normalizarClips(r: ClipClaude[], t: Transcripcion): ClipSpec[] {
       descripcion: c.descripcion,
       hashtags: c.hashtags,
       encuadre: { modo: "auto", x: 0.5, zoom: 1.25 },
-      subtitulos: { activos: true, estilo: "pop", tamano: "m", altura: 0.74 },
-      musica: { pista: "auto", volumen: 0.12 },
-      cierre: true,
-      formatos: ["9:16", "4:5"],
+      subtitulos: { activos: true, estilo: estilo.subtitulos.estilo, tamano: estilo.subtitulos.tamano, altura: 0.74 },
+      musica: { modo: estilo.musica.modo, pista: null, volumen: estilo.musica.volumen },
+      cierre: estilo.cierre,
+      formatos: [...estilo.formatos],
       estado: "sugerido",
-    });
+    }, estilo));
   }
   return clips.sort((x, y) => y.puntaje - x.puntaje);
 }

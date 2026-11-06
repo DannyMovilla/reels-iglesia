@@ -9,7 +9,7 @@ import type { Cola } from "./cola/cola";
 import { dimensionesVideo, duracionVideo } from "./procesos/video";
 import { carpetaProyecto, raizApp } from "./rutas";
 import { esquemaVista, registrarComposicion, servirVista } from "./vista";
-import { crearProyecto, guardarClip, leerJson, leerMarca, leerProyecto, listarExportados, listarProyectos } from "./proyectos/almacen";
+import { crearProyecto, guardarClip, leerClips, leerJson, leerMarca, leerProyecto, listarExportados, listarProyectos } from "./proyectos/almacen";
 
 export interface DepsIpc {
   cola: Cola;
@@ -91,7 +91,7 @@ export function registrarIpc(deps: DepsIpc): void {
   ipcMain.handle("proyectos:crear", (_e, d: DatosNuevoProyecto) => crearProyecto(d));
   ipcMain.handle("proyectos:listar", () => listarProyectos());
   ipcMain.handle("proyectos:leer", (_e, id: string) => leerProyecto(id));
-  ipcMain.handle("proyectos:clips", async (_e, id: string) => (await leerJson<ClipSpec[]>(id, "clips.json")) ?? []);
+  ipcMain.handle("proyectos:clips", (_e, id: string) => leerClips(id));
   ipcMain.handle("proyectos:transcripcion", (_e, id: string) => leerJson<Transcripcion>(id, "transcripcion.json"));
   ipcMain.handle("proyectos:caras", (_e, id: string) => leerJson<Caras>(id, "caras.json"));
   ipcMain.handle("proyectos:guardarClip", (_e, id: string, clip: ClipSpec) => guardarClip(id, clip));
@@ -103,7 +103,7 @@ export function registrarIpc(deps: DepsIpc): void {
   });
   ipcMain.handle("proyectos:procesar", (_e, id: string, desde?: TipoTarea) => void cola.agregar(id, desde ?? "transcribir"));
   ipcMain.handle("exportar:encolar", async (_e, id: string, clipIds: string[], formatos?: Formato[]) => {
-    const clips = (await leerJson<ClipSpec[]>(id, "clips.json")) ?? [];
+    const clips = await leerClips(id);
     for (const c of clips.filter((x) => clipIds.includes(x.id))) {
       for (const formato of formatos ?? c.formatos) cola.agregar(id, "exportar", { clipId: c.id, formato, instantanea: c });
     }

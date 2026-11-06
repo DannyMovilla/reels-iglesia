@@ -6,6 +6,7 @@ import { construirComposicion, type EntradaComposicion } from "../../../src/shar
 import { partesDelReel } from "../../../src/shared/reel/tiempo";
 import { ventanaVersiculo } from "../../../src/shared/reel/versiculo";
 import type { Caras, ClipSpec, Formato, Transcripcion } from "../../../src/shared/tipos";
+import { MARCA_PLAN3, PLAN3 } from "../../ayuda/plan3";
 
 const muestra: Transcripcion = JSON.parse(readFileSync(join(resolve(__dirname, "../../fixtures"), "transcripcion-muestra.json"), "utf8"));
 const caras: Caras = Array.from({ length: 160 }, (_, i) => [i * 0.5, [[0.5, 0.25, 0.06, 0.9]]]);
@@ -16,13 +17,13 @@ const clip = (extra: Partial<ClipSpec> = {}): ClipSpec => ({
   inicio: 30.93, fin: 63.46, apertura: { activa: true, inicio: 39.02, fin: 44.8, frase: "ese quebrantamiento" },
   palabrasClave: ["quebrantamiento"], versiculos: [{ ref: "Salmos 51:17", texto: TEXTO, en: 16.29, activo: true, confirmado: true }],
   puntaje: 90, razon: "", descripcion: "", hashtags: [], encuadre: { modo: "auto", x: 0.5, zoom: 1.25 },
-  subtitulos: { activos: true, estilo: "pop", tamano: "m", altura: 0.74 }, musica: { pista: "auto", volumen: 0.12 },
+  subtitulos: { activos: true, estilo: "pop", tamano: "m", altura: 0.74 }, ...PLAN3,
   cierre: true, formatos: ["9:16"], estado: "sugerido", ...extra,
 });
 
 const entrada = (formato: Formato = "9:16", c = clip()): EntradaComposicion => ({
   clip: c, transcripcion: muestra, caras, formato, dimensiones: { ancho: 1280, alto: 720 },
-  marca: { nombre: "Iglesia Familia", color: "#f5c542", invitacion: "Síguenos · Domingos 10:00 AM" },
+  marca: { nombre: "Iglesia Familia", color: "#f5c542", invitacion: "Síguenos · Domingos 10:00 AM", ...MARCA_PLAN3 },
   fuenteVideo: "C:/Descargas/culto (1280p).mp4", recursos: { gsap: "recursos/gsap.min.js", fuentes: "recursos/fuentes" }, modo: "render",
 });
 

@@ -12,5 +12,5 @@
     "baseUrl": ".",
     "paths": { "@shared/*": ["src/shared/*"] }
   },
-  "include": ["electron.vite.config.ts", "vitest.workspace.ts", "playwright.config.ts", "src/main/**/*", "src/preload/**/*", "src/shared/**/*", "tests/main/**/*", "tests/shared/**/*", "tests/integracion/**/*", "tests/e2e/**/*"]
+  "include": ["electron.vite.config.ts", "vitest.workspace.ts", "playwright.config.ts", "src/main/**/*", "src/preload/**/*", "src/shared/**/*", "tests/main/**/*", "tests/shared/**/*", "tests/integracion/**/*", "tests/e2e/**/*", "tests/ayuda/**/*"]
 }

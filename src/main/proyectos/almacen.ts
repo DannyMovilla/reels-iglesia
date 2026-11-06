@@ -1,6 +1,7 @@
 import { existsSync } from "node:fs";
 import { mkdir, readdir, readFile, rename, rm, stat, writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import { completarClip, ESTILO_POR_DEFECTO } from "@shared/clip";
 import type { ClipSpec, Marca, Proyecto, VideoOrigen } from "@shared/tipos";
 import { validarRango } from "@shared/validar";
 import { carpetaDatos, carpetaProyecto, carpetaProyectos } from "../rutas";
@@ -102,15 +103,27 @@ export async function guardarJson(id: string, archivo: ArchivoProyecto, datos: u
   await escribirAtomico(join(carpetaProyecto(id), archivo), datos);
 }
 
-export const MARCA_POR_DEFECTO: Marca = { nombre: "Mi iglesia", color: "#f2b544", invitacion: "Síguenos" };
+export const MARCA_POR_DEFECTO: Marca = {
+  nombre: "Mi iglesia", color: "#f2b544", invitacion: "Síguenos", logoEscala: 1, redes: {}, estilo: ESTILO_POR_DEFECTO,
+};
 
-/** Marca de la iglesia (marca.json en la carpeta de datos), con valores por defecto mientras no exista la pantalla Marca. */
+/** Marca de la iglesia (marca.json en la carpeta de datos); lo que falte (marcas de versiones anteriores) va por defecto. */
 export async function leerMarca(): Promise<Marca> {
+  let guardada: Partial<Marca> = {};
   try {
-    return { ...MARCA_POR_DEFECTO, ...(JSON.parse(await readFile(join(carpetaDatos(), "marca.json"), "utf8")) as Partial<Marca>) };
+    guardada = JSON.parse(await readFile(join(carpetaDatos(), "marca.json"), "utf8")) as Partial<Marca>;
   } catch {
-    return { ...MARCA_POR_DEFECTO };
+    /* sin marca todavía */
   }
+  const estilo = { ...ESTILO_POR_DEFECTO, ...(guardada.estilo ?? {}) };
+  return structuredClone({ ...MARCA_POR_DEFECTO, ...guardada, redes: guardada.redes ?? {}, estilo });
+}
+
+/** clips.json completado al formato actual (clips de versiones anteriores incluidos). */
+export async function leerClips(proyectoId: string): Promise<ClipSpec[]> {
+  const clips = (await leerJson<unknown[]>(proyectoId, "clips.json")) ?? [];
+  const { estilo } = await leerMarca();
+  return clips.map((c) => completarClip(c, estilo));
 }
 
 /** Reemplaza un clip por id en clips.json (un clip que no existe se ignora). */

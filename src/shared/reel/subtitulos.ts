@@ -1,11 +1,14 @@
-import type { ClipSpec } from "../tipos";
+import type { ClipSpec, EstiloSub } from "../tipos";
 import type { Palabra, Parte } from "./tiempo";
 import { type Ventana, ventanaVersiculo } from "./versiculo";
 
 export interface PalabraBloque { texto: string; desde: number; hasta: number; clave: boolean }
 export interface Bloque { desde: number; hasta: number; palabras: PalabraBloque[] }
 
-const LIMITES = { pop: { palabras: 3, letras: 16 }, caja: { palabras: 3, letras: 16 }, limpio: { palabras: 6, letras: 30 } } as const;
+const CORTO = { palabras: 3, letras: 16 };
+const LIMITES: Record<EstiloSub, { palabras: number; letras: number }> = {
+  pop: CORTO, caja: CORTO, limpio: { palabras: 6, letras: 30 }, resaltado: CORTO, karaoke: CORTO, impacto: CORTO, neon: CORTO,
+};
 const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9ñ]+/g, "");
 
 /** Mientras se ve la tarjeta del versículo no hay subtítulos: el que entra se corta y si queda < 0,3 s se omite. */

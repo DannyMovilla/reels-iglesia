@@ -8,6 +8,7 @@ import { renderizar } from "../../src/main/exportar/render";
 import { construirComposicion } from "../../src/shared/reel/composicion";
 import { duracionReel } from "../../src/shared/reel/tiempo";
 import type { ClipSpec, Transcripcion } from "../../src/shared/tipos";
+import { MARCA_PLAN3, PLAN3, SIN_MUSICA } from "../ayuda/plan3";
 
 const RAIZ = resolve(__dirname, "../..");
 
@@ -31,10 +32,10 @@ test("exporta un clip de 15 s en 9:16 desde el video original", async () => {
     id: "c", titulo: "Prueba", gancho: "La fidelidad de Dios", ganchosAlternativos: [], categoria: "Esperanza", inicio: t.segmentos[0].s, fin: 15,
     apertura: null, palabrasClave: ["Dios"], versiculos: [], puntaje: 80, razon: "", descripcion: "", hashtags: [],
     encuadre: { modo: "fijo", x: 0.5, zoom: 1.25 }, subtitulos: { activos: true, estilo: "pop", tamano: "m", altura: 0.74 },
-    musica: { pista: null, volumen: 0 }, cierre: true, formatos: ["9:16"], estado: "sugerido",
+    ...PLAN3, musica: SIN_MUSICA, cierre: true, formatos: ["9:16"], estado: "sugerido",
   };
   const comp = construirComposicion({ clip, transcripcion: t, caras: null, formato: "9:16", dimensiones: { ancho: 1280, alto: 720 },
-    marca: { nombre: "Mi iglesia", color: "#f2b544", invitacion: "Síguenos" }, fuenteVideo: video.replace(/\\/g, "/"),
+    marca: { nombre: "Mi iglesia", color: "#f2b544", invitacion: "Síguenos", ...MARCA_PLAN3 }, fuenteVideo: video.replace(/\\/g, "/"),
     recursos: { gsap: "recursos/gsap.min.js", fuentes: "recursos/fuentes" }, modo: "render" });
   const dir = mkdtempSync(join(tmpdir(), "reels-exp-"));
   await prepararCarpeta(dir, comp.html);

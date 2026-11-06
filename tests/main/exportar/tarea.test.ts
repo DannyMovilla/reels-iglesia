@@ -6,6 +6,7 @@ import { crearEjecutorExportar, nombreSalida, type DepsExportar } from "../../..
 import { crearProyecto, guardarJson, leerJson } from "../../../src/main/proyectos/almacen";
 import { carpetaProyecto } from "../../../src/main/rutas";
 import type { ClipSpec, Tarea } from "../../../src/shared/tipos";
+import { PLAN3, SIN_MUSICA } from "../../ayuda/plan3";
 
 const FIX = resolve(__dirname, "../../fixtures");
 const ctx = () => ({ alProgreso: () => {}, senal: new AbortController().signal });
@@ -45,7 +46,7 @@ describe("ejecutor exportar", () => {
       id: "c1", titulo: "El quebrantamiento", gancho: "Original", ganchosAlternativos: [], categoria: "Exhortación", inicio: 30.93, fin: 63.46,
       apertura: null, palabrasClave: [], versiculos: [], puntaje: 90, razon: "", descripcion: "", hashtags: [],
       encuadre: { modo: "fijo", x: 0.5, zoom: 1.25 }, subtitulos: { activos: true, estilo: "pop", tamano: "m", altura: 0.74 },
-      musica: { pista: null, volumen: 0 }, cierre: true, formatos: ["9:16"], estado: "sugerido",
+      ...PLAN3, musica: SIN_MUSICA, cierre: true, formatos: ["9:16"], estado: "sugerido",
     };
     await guardarJson(id, "clips.json", [clip]);
     llamadas = [];
