@@ -8,8 +8,17 @@ export function carpetaDatos(): string {
   return join(electron.app.getPath("documents"), "Reels Iglesia");
 }
 
-/** Raíz de la app: el código compilado vive en <raíz>/out/main. (El instalador del plan 3 la ajustará.) */
-export const raizApp = (): string => resolve(__dirname, "..", "..");
+interface Entorno { empaquetada: boolean; recursos: string }
+const entornoActual = (): Entorno => ({ empaquetada: !!electron.app?.isPackaged, recursos: process.resourcesPath ?? "" });
+
+/**
+ * Donde están los node_modules que se ejecutan fuera de Electron (CLI de HyperFrames, GSAP, fuentes):
+ * en desarrollo el repositorio; instalada, resources/app.asar.unpacked (asarUnpack del instalador).
+ */
+export const raizApp = (e: Entorno = entornoActual()): string => (e.empaquetada ? join(e.recursos, "app.asar.unpacked") : resolve(__dirname, "..", ".."));
+
+/** Donde están python/ y modelos/: el repositorio en desarrollo; resources/ instalada (extraResources). */
+export const raizRecursos = (e: Entorno = entornoActual()): string => (e.empaquetada ? e.recursos : raizApp(e));
 /** Entorno de Python que prepara el asistente: en %LOCALAPPDATA% (la carpeta de la app instalada no se puede escribir). */
 export const rutaEntorno = (): string => join(process.env.LOCALAPPDATA ?? electron.app.getPath("userData"), "Reels Iglesia", "venv");
 
@@ -19,7 +28,7 @@ export function rutaPython(): string {
   const desarrollo = join(raizApp(), ".venv", "Scripts", "python.exe");
   return existsSync(desarrollo) ? desarrollo : join(rutaEntorno(), "Scripts", "python.exe");
 }
-export const rutaTranscriptor = (): string => join(raizApp(), "python", "transcribir.py");
+export const rutaTranscriptor = (): string => join(raizRecursos(), "python", "transcribir.py");
 
 export const carpetaProyectos = (): string => join(carpetaDatos(), "proyectos");
 export const carpetaProyecto = (id: string): string => join(carpetaProyectos(), id);

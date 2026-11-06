@@ -6,7 +6,7 @@ import type { Animo, ClipSpec, Proyecto } from "@shared/tipos";
 import { ejecutarConProgreso } from "../procesos/lineas";
 import { duracionVideo } from "../procesos/video";
 import { escribirAtomico } from "../proyectos/almacen";
-import { carpetaDatos, carpetaProyecto, raizApp, rutaPython } from "../rutas";
+import { carpetaDatos, carpetaProyecto, raizRecursos, rutaPython } from "../rutas";
 
 export interface DepsMusica {
   duracion(ruta: string): Promise<number>;
@@ -106,7 +106,7 @@ export async function musicaParaClip(clip: ClipSpec, proyecto: Proyecto, duracio
 export const depsReales: DepsMusica = {
   duracion: (ruta) => duracionVideo(ruta),
   async generarPad(duracion, tonalidad, animo, semilla, destino) {
-    const r = await ejecutarConProgreso(rutaPython(), [join(raizApp(), "python", "pads.py"), "--duracion", String(duracion), "--tonalidad", tonalidad,
+    const r = await ejecutarConProgreso(rutaPython(), [join(raizRecursos(), "python", "pads.py"), "--duracion", String(duracion), "--tonalidad", tonalidad,
       "--animo", animo, "--semilla", String(semilla), "--salida", destino], { env: { ...process.env, PYTHONUTF8: "1" } });
     if (r.codigo !== 0) throw new Error("No se pudo crear la música de fondo (pad).");
   },

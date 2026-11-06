@@ -25,3 +25,5 @@ design/assets/
 out/
 test-results/
 playwright-report/
+
+dist/

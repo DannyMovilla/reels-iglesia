@@ -9,7 +9,7 @@ import { crearEjecutorExportar } from "./exportar/tarea";
 import { crearEjecutores, marcarInterrumpidos } from "./pipeline/tareas";
 import { resolverComandoClaude } from "./sistema/claude-cmd";
 import { protegerNavegacion } from "./ventana";
-import { carpetaDatos, raizApp, rutaEntorno, rutaPython, rutaTranscriptor } from "./rutas";
+import { carpetaDatos, raizApp, raizRecursos, rutaEntorno, rutaPython, rutaTranscriptor } from "./rutas";
 import { argsWinget, prepararEntorno } from "./sistema/preparar";
 import { ejecutarConProgreso } from "./procesos/lineas";
 
@@ -64,7 +64,7 @@ app.whenReady().then(async () => {
       if (accion === "crear-venv") {
         const cli = join(raizApp(), "node_modules", "hyperframes", "bin", "hyperframes.mjs");
         return prepararEntorno({
-          destino: rutaEntorno(), requisitos: join(raizApp(), "python", "requirements.txt"),
+          destino: rutaEntorno(), requisitos: join(raizRecursos(), "python", "requirements.txt"),
           navegador: [process.execPath, [cli, "browser", "ensure"]], senal: new AbortController().signal,
           alProgreso: (pct, texto) => alProgreso({ pct, texto }),
         });
