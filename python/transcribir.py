@@ -126,8 +126,20 @@ def dimensiones_video(ruta: str) -> tuple[int, int]:
     return int(w), int(h)
 
 
+PROGRESO_JSON = False
+
+
+def emitir_progreso(etapa: str, pct: float, texto: str | None = None) -> None:
+    """Una línea JSON por stdout que la app de escritorio interpreta como progreso."""
+    datos = {"etapa": etapa, "pct": round(float(pct), 1)}
+    if texto:
+        datos["texto"] = texto
+    print(json.dumps(datos, ensure_ascii=False), flush=True)
+
+
 def ruta_modelo_caras() -> str:
-    carpeta = os.path.join(os.path.dirname(os.path.abspath(__file__)), "modelos")
+    # El modelo vive en <repo>/modelos (este script está en <repo>/python).
+    carpeta = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "modelos")
     ruta = os.path.join(carpeta, "face_detection_yunet_2023mar.onnx")
     if not os.path.isfile(ruta):
         import urllib.request
@@ -175,9 +187,16 @@ def detectar_caras(video: str, inicio: float, fin: float, fps: float = 2.0, anch
         salida.append([round(inicio + i / fps, 2), lista])
         i += 1
         if i % 20 == 0:
-            print(f"\r  Caras: {min(100, i / max(total, 1) * 100):5.1f}%", end="", flush=True)
+            pct = min(100, i / max(total, 1) * 100)
+            if PROGRESO_JSON:
+                emitir_progreso("caras", pct)
+            else:
+                print(f"\r  Caras: {pct:5.1f}%", end="", flush=True)
     proc.wait()
-    print(f"\r  Caras: 100.0%  ({time.time() - t0:.0f} s)", flush=True)
+    if PROGRESO_JSON:
+        emitir_progreso("caras", 100)
+    else:
+        print(f"\r  Caras: 100.0%  ({time.time() - t0:.0f} s)", flush=True)
     return salida
 
 
@@ -212,13 +231,50 @@ def transcribir(video: str, inicio: float, fin: float, args):
             "w": palabras,
         })
         pct = min(100, seg.end / dur * 100)
-        print(f"\r  {pct:5.1f}%  [{a_srt(seg.start + inicio)[:8]}] {seg.text.strip()[:60]:<60}", end="", flush=True)
-    print(f"\nTranscripción lista en {time.time() - t0:.0f} s.", flush=True)
+        if PROGRESO_JSON:
+            emitir_progreso("transcripcion", pct, seg.text.strip()[:60])
+        else:
+            print(f"\r  {pct:5.1f}%  [{a_srt(seg.start + inicio)[:8]}] {seg.text.strip()[:60]:<60}", end="", flush=True)
+    if PROGRESO_JSON:
+        emitir_progreso("transcripcion", 100)
+    else:
+        print(f"\nTranscripción lista en {time.time() - t0:.0f} s.", flush=True)
     return resultado, nombre_modelo, disp
 
 
-def main() -> None:
-    p = argparse.ArgumentParser(description="Transcribe la prédica para Púlpito Clips")
+def guardar_json(ruta: str, datos) -> None:
+    tmp = ruta + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(datos, f, ensure_ascii=False, separators=(",", ":"))
+    os.replace(tmp, ruta)
+
+
+def main_salida(args, video: str) -> None:
+    """Modo de la app: escribe transcripcion.json y/o caras.json en --salida."""
+    os.makedirs(args.salida, exist_ok=True)
+    total = duracion_video(video)
+    inicio = a_segundos(args.inicio) or 0.0
+    fin = min(a_segundos(args.fin) or total, total)
+    if fin <= inicio:
+        raise SystemExit("--fin tiene que ser mayor que --inicio")
+    if not args.solo_caras:
+        resultado, nombre_modelo, disp = transcribir(video, inicio, fin, args)
+        guardar_json(os.path.join(args.salida, "transcripcion.json"), {
+            "formato": "pulpito-transcripcion/1",
+            "video": os.path.basename(video),
+            "tamano": os.path.getsize(video),
+            "inicio": round(inicio, 2),
+            "fin": round(fin, 2),
+            "modelo": nombre_modelo,
+            "dispositivo": disp,
+            "segmentos": resultado,
+        })
+    if args.solo_caras or not (args.solo_transcripcion or args.sin_caras):
+        guardar_json(os.path.join(args.salida, "caras.json"), detectar_caras(video, inicio, fin))
+
+
+def crear_parser() -> argparse.ArgumentParser:
+    p = argparse.ArgumentParser(description="Transcribe la prédica para Reels Iglesia")
     p.add_argument("video", help="Ruta del video del culto")
     p.add_argument("--inicio", help="Dónde empieza la prédica, ej. 0:42:10", default="0")
     p.add_argument("--fin", help="Dónde termina la prédica (opcional)")
@@ -226,12 +282,24 @@ def main() -> None:
     p.add_argument("--dispositivo", choices=["auto", "cuda", "cpu"], default="auto")
     p.add_argument("--sin-caras", action="store_true", help="No buscar caras (el encuadre se hace a mano)")
     p.add_argument("--solo-caras", action="store_true",
-                   help="No vuelve a transcribir: agrega las caras al .pulpito.json que ya existe")
-    args = p.parse_args()
+                   help="Solo busca caras (con --salida usa --inicio/--fin; sin --salida, el .pulpito.json existente)")
+    p.add_argument("--solo-transcripcion", action="store_true", help="Solo transcribe, sin buscar caras")
+    p.add_argument("--salida", help="Carpeta donde escribir transcripcion.json / caras.json (modo app)")
+    p.add_argument("--progreso-json", action="store_true", help="Progreso como líneas JSON (modo app)")
+    return p
+
+
+def main() -> None:
+    global PROGRESO_JSON
+    args = crear_parser().parse_args()
+    PROGRESO_JSON = args.progreso_json
 
     video = os.path.abspath(args.video)
     if not os.path.isfile(video):
         raise SystemExit(f"No encuentro el video: {video}")
+    if args.salida:
+        main_salida(args, video)
+        return
     base = os.path.splitext(video)[0]
 
     if args.solo_caras:
