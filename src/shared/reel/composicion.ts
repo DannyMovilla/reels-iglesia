@@ -165,7 +165,7 @@ export function construirComposicion(e: EntradaComposicion): { html: string; dur
 }
 
 /** Tarjeta de cierre: logo (sin recortar, tamaño según la marca) o inicial, nombre e invitación. */
-function agregarCierre(el: string[], js: string[], marca: Marca, recursos: EntradaComposicion["recursos"], inicio: number, dur: number): void {
+export function agregarCierre(el: string[], js: string[], marca: Marca, recursos: EntradaComposicion["recursos"], inicio: number, dur: number): void {
   const lado = Math.round(260 * Math.min(1.5, Math.max(0.5, marca.logoEscala ?? 1)));
   const logo = recursos.logo
     ? `<div class="logo con-imagen" style="width:${lado}px;height:${lado}px"><img src="${esc(recursos.logo)}" alt=""></div>`
@@ -189,8 +189,8 @@ export function construirMuestraMarca(e: { marca: Marca; recursos: EntradaCompos
   return { html: documento(W, H, duracion, css, e.recursos, e.modo, el, js), duracion, alto: H };
 }
 
-function documento(W: number, H: number, duracion: number, css: string, recursos: EntradaComposicion["recursos"], modo: "vista" | "render", el: string[], js: string[]): string {
-  const runtime = modo === "vista" && recursos.runtime ? `<script src="${recursos.runtime}"></script>\n` : "";
+export function documento(W: number, H: number, duracion: number, css: string, recursos: EntradaComposicion["recursos"], modo: "vista" | "render", el: string[], js: string[], scripts: string[] = []): string {
+  const runtime = (modo === "vista" && recursos.runtime ? `<script src="${recursos.runtime}"></script>\n` : "") + scripts.map((x) => `<script src="${x}"></script>\n`).join("");
   return `<!doctype html>
 <html lang="es">
 <head>
