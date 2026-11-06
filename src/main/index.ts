@@ -1,7 +1,7 @@
 import { join } from "node:path";
 import { app, BrowserWindow, ipcMain } from "electron";
-import type { EstadoSistema } from "@shared/api";
 import { analizarProyecto } from "./claude/analizar";
+import { abrirInicioSesionClaude, verificarSistema } from "./sistema/verificar";
 import { Cola } from "./cola/cola";
 import { registrarEsquemaVideo, registrarIpc } from "./ipc";
 import { crearEjecutores } from "./pipeline/tareas";
@@ -29,7 +29,7 @@ function crearVentana(): BrowserWindow {
   return v;
 }
 
-const PENDIENTE = { ok: false, detalle: "Verificación pendiente" };
+const comandoClaude = (): string => process.env.REELS_CLAUDE_COMANDO ?? "claude";
 
 app.whenReady().then(async () => {
   let cola: Cola;
@@ -46,8 +46,10 @@ app.whenReady().then(async () => {
   registrarIpc({
     cola,
     ventana: () => ventana,
-    verificarSistema: async (): Promise<EstadoSistema> => ({ ffmpeg: PENDIENTE, python: PENDIENTE, gpu: PENDIENTE, claude: PENDIENTE }),
-    accionSistema: async () => {},
+    verificarSistema: () => verificarSistema({ python: rutaPython(), claude: comandoClaude() }),
+    accionSistema: async (accion) => {
+      if (accion === "iniciar-sesion-claude") abrirInicioSesionClaude(comandoClaude());
+    },
   });
   ipcMain.on("ventana:minimizar", () => ventana?.minimize());
   ipcMain.on("ventana:maximizar", () => (ventana?.isMaximized() ? ventana.unmaximize() : ventana?.maximize()));

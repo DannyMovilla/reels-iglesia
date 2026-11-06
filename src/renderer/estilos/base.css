@@ -42,4 +42,19 @@ button { cursor: pointer; }
 .riel .separador { width: 28px; height: 1px; background: var(--line); margin: 8px 0; }
 .riel .pronto { font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3); margin-bottom: 2px; }
 
+/* pantallas de contenido */
+.pantalla { max-width: 980px; margin: 0 auto; padding: 28px 32px 40px; display: flex; flex-direction: column; gap: 16px; }
+.pantalla-cabeza { display: flex; align-items: center; gap: 12px; }
+.pantalla-cabeza h1 { font: 600 22px var(--font-ui); letter-spacing: -0.01em; flex: 1; }
+.ayuda { color: var(--text-2); max-width: 65ch; }
+.chequeos { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.chequeo { display: grid; grid-template-columns: 28px 1fr auto; gap: 12px; align-items: center; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--bg-1); }
+.chequeo b { display: block; font-weight: 600; }
+.chequeo span { color: var(--text-2); }
+.chequeo-icono { color: var(--text-3); display: grid; place-items: center; }
+.chequeo.ok .chequeo-icono { color: var(--ok); }
+.chequeo.mal .chequeo-icono { color: var(--warn); }
+.girar { animation: girar 0.9s linear infinite; }
+@keyframes girar { to { transform: rotate(360deg); } }
+
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
