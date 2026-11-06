@@ -17,3 +17,11 @@ node_modules/
 
 # Imagenes del culto usadas en maquetas
 design/assets/
+
+# Registro de ejecución de planes
+.superpowers/
+
+# Compilacion y reportes de pruebas
+out/
+test-results/
+playwright-report/

@@ -1,0 +1,27 @@
+/* Tokens de diseño de Reels Iglesia (fuente: design/maqueta-editor.html). */
+:root {
+  --bg-0: #0a0c16;            /* fondo de la app */
+  --bg-1: #10131f;            /* paneles */
+  --bg-2: #171b2b;            /* superficies elevadas */
+  --bg-3: #20263b;            /* hover / inputs */
+  --line: rgba(255, 255, 255, 0.07);
+  --line-2: rgba(255, 255, 255, 0.12);
+  --text: #eceef6;
+  --text-2: #a4aac3;
+  --text-3: #6d7391;
+  --luz: #f2b544;             /* acento principal: acciones y marca */
+  --luz-ink: #1c1405;
+  --luz-soft: rgba(242, 181, 68, 0.13);
+  --cielo: #4fd1c5;           /* línea de tiempo, cabezal, IA */
+  --cielo-soft: rgba(79, 209, 197, 0.14);
+  --ok: #4ade80;
+  --warn: #fbbf24;
+  --bad: #f87171;
+  --font-ui: "Geist", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, Consolas, monospace;
+  --font-brand: "Fraunces", Georgia, serif;
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+  color-scheme: dark;
+}
