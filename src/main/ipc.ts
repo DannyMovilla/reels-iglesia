@@ -23,22 +23,35 @@ export function registrarEsquemaVideo(): void {
   protocol.registerSchemesAsPrivileged([{ scheme: "reels-video", privileges: { stream: true, supportFetchAPI: true, bypassCSP: false } }]);
 }
 
-/** reels-video://proyecto/<id> sirve el video original, con soporte de rangos para poder adelantar. */
+/** Videos que la persona eligió con el diálogo: solo esos se pueden servir por ruta. */
+const elegidos = new Set<string>();
+
+/**
+ * reels-video://proyecto/<id> sirve el video original de un proyecto;
+ * reels-video://archivo/<ruta> sirve un video elegido con el diálogo. Con soporte de rangos para adelantar.
+ */
 function servirVideo(): void {
   protocol.handle("reels-video", async (req) => {
-    const id = decodeURIComponent(new URL(req.url).pathname.replace(/^\//, ""));
-    const p = await leerProyecto(id);
-    const { size } = await stat(p.video.ruta);
-    const tipo = MIME[extname(p.video.ruta).toLowerCase()] ?? "video/mp4";
+    const url = new URL(req.url);
+    const valor = decodeURIComponent(url.pathname.replace(/^\//, ""));
+    let ruta: string;
+    if (url.hostname === "archivo") {
+      if (!elegidos.has(valor)) return new Response("No permitido", { status: 403 });
+      ruta = valor;
+    } else {
+      ruta = (await leerProyecto(valor)).video.ruta;
+    }
+    const { size } = await stat(ruta);
+    const tipo = MIME[extname(ruta).toLowerCase()] ?? "video/mp4";
     const rango = /bytes=(\d*)-(\d*)/.exec(req.headers.get("range") ?? "");
     if (!rango) {
-      return new Response(Readable.toWeb(createReadStream(p.video.ruta)) as ReadableStream, {
+      return new Response(Readable.toWeb(createReadStream(ruta)) as ReadableStream, {
         status: 200, headers: { "Content-Type": tipo, "Content-Length": String(size), "Accept-Ranges": "bytes" },
       });
     }
     const ini = rango[1] ? Number(rango[1]) : 0;
     const fin = rango[2] ? Math.min(Number(rango[2]), size - 1) : size - 1;
-    return new Response(Readable.toWeb(createReadStream(p.video.ruta, { start: ini, end: fin })) as ReadableStream, {
+    return new Response(Readable.toWeb(createReadStream(ruta, { start: ini, end: fin })) as ReadableStream, {
       status: 206,
       headers: { "Content-Type": tipo, "Content-Length": String(fin - ini + 1), "Content-Range": `bytes ${ini}-${fin}/${size}`, "Accept-Ranges": "bytes" },
     });
@@ -58,13 +71,17 @@ export function registrarIpc(deps: DepsIpc): void {
   cola.on("cambio", (t) => deps.ventana()?.webContents.send("tareas:cambio", t));
 
   ipcMain.handle("video:elegir", async () => {
-    const r = await dialog.showOpenDialog({
-      title: "Elige el video del culto",
-      properties: ["openFile"],
-      filters: [{ name: "Videos", extensions: ["mp4", "mov", "m4v", "mkv", "webm"] }],
-    });
-    if (r.canceled || !r.filePaths[0]) return null;
-    const ruta = r.filePaths[0];
+    let ruta = process.env.REELS_VIDEO_PRUEBA; // solo pruebas E2E: el diálogo nativo no se puede automatizar
+    if (!ruta) {
+      const r = await dialog.showOpenDialog({
+        title: "Elige el video del culto",
+        properties: ["openFile"],
+        filters: [{ name: "Videos", extensions: ["mp4", "mov", "m4v", "mkv", "webm"] }],
+      });
+      if (r.canceled || !r.filePaths[0]) return null;
+      ruta = r.filePaths[0];
+    }
+    elegidos.add(ruta);
     const st = await stat(ruta);
     return { ruta, tamano: st.size, modificado: st.mtimeMs, duracion: await duracion(ruta) };
   });

@@ -6,6 +6,21 @@ export function formatoTiempo(seg: number): string {
   return h ? `${h}:${String(m).padStart(2, "0")}:${ss}` : `${m}:${ss}`;
 }
 
+/** "1:44:44" / "44:44" / "31" → segundos (NaN si no es un tiempo). */
+export function leerTiempo(texto: string): number {
+  const t = texto.trim().replace(",", ".");
+  if (!t) return NaN;
+  const partes = t.split(":").map(Number);
+  if (partes.length > 3 || partes.some((p) => !Number.isFinite(p) || p < 0)) return NaN;
+  return partes.reduce((a, p) => a * 60 + p, 0);
+}
+
+/** "1:44:44" siempre con horas (para los campos de tiempo). */
+export function tiempoConHoras(seg: number): string {
+  const t = Math.max(0, Math.floor(seg));
+  return `${Math.floor(t / 3600)}:${String(Math.floor((t % 3600) / 60)).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`;
+}
+
 /** Devuelve el mensaje de error en español o null si el rango de la prédica es válido. */
 export function validarRango(inicio: number, fin: number, duracion: number): string | null {
   if (!Number.isFinite(inicio) || !Number.isFinite(fin)) return "Escribe el inicio y el fin de la prédica.";

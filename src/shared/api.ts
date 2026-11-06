@@ -33,6 +33,8 @@ export interface ApiReels {
   reintentar(idTarea: string): Promise<void>;
   cancelar(idTarea: string): Promise<void>;
   urlVideo(id: string): string;
+  /** URL para reproducir un video elegido con elegirVideo() (antes de crear el proyecto). */
+  urlArchivo(ruta: string): string;
   verificarSistema(): Promise<EstadoSistema>;
   accionSistema(accion: NonNullable<Chequeo["accion"]>): Promise<void>;
   ventana: { minimizar(): void; maximizar(): void; cerrar(): void };

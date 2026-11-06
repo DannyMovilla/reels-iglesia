@@ -24,7 +24,16 @@ process.stdin.on("end", () => {
     console.log(JSON.stringify({ type: "result", subtype: "success", is_error: true, result: "Not logged in · Please run /login" }));
     process.exit(1);
   }
-  const clips = readFileSync(join(aqui, "respuesta-ok.json"), "utf8");
+  let clips = readFileSync(join(aqui, "respuesta-ok.json"), "utf8");
+  if (modo === "corto") {
+    // Para el video de prueba de ~20 s: un clip que cubre todo el video.
+    const lista = JSON.parse(clips);
+    lista[0].inicio = "0:00:00";
+    lista[0].fin = "0:00:30";
+    lista[0].intro_frase = "la fidelidad de Dios no depende de nuestras circunstancias";
+    lista[0].versiculos = [{ ref: "Romanos 8:28", cita: "todas las cosas ayudan a bien" }];
+    clips = JSON.stringify([lista[0]]);
+  }
   const resultado = modo === "invalido-luego-ok" && n === 1 ? "Lo siento, no pude." : "Aquí van los clips:\n```json\n" + clips + "\n```\nBendiciones";
   console.log(JSON.stringify({ type: "result", subtype: "success", is_error: false, result: resultado }));
 });

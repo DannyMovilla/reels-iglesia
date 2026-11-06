@@ -2,15 +2,37 @@ import { useState } from "react";
 import { BarraTitulo } from "./componentes/BarraTitulo";
 import { Riel, type Seccion } from "./componentes/Riel";
 import { Ajustes } from "./pantallas/Ajustes";
+import { Editor } from "./pantallas/Editor";
+import { NuevaPredica } from "./pantallas/NuevaPredica";
+import { Predicas } from "./pantallas/Predicas";
+
+type Vista = { tipo: "predicas" } | { tipo: "nueva" } | { tipo: "editor"; id: string; nombre: string } | { tipo: "ajustes" } | { tipo: "pronto"; seccion: Seccion };
 
 export function App() {
-  const [seccion, setSeccion] = useState<Seccion>("predicas");
+  const [vista, setVista] = useState<Vista>({ tipo: "predicas" });
+  const seccion: Seccion = vista.tipo === "ajustes" ? "ajustes" : vista.tipo === "pronto" ? vista.seccion : "predicas";
+  const migas = vista.tipo === "nueva" ? ["Prédicas", "Nueva prédica"] : vista.tipo === "editor" ? ["Prédicas", vista.nombre]
+    : vista.tipo === "ajustes" ? ["Ajustes"] : [];
+
+  const cambiar = (s: Seccion) => setVista(s === "predicas" ? { tipo: "predicas" } : s === "ajustes" ? { tipo: "ajustes" } : { tipo: "pronto", seccion: s });
+
   return (
     <div className="app">
-      <BarraTitulo migas={seccion === "ajustes" ? ["Ajustes"] : []} />
-      <Riel actual={seccion} alCambiar={setSeccion} />
-      <main className="contenido" aria-label="Contenido">
-        {seccion === "ajustes" && <Ajustes />}
+      <BarraTitulo migas={migas} />
+      <Riel actual={seccion} alCambiar={cambiar} />
+      <main className={`contenido ${vista.tipo === "editor" ? "sin-scroll" : ""}`} aria-label="Contenido">
+        {vista.tipo === "predicas" && (
+          <Predicas alNueva={() => setVista({ tipo: "nueva" })}
+            alAbrir={(id) => void window.reels!.leerProyecto(id).then((p) => setVista({ tipo: "editor", id, nombre: p.nombre }))} />
+        )}
+        {vista.tipo === "nueva" && (
+          <NuevaPredica alCancelar={() => setVista({ tipo: "predicas" })} alCrear={(p) => setVista({ tipo: "editor", id: p.id, nombre: p.nombre })} />
+        )}
+        {vista.tipo === "editor" && <Editor key={vista.id} proyectoId={vista.id} />}
+        {vista.tipo === "ajustes" && <Ajustes />}
+        {vista.tipo === "pronto" && (
+          <section className="pantalla"><h1>Muy pronto</h1><p className="ayuda">Esta sección llega en la siguiente etapa de Reels Iglesia.</p></section>
+        )}
       </main>
     </div>
   );
