@@ -14,7 +14,7 @@ const bajar = (modo: string, senal = new AbortController().signal, progreso: num
 
 test("argumentos: mejor calidad hasta 1080p en MP4, sin listas, progreso por línea y la ruta final", () => {
   expect(argsYtdlp("https://youtu.be/x", "C:/datos/videos")).toEqual([
-    "-f", "bv*[height<=1080]+ba/b[height<=1080]/b", "--merge-output-format", "mp4", "--no-playlist", "--newline",
+    "-f", "bv*[height<=1080]+ba/b[height<=1080]/b", "--merge-output-format", "mp4", "--no-playlist", "--newline", "--progress",
     "-o", "C:/datos/videos/%(title).70s [%(id)s].%(ext)s", "--print", "after_move:filepath", "https://youtu.be/x",
   ]);
 });
@@ -52,4 +52,8 @@ test("reconoce enlaces", () => {
 
 test("revisión I2: el nombre lleva el id del video (dos cultos con el mismo título no se confunden)", () => {
   expect(argsYtdlp("https://youtu.be/x", "C:/v")).toContain("C:/v/%(title).70s [%(id)s].%(ext)s");
+});
+
+test("con --print yt-dlp se calla: --progress hace que igual muestre el avance (lo vimos con el culto real)", () => {
+  expect(argsYtdlp("https://youtu.be/x", "C:/v")).toContain("--progress");
 });
