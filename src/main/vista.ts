@@ -23,7 +23,8 @@ export function registrarComposicion(id: string, html: string): string {
 export const composicionRegistrada = (id: string): string | undefined => composiciones.get(id);
 
 /** Ruta del archivo local para un recurso pedido, o null si no está permitido. */
-export function rutaRecurso(ruta: string, raiz: string, datos?: string): string | null {
+export function rutaRecurso(ruta: string, raiz: string, datos?: string, escenas?: string): string | null {
+  if (ruta === "recursos/escenas/shaders.iife.js") return escenas ? join(escenas, "shaders.iife.js") : null;
   if (ruta.startsWith("marca/")) return datos && /^marca\/logo\.(png|jpe?g|svg|webp)$/.test(ruta) ? join(datos, "marca", ruta.slice(6)) : null;
   const nm = join(raiz, "node_modules");
   const fijos: Record<string, string> = {
@@ -46,7 +47,7 @@ const CSP = "default-src 'self' reels-comp: http://127.0.0.1:*; script-src 'self
 /** Debe registrarse antes de app.ready. */
 export const esquemaVista = { scheme: "reels-comp", privileges: { standard: true, secure: true, supportFetchAPI: true, stream: true } };
 
-export function servirVista(raiz: string, datos: () => string): void {
+export function servirVista(raiz: string, datos: () => string, escenas?: string): void {
   protocol.handle("reels-comp", async (req) => {
     const url = new URL(req.url);
     const ruta = decodeURIComponent(url.pathname).replace(/^\/+/, "");
@@ -55,7 +56,7 @@ export function servirVista(raiz: string, datos: () => string): void {
       const html = composiciones.get(url.hostname);
       return html ? new Response(html, { headers: encabezados("text/html; charset=utf-8") }) : new Response("No existe", { status: 404 });
     }
-    const archivo = rutaRecurso(ruta, raiz, datos());
+    const archivo = rutaRecurso(ruta, raiz, datos(), escenas);
     if (!archivo) return new Response("No permitido", { status: 404 });
     try {
       return new Response(await readFile(archivo), { headers: encabezados(TIPOS[extname(archivo)] ?? "application/octet-stream") });

@@ -17,6 +17,9 @@ const entornoActual = (): Entorno => ({ empaquetada: !!electron.app?.isPackaged,
  */
 export const raizApp = (e: Entorno = entornoActual()): string => (e.empaquetada ? join(e.recursos, "app.asar.unpacked") : resolve(__dirname, "..", ".."));
 
+/** Librería de escenas animadas (resources/escenas en el repositorio y en la app instalada). */
+export const rutaEscenas = (): string => join(raizRecursos(), "resources", "escenas");
+
 /** Donde están python/ y modelos/: el repositorio en desarrollo; resources/ instalada (extraResources). */
 export const raizRecursos = (e: Entorno = entornoActual()): string => (e.empaquetada ? e.recursos : raizApp(e));
 /** Entorno de Python que prepara el asistente: en %LOCALAPPDATA% (la carpeta de la app instalada no se puede escribir). */

@@ -30,3 +30,10 @@ test("sirve el logo de la marca y nada más de la carpeta de datos", () => {
   expect(rutaRecurso("marca/../marca.json", RAIZ, DATOS)).toBeNull();
   expect(rutaRecurso("marca/logo.png", RAIZ)).toBeNull();
 });
+
+test("sirve la librería de escenas animadas y nada más de esa carpeta", () => {
+  const ESC = "C:/app/resources/escenas";
+  expect(rutaRecurso("recursos/escenas/shaders.iife.js", RAIZ, undefined, ESC)).toBe(join(ESC, "shaders.iife.js"));
+  expect(rutaRecurso("recursos/escenas/shaders.THIRD-PARTY-LICENSES.txt", RAIZ, undefined, ESC)).toBeNull();
+  expect(rutaRecurso("recursos/escenas/../../secreto.js", RAIZ, undefined, ESC)).toBeNull();
+});

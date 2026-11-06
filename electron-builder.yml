@@ -19,6 +19,8 @@ extraResources:
     filter: ["*.py", "requirements*.txt"]
   - from: modelos
     to: modelos
+  - from: resources/escenas
+    to: resources/escenas
 win:
   target: nsis
   icon: build/icon.ico
