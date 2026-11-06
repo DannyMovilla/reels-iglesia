@@ -4,6 +4,8 @@ import { analizarProyecto } from "./claude/analizar";
 import { abrirInicioSesionClaude, verificarSistema } from "./sistema/verificar";
 import { Cola } from "./cola/cola";
 import { registrarEsquemaVideo, registrarIpc } from "./ipc";
+import { avisarExportaciones } from "./exportar/avisos";
+import { crearEjecutorExportar } from "./exportar/tarea";
 import { crearEjecutores, marcarInterrumpidos } from "./pipeline/tareas";
 import { resolverComandoClaude } from "./sistema/claude-cmd";
 import { protegerNavegacion } from "./ventana";
@@ -42,7 +44,8 @@ app.whenReady().then(async () => {
     encolar: (id, tipo) => cola.agregar(id, tipo),
     analizar: (id, ctx) => analizarProyecto(id, ctx),
   });
-  cola = new Cola(join(carpetaDatos(), "cola.json"), ejecutores);
+  cola = new Cola(join(carpetaDatos(), "cola.json"), { ...ejecutores, exportar: crearEjecutorExportar() });
+  avisarExportaciones(cola);
   await cola.cargar();
   await marcarInterrumpidos(cola.lista());
 

@@ -10,6 +10,8 @@ const api: ApiReels = {
   leerClips: (id) => ipcRenderer.invoke("proyectos:clips", id),
   leerTranscripcion: (id) => ipcRenderer.invoke("proyectos:transcripcion", id),
   procesar: (id, desde) => ipcRenderer.invoke("proyectos:procesar", id, desde),
+  exportar: (id, clipIds, formatos) => ipcRenderer.invoke("exportar:encolar", id, clipIds, formatos),
+  abrirCarpetaExportados: (id) => ipcRenderer.invoke("exportar:abrir", id),
   tareas: () => ipcRenderer.invoke("tareas:lista"),
   alCambiarTareas: (cb) => {
     const oyente = (_e: unknown, t: Tarea[]) => cb(t);

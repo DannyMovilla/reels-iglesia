@@ -41,8 +41,8 @@ export class Cola extends EventEmitter {
     return this.tareas.map((t) => ({ ...t }));
   }
 
-  agregar(proyectoId: string, tipo: TipoTarea): Tarea {
-    const t: Tarea = { id: randomUUID(), proyectoId, tipo, estado: "pendiente", pct: 0, creada: new Date().toISOString() };
+  agregar(proyectoId: string, tipo: TipoTarea, extra: Pick<Tarea, "clipId" | "formato" | "instantanea"> = {}): Tarea {
+    const t: Tarea = { id: randomUUID(), proyectoId, tipo, estado: "pendiente", pct: 0, creada: new Date().toISOString(), ...extra };
     this.tareas.push(t);
     this.cambio(true);
     this.siguiente();

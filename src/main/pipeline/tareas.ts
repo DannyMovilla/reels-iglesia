@@ -12,12 +12,13 @@ export interface DepsPipeline {
   ejecutar?: typeof ejecutarConProgreso;
 }
 
-const PASO: Record<TipoTarea, NombrePaso> = { transcribir: "transcripcion", caras: "caras", analizar: "analisis" };
-const ESTADO: Record<TipoTarea, EstadoProyecto> = { transcribir: "transcribiendo", caras: "caras", analizar: "analizando" };
-const SIGUIENTE: Partial<Record<TipoTarea, TipoTarea>> = { transcribir: "caras", caras: "analizar" };
+type TipoPaso = Exclude<TipoTarea, "exportar">;
+const PASO: Record<TipoPaso, NombrePaso> = { transcribir: "transcripcion", caras: "caras", analizar: "analisis" };
+const ESTADO: Record<TipoPaso, EstadoProyecto> = { transcribir: "transcribiendo", caras: "caras", analizar: "analizando" };
+const SIGUIENTE: Partial<Record<TipoPaso, TipoPaso>> = { transcribir: "caras", caras: "analizar" };
 
 /** Envuelve cada paso: marca el estado del proyecto, mide el tiempo y encola el paso siguiente. */
-export function crearEjecutores(deps: DepsPipeline): Record<TipoTarea, Ejecutor> {
+export function crearEjecutores(deps: DepsPipeline): Record<TipoPaso, Ejecutor> {
   const ejecutar = deps.ejecutar ?? ejecutarConProgreso;
 
   async function python(proyectoId: string, modo: "--solo-transcripcion" | "--solo-caras", ctx: ContextoTarea): Promise<void> {
@@ -41,7 +42,7 @@ export function crearEjecutores(deps: DepsPipeline): Record<TipoTarea, Ejecutor>
     }
   }
 
-  const envolver = (tipo: TipoTarea, trabajo: (proyectoId: string, ctx: ContextoTarea) => Promise<void>): Ejecutor =>
+  const envolver = (tipo: TipoPaso, trabajo: (proyectoId: string, ctx: ContextoTarea) => Promise<void>): Ejecutor =>
     async (t, ctx) => {
       const paso = PASO[tipo];
       const p0 = await leerProyecto(t.proyectoId);
@@ -78,7 +79,7 @@ export function crearEjecutores(deps: DepsPipeline): Record<TipoTarea, Ejecutor>
  */
 export async function marcarInterrumpidos(tareas: Tarea[]): Promise<void> {
   for (const t of tareas) {
-    if (t.estado !== "interrumpida") continue;
+    if (t.estado !== "interrumpida" || t.tipo === "exportar") continue;
     try {
       const p = await leerProyecto(t.proyectoId);
       p.pasos[PASO[t.tipo]] = { estado: "error", detalle: "Se interrumpió al cerrar la app." };

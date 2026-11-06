@@ -1,13 +1,13 @@
 import { createReadStream } from "node:fs";
-import { stat } from "node:fs/promises";
-import { extname } from "node:path";
+import { mkdir, stat } from "node:fs/promises";
+import { extname, join } from "node:path";
 import { Readable } from "node:stream";
-import { dialog, ipcMain, protocol, type BrowserWindow } from "electron";
+import { dialog, ipcMain, protocol, shell, type BrowserWindow } from "electron";
 import type { DatosNuevoProyecto, EstadoSistema } from "@shared/api";
-import type { ClipSpec, TipoTarea, Transcripcion } from "@shared/tipos";
+import type { ClipSpec, Formato, TipoTarea, Transcripcion } from "@shared/tipos";
 import type { Cola } from "./cola/cola";
 import { duracionVideo } from "./procesos/video";
-import { raizApp } from "./rutas";
+import { carpetaProyecto, raizApp } from "./rutas";
 import { esquemaVista, registrarComposicion, servirVista } from "./vista";
 import { crearProyecto, leerJson, leerProyecto, listarProyectos } from "./proyectos/almacen";
 
@@ -94,6 +94,17 @@ export function registrarIpc(deps: DepsIpc): void {
   ipcMain.handle("proyectos:clips", async (_e, id: string) => (await leerJson<ClipSpec[]>(id, "clips.json")) ?? []);
   ipcMain.handle("proyectos:transcripcion", (_e, id: string) => leerJson<Transcripcion>(id, "transcripcion.json"));
   ipcMain.handle("proyectos:procesar", (_e, id: string, desde?: TipoTarea) => void cola.agregar(id, desde ?? "transcribir"));
+  ipcMain.handle("exportar:encolar", async (_e, id: string, clipIds: string[], formatos?: Formato[]) => {
+    const clips = (await leerJson<ClipSpec[]>(id, "clips.json")) ?? [];
+    for (const c of clips.filter((x) => clipIds.includes(x.id))) {
+      for (const formato of formatos ?? c.formatos) cola.agregar(id, "exportar", { clipId: c.id, formato, instantanea: c });
+    }
+  });
+  ipcMain.handle("exportar:abrir", async (_e, id: string) => {
+    const dir = join(carpetaProyecto(id), "exportados");
+    await mkdir(dir, { recursive: true });
+    await shell.openPath(dir);
+  });
   ipcMain.handle("tareas:lista", () => cola.lista());
   ipcMain.handle("tareas:reintentar", (_e, id: string) => cola.reintentar(id));
   ipcMain.handle("tareas:cancelar", (_e, id: string) => cola.cancelar(id));

@@ -1,9 +1,9 @@
 import { existsSync } from "node:fs";
 import { mkdir, readdir, readFile, rename, stat, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import type { Proyecto, VideoOrigen } from "@shared/tipos";
+import type { Marca, Proyecto, VideoOrigen } from "@shared/tipos";
 import { validarRango } from "@shared/validar";
-import { carpetaProyecto, carpetaProyectos } from "../rutas";
+import { carpetaDatos, carpetaProyecto, carpetaProyectos } from "../rutas";
 
 export type ArchivoProyecto = "transcripcion.json" | "caras.json" | "clips.json";
 
@@ -83,4 +83,15 @@ export async function leerJson<T>(id: string, archivo: ArchivoProyecto): Promise
 
 export async function guardarJson(id: string, archivo: ArchivoProyecto, datos: unknown): Promise<void> {
   await escribirAtomico(join(carpetaProyecto(id), archivo), datos);
+}
+
+export const MARCA_POR_DEFECTO: Marca = { nombre: "Mi iglesia", color: "#f2b544", invitacion: "Síguenos" };
+
+/** Marca de la iglesia (marca.json en la carpeta de datos), con valores por defecto mientras no exista la pantalla Marca. */
+export async function leerMarca(): Promise<Marca> {
+  try {
+    return { ...MARCA_POR_DEFECTO, ...(JSON.parse(await readFile(join(carpetaDatos(), "marca.json"), "utf8")) as Partial<Marca>) };
+  } catch {
+    return { ...MARCA_POR_DEFECTO };
+  }
 }

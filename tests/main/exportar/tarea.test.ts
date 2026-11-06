@@ -1,0 +1,86 @@
+import { existsSync, mkdtempSync, readFileSync, readdirSync, renameSync, statSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
+import { beforeEach, describe, expect, test } from "vitest";
+import { crearEjecutorExportar, nombreSalida, type DepsExportar } from "../../../src/main/exportar/tarea";
+import { crearProyecto, guardarJson, leerJson } from "../../../src/main/proyectos/almacen";
+import { carpetaProyecto } from "../../../src/main/rutas";
+import type { ClipSpec, Tarea } from "../../../src/shared/tipos";
+
+const FIX = resolve(__dirname, "../../fixtures");
+const ctx = () => ({ alProgreso: () => {}, senal: new AbortController().signal });
+
+test("nombres de archivo válidos en Windows y sin pisarse", () => {
+  expect(nombreSalida("¿Oras o solo hablas? 🙏", "9:16", new Set())).toBe("oras-o-solo-hablas-9x16.mp4");
+  expect(nombreSalida("¿Oras o solo hablas?", "9:16", new Set(["oras-o-solo-hablas-9x16.mp4"]))).toBe("oras-o-solo-hablas-2-9x16.mp4");
+  expect(nombreSalida("", "4:5", new Set())).toBe("reel-4x5.mp4");
+  expect(nombreSalida("Fe: \"Sí\" / No", "1:1", new Set())).toBe("fe-si-no-1x1.mp4");
+});
+
+describe("ejecutor exportar", () => {
+  let id: string;
+  let video: string;
+  let clip: ClipSpec;
+  let llamadas: { gpu: boolean; html: string; salida: string }[];
+
+  const deps = (extra: Partial<DepsExportar> = {}): DepsExportar => ({
+    gpu: async () => true,
+    dimensiones: async () => ({ ancho: 1280, alto: 720 }),
+    renderizar: async (dir, salida, op) => {
+      llamadas.push({ gpu: op.gpu, html: readFileSync(join(dir, "index.html"), "utf8"), salida });
+      writeFileSync(salida, "mp4");
+    },
+    ...extra,
+  });
+  const tarea = (instantanea: ClipSpec): Tarea => ({ id: "t1", proyectoId: id, tipo: "exportar", estado: "corriendo", pct: 0, creada: "",
+    clipId: instantanea.id, formato: "9:16", instantanea });
+
+  beforeEach(async () => {
+    process.env.REELS_IGLESIA_DATOS = mkdtempSync(join(tmpdir(), "reels-exp-"));
+    video = join(mkdtempSync(join(tmpdir(), "reels-v-")), "culto (1280p).mp4");
+    writeFileSync(video, "x");
+    id = (await crearProyecto({ nombre: "Culto", video: { ruta: video, tamano: statSync(video).size, modificado: 0, duracion: 100 }, rango: { inicio: 0, fin: 75 } })).id;
+    await guardarJson(id, "transcripcion.json", JSON.parse(readFileSync(join(FIX, "transcripcion-muestra.json"), "utf8")));
+    clip = {
+      id: "c1", titulo: "El quebrantamiento", gancho: "Original", ganchosAlternativos: [], categoria: "Exhortación", inicio: 30.93, fin: 63.46,
+      apertura: null, palabrasClave: [], versiculos: [], puntaje: 90, razon: "", descripcion: "", hashtags: [],
+      encuadre: { modo: "fijo", x: 0.5, zoom: 1.25 }, subtitulos: { activos: true, estilo: "pop", tamano: "m", altura: 0.74 },
+      musica: { pista: null, volumen: 0 }, cierre: true, formatos: ["9:16"], estado: "sugerido",
+    };
+    await guardarJson(id, "clips.json", [clip]);
+    llamadas = [];
+  });
+
+  test("usa la versión del clip guardada al encolar, no los cambios posteriores", async () => {
+    const t = tarea({ ...clip });
+    await guardarJson(id, "clips.json", [{ ...clip, gancho: "Cambiado" }]);
+    await crearEjecutorExportar(deps())(t, ctx());
+    expect(llamadas[0].html).toContain("Original");
+    expect(llamadas[0].html).not.toContain("Cambiado");
+  });
+
+  test("deja el MP4 en exportados, marca el clip como exportado y borra la carpeta temporal", async () => {
+    await crearEjecutorExportar(deps())(tarea(clip), ctx());
+    expect(readdirSync(join(carpetaProyecto(id), "exportados"))).toEqual(["el-quebrantamiento-9x16.mp4"]);
+    expect((await leerJson<ClipSpec[]>(id, "clips.json"))?.[0].estado).toBe("exportado");
+    expect(existsSync(join(carpetaProyecto(id), "tmp", "t1"))).toBe(false);
+  });
+
+  test("sin GPU NVIDIA exporta sin --gpu", async () => {
+    await crearEjecutorExportar(deps({ gpu: async () => false }))(tarea(clip), ctx());
+    expect(llamadas[0].gpu).toBe(false);
+  });
+
+  test("video original movido: error en español", async () => {
+    renameSync(video, video + ".movido");
+    await expect(crearEjecutorExportar(deps())(tarea(clip), ctx())).rejects.toThrow(
+      "No encuentro el video original. Vuelve a ponerlo en su lugar y reintenta.",
+    );
+  });
+
+  test("un versículo activo sin confirmar no se exporta", async () => {
+    const c = { ...clip, versiculos: [{ ref: "Salmos 51:17", texto: "Los sacrificios…", en: 3, activo: true, confirmado: false }] };
+    await expect(crearEjecutorExportar(deps())(tarea(c), ctx())).rejects.toThrow("Confirma el texto de Salmos 51:17 antes de exportar.");
+    expect(llamadas).toEqual([]);
+  });
+});

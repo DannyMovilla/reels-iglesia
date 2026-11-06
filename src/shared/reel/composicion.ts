@@ -1,11 +1,12 @@
-import type { Caras, ClipSpec, Formato, Transcripcion } from "../tipos";
+import type { Caras, ClipSpec, Formato, Marca, Transcripcion } from "../tipos";
+
+export type { Marca };
 import { pistaCamara, posicionGancho, type ClaveCamara } from "./encuadre";
 import { cssComposicion } from "./estilos.css";
 import { bloquesSubtitulos } from "./subtitulos";
 import { palabrasDe, partesDelReel, r2 } from "./tiempo";
 import { ventanaVersiculo } from "./versiculo";
 
-export interface Marca { nombre: string; color: string; invitacion: string; logo?: string }
 
 export interface EntradaComposicion {
   clip: ClipSpec;

@@ -21,6 +21,7 @@ test("corre las tareas en orden de llegada y termina en ok", async () => {
     transcribir: async (t) => { orden.push(t.tipo); await espera(20); },
     caras: async (t) => { orden.push(t.tipo); },
     analizar: ok,
+    exportar: ok,
   });
   await cola.cargar();
   const a = cola.agregar("p1", "transcribir");
@@ -35,6 +36,7 @@ test("un error deja la tarea en error con su mensaje y la siguiente igual corre"
     transcribir: async () => { throw new Error("sin GPU"); },
     caras: ok,
     analizar: ok,
+    exportar: ok,
   });
   await cola.cargar();
   const a = cola.agregar("p1", "transcribir");
@@ -53,6 +55,7 @@ test("cancelar aborta la señal y deja la tarea cancelada", async () => {
     }),
     caras: ok,
     analizar: ok,
+    exportar: ok,
   });
   await cola.cargar();
   const a = cola.agregar("p1", "transcribir");
@@ -66,7 +69,7 @@ test("una tarea que estaba corriendo al cerrar la app queda interrumpida y se pu
   const ruta = archivo();
   const vieja: Tarea = { id: "t1", proyectoId: "p1", tipo: "transcribir", estado: "corriendo", pct: 40, creada: "2026-11-05T10:00:00.000Z" };
   writeFileSync(ruta, JSON.stringify([vieja]));
-  const cola = new Cola(ruta, { transcribir: ok, caras: ok, analizar: ok });
+  const cola = new Cola(ruta, { transcribir: ok, caras: ok, analizar: ok, exportar: ok });
   await cola.cargar();
   expect(cola.lista()[0].estado).toBe("interrumpida");
   cola.reintentar("t1");
@@ -76,7 +79,7 @@ test("una tarea que estaba corriendo al cerrar la app queda interrumpida y se pu
 test("un cola.json dañado no impide abrir la app: se respalda y la cola empieza vacía", async () => {
   const ruta = archivo();
   writeFileSync(ruta, "");
-  const cola = new Cola(ruta, { transcribir: ok, caras: ok, analizar: ok });
+  const cola = new Cola(ruta, { transcribir: ok, caras: ok, analizar: ok, exportar: ok });
   await cola.cargar();
   expect(cola.lista()).toEqual([]);
   expect(existsSync(ruta + ".bad")).toBe(true);
