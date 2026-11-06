@@ -5,7 +5,7 @@ import type { DatosNuevoProyecto, EstadoSistema } from "@shared/api";
 import { descargarVideo } from "./descargas/ytdlp";
 import { agregarPista, cambiarAnimo, carpetaMusica, listarPistas, musicaParaVista } from "./musica/banco";
 import { escribirCreacion } from "./ia/claude";
-import { borrarCreacion, copiarFondo, crearCreacion, guardarCreacion, leerCreacion, listarCreaciones } from "./ia/almacen";
+import { carpetaCreacion, listarExportadosIa, borrarCreacion, copiarFondo, crearCreacion, guardarCreacion, leerCreacion, listarCreaciones } from "./ia/almacen";
 import type { Animo, Caras, ClipSpec, Creacion, Formato, Marca, TipoTarea, Transcripcion } from "@shared/tipos";
 import type { Cola } from "./cola/cola";
 import { dimensionesVideo, duracionVideo } from "./procesos/video";
@@ -43,7 +43,12 @@ export async function resolverMedio(tipo: string, valor: string): Promise<string
   if (tipo === "musica") return simple(valor) ? join(carpetaMusica(), valor) : null;
   if (tipo === "exportado") {
     const [id, archivo] = valor.split("/");
-    return simple(id) && simple(archivo) ? join(carpetaProyecto(id), "exportados", archivo) : null;
+    if (!simple(id) || !simple(archivo)) return null;
+    return id.startsWith("ia:") ? join(carpetaCreacion(id.slice(3)), "exportados", archivo) : join(carpetaProyecto(id), "exportados", archivo);
+  }
+  if (tipo === "fondo-ia") {
+    const [id, archivo] = valor.split("/");
+    return simple(id) && simple(archivo) && /^fondo\.\w+$/.test(archivo) ? join(carpetaCreacion(id), archivo) : null;
   }
   if (tipo === "voz") return simple(valor) ? join(carpetaProyecto(valor), "voz.m4a") : null;
   if (tipo === "cache") return simple(valor) ? join(carpetaDatos(), "cache", valor) : null;
@@ -138,11 +143,14 @@ export function registrarIpc(deps: DepsIpc): void {
     }
   });
   ipcMain.handle("exportar:abrir", async (_e, id: string) => {
-    const dir = join(carpetaProyecto(id), "exportados");
+    const dir = id.startsWith("ia:") ? join(carpetaCreacion(id.slice(3)), "exportados") : join(carpetaProyecto(id), "exportados");
     await mkdir(dir, { recursive: true });
     await shell.openPath(dir);
   });
-  ipcMain.handle("exportar:listar", () => listarExportados());
+  ipcMain.handle("exportar:listar", async () => [...(await listarExportados()), ...(await listarExportadosIa())]);
+  ipcMain.handle("ia:exportar", (_e, id: string, formatos: Formato[]) => {
+    for (const formato of formatos) cola.agregar(`ia:${id}`, "exportar-ia", { creacionId: id, formato });
+  });
   ipcMain.handle("tareas:lista", () => cola.lista());
   ipcMain.handle("tareas:reintentar", (_e, id: string) => cola.reintentar(id));
   ipcMain.handle("tareas:cancelar", (_e, id: string) => cola.cancelar(id));

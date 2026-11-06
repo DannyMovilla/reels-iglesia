@@ -45,7 +45,7 @@ export interface Transcripcion {
 /** [t, [[x, y, w, score], ...]] con coordenadas normalizadas 0–1. */
 export type Caras = [number, [number, number, number, number][]][];
 
-export type TipoTarea = "transcribir" | "audio" | "caras" | "analizar" | "exportar";
+export type TipoTarea = "transcribir" | "audio" | "caras" | "analizar" | "exportar" | "exportar-ia";
 export type EstadoTarea = "pendiente" | "corriendo" | "ok" | "error" | "cancelada" | "interrumpida";
 
 export interface Tarea {
@@ -63,6 +63,8 @@ export interface Tarea {
   clipId?: string;
   formato?: Formato;
   instantanea?: ClipSpec;
+  /** Solo "exportar-ia": qué reel de «Con IA» (proyectoId es "ia:<id>"). */
+  creacionId?: string;
 }
 
 export type Animo = "reflexivo" | "esperanza" | "victoria" | "adoracion" | "tension";

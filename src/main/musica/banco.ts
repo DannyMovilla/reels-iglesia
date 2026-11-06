@@ -69,39 +69,42 @@ export async function cambiarAnimo(id: string, animo: Animo): Promise<void> {
   await escribirAtomico(archivoFichas(), fichas);
 }
 
-/** Ids de las últimas pistas usadas en el proyecto (la primera, la más reciente). */
-async function recientes(proyectoId: string): Promise<string[]> {
+/** Ids de las últimas pistas usadas en una carpeta (proyecto o creación; la primera, la más reciente). */
+async function recientesEn(carpeta: string): Promise<string[]> {
   try {
-    return JSON.parse(await readFile(join(carpetaProyecto(proyectoId), "musica-usada.json"), "utf8")) as string[];
+    return JSON.parse(await readFile(join(carpeta, "musica-usada.json"), "utf8")) as string[];
   } catch {
     return [];
   }
 }
+const recientes = (proyectoId: string) => recientesEn(carpetaProyecto(proyectoId));
 
 /**
- * Archivo de música para un reel según el modo del clip:
+ * Archivo de música para un reel según el modo:
  * ninguna → null; pista → la elegida (si ya no existe, como auto); auto → pista del ánimo sin repetir
- * las últimas, o un pad si no hay; pad → pad generado en tmp/ con la duración del reel.
+ * las últimas de esa carpeta, o un pad si no hay; pad → pad generado en <carpeta>/tmp con la duración del reel.
  */
-export async function musicaParaClip(clip: ClipSpec, proyecto: Proyecto, duracion: number, deps: DepsMusica = depsReales): Promise<string | null> {
-  const m = clip.musica;
+export async function musicaEn(m: ClipSpec["musica"], carpeta: string, idSemilla: string, duracion: number, deps: DepsMusica = depsReales): Promise<string | null> {
   if (m.modo === "ninguna") return null;
   if (m.modo === "pista" || m.modo === "auto") {
     const pistas = await listarPistas(deps);
-    const usadas = await recientes(proyecto.id);
+    const usadas = await recientesEn(carpeta);
     const elegida = (m.modo === "pista" ? pistas.find((p) => p.id === m.pista) : undefined) ?? elegirPista(m.animo, pistas, usadas, duracion);
     if (elegida) {
-      await escribirAtomico(join(carpetaProyecto(proyecto.id), "musica-usada.json"), [elegida.id, ...usadas.filter((u) => u !== elegida.id)].slice(0, 10));
+      await escribirAtomico(join(carpeta, "musica-usada.json"), [elegida.id, ...usadas.filter((u) => u !== elegida.id)].slice(0, 10));
       return elegida.archivo;
     }
   }
-  const dir = join(carpetaProyecto(proyecto.id), "tmp");
+  const dir = join(carpeta, "tmp");
   await mkdir(dir, { recursive: true });
-  const destino = join(dir, `pad-${clip.id}-${Date.now()}.wav`);
-  const semilla = [...clip.id].reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) % 100000, 7);
+  const destino = join(dir, `pad-${idSemilla}-${Date.now()}.wav`);
+  const semilla = [...idSemilla].reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) % 100000, 7);
   await deps.generarPad(Math.floor(duracion) + 1, m.tonalidad, m.animo, semilla, destino);
   return destino;
 }
+
+export const musicaParaClip = (clip: ClipSpec, proyecto: Proyecto, duracion: number, deps: DepsMusica = depsReales): Promise<string | null> =>
+  musicaEn(clip.musica, carpetaProyecto(proyecto.id), clip.id, duracion, deps);
 
 /**
  * Música para la VISTA PREVIA: la misma elección que al exportar, pero sin contarla como usada.

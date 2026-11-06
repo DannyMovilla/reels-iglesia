@@ -47,6 +47,10 @@ export interface ApiReels {
   borrarCreacion(id: string): Promise<void>;
   /** Abre el diálogo para elegir una foto o un video de fondo; devuelve la ruta copiada o null. */
   elegirFondo(id: string): Promise<string | null>;
+  /** Encola la exportación del reel de versículo en cada formato. */
+  exportarCreacion(id: string, formatos: Formato[]): Promise<void>;
+  /** URL de la foto o el video de fondo de una creación (vista previa). */
+  urlFondo(id: string, archivo: string): string;
   listarPistas(): Promise<Pista[]>;
   /** Abre el diálogo para agregar pistas propias; devuelve las agregadas. */
   agregarPistas(): Promise<Pista[]>;

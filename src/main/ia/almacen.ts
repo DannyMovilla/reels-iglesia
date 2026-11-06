@@ -1,5 +1,5 @@
 import { existsSync } from "node:fs";
-import { copyFile, mkdir, readdir, readFile, rm } from "node:fs/promises";
+import { copyFile, mkdir, readdir, readFile, rm, stat } from "node:fs/promises";
 import { extname, join } from "node:path";
 import type { Creacion } from "@shared/tipos";
 import { escribirAtomico } from "../proyectos/almacen";
@@ -68,4 +68,21 @@ export async function copiarFondo(id: string, origen: string): Promise<string> {
 
 export async function borrarCreacion(id: string): Promise<void> {
   await rm(carpetaCreacion(id), { recursive: true, force: true });
+}
+
+/** MP4 exportados de cada creación, con el mismo formato que los de las prédicas (proyectoId "ia:<id>"). */
+export async function listarExportadosIa(): Promise<{ proyectoId: string; nombre: string; archivos: { nombre: string; tamano: number; portada?: string }[] }[]> {
+  const salida = [];
+  for (const c of await listarCreaciones()) {
+    const dir = join(carpetaCreacion(c.id), "exportados");
+    if (!existsSync(dir)) continue;
+    const todos = await readdir(dir);
+    const archivos = [];
+    for (const nombre of todos.filter((x) => x.toLowerCase().endsWith(".mp4")).sort()) {
+      const portada = nombre.replace(/\.mp4$/i, "-portada.jpg");
+      archivos.push({ nombre, tamano: (await stat(join(dir, nombre))).size, ...(todos.includes(portada) ? { portada } : {}) });
+    }
+    if (archivos.length) salida.push({ proyectoId: `ia:${c.id}`, nombre: `Con IA · ${c.versiculo.ref || c.entrada.texto}`, archivos });
+  }
+  return salida;
 }

@@ -16,9 +16,10 @@ export function archivosRecursos(raiz = raizApp()): Record<string, string> {
 }
 
 /** Carpeta de render de HyperFrames: index.html + recursos locales + archivos de proyecto. */
-export async function prepararCarpeta(dir: string, html: string): Promise<void> {
+/** `extra`: más archivos a copiar (destino relativo → origen), p. ej. la librería de escenas. */
+export async function prepararCarpeta(dir: string, html: string, extra: Record<string, string> = {}): Promise<void> {
   await mkdir(dir, { recursive: true });
-  for (const [destino, origen] of Object.entries(archivosRecursos())) {
+  for (const [destino, origen] of Object.entries({ ...archivosRecursos(), ...extra })) {
     await mkdir(dirname(join(dir, destino)), { recursive: true });
     await copyFile(origen, join(dir, destino));
   }

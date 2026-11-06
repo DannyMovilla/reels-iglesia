@@ -15,7 +15,7 @@ export interface DepsPipeline {
   ejecutar?: typeof ejecutarConProgreso;
 }
 
-type TipoPaso = Exclude<TipoTarea, "exportar">;
+type TipoPaso = Exclude<TipoTarea, "exportar" | "exportar-ia">;
 const PASO: Record<TipoPaso, NombrePaso> = { transcribir: "transcripcion", audio: "audio", caras: "caras", analizar: "analisis" };
 const ESTADO: Record<TipoPaso, EstadoProyecto> = { transcribir: "transcribiendo", audio: "limpiando", caras: "caras", analizar: "analizando" };
 const SIGUIENTE: Partial<Record<TipoPaso, TipoPaso>> = { transcribir: "audio", audio: "caras", caras: "analizar" };
@@ -100,7 +100,7 @@ export function crearEjecutores(deps: DepsPipeline): Record<TipoPaso, Ejecutor> 
  */
 export async function marcarInterrumpidos(tareas: Tarea[]): Promise<void> {
   for (const t of tareas) {
-    if (t.estado !== "interrumpida" || t.tipo === "exportar") continue;
+    if (t.estado !== "interrumpida" || t.tipo === "exportar" || t.tipo === "exportar-ia") continue;
     try {
       const p = await leerProyecto(t.proyectoId);
       p.pasos[PASO[t.tipo]] = { estado: "error", detalle: "Se interrumpió al cerrar la app." };

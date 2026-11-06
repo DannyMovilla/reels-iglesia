@@ -7,6 +7,7 @@ import { registrarEsquemaVideo, registrarIpc, resolverMedio } from "./ipc";
 import { iniciarServidorMedios } from "./servidor-medios";
 import { avisarExportaciones } from "./exportar/avisos";
 import { crearEjecutorExportar } from "./exportar/tarea";
+import { crearEjecutorExportarIa } from "./ia/exportar";
 import { crearEjecutores, marcarInterrumpidos } from "./pipeline/tareas";
 import { resolverComandoClaude } from "./sistema/claude-cmd";
 import { protegerNavegacion } from "./ventana";
@@ -50,7 +51,7 @@ app.whenReady().then(async () => {
     encolar: (id, tipo) => cola.agregar(id, tipo),
     analizar: (id, ctx) => analizarProyecto(id, ctx),
   });
-  cola = new Cola(join(carpetaDatos(), "cola.json"), { ...ejecutores, exportar: crearEjecutorExportar() });
+  cola = new Cola(join(carpetaDatos(), "cola.json"), { ...ejecutores, exportar: crearEjecutorExportar(), "exportar-ia": crearEjecutorExportarIa() });
   avisarExportaciones(cola);
   await cola.cargar();
   await marcarInterrumpidos(cola.lista());

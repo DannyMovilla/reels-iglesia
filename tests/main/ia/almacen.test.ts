@@ -41,3 +41,20 @@ test("borrar una creación", async () => {
   await borrarCreacion(c.id);
   expect(await listarCreaciones()).toEqual([]);
 });
+
+test("los reels exportados de «Con IA» aparecen en Exportados con su portada", async () => {
+  const { listarExportadosIa, carpetaCreacion } = await import("../../../src/main/ia/almacen");
+  const c = await crearCreacion({ tipo: "versiculo", texto: "Juan 8:12" });
+  await guardarCreacion({ ...c, versiculo: { ref: "Juan 8:12", texto: "t", confirmado: true } });
+  writeFileSync(join(carpetaCreacion(c.id), "exportados", "juan-8-12-9x16.mp4"), "x");
+  writeFileSync(join(carpetaCreacion(c.id), "exportados", "juan-8-12-9x16-portada.jpg"), "x");
+  expect(await listarExportadosIa()).toEqual([{ proyectoId: `ia:${c.id}`, nombre: "Con IA · Juan 8:12", archivos: [{ nombre: "juan-8-12-9x16.mp4", tamano: 1, portada: "juan-8-12-9x16-portada.jpg" }] }]);
+});
+
+test("el servidor de medios encuentra los archivos de «Con IA»", async () => {
+  const { resolverMedio } = await import("../../../src/main/ipc");
+  const c = await crearCreacion({ tipo: "versiculo", texto: "Juan 8:12" });
+  expect(await resolverMedio("exportado", `ia:${c.id}/juan-9x16.mp4`)).toBe(join(datos, "ia", c.id, "exportados", "juan-9x16.mp4"));
+  expect(await resolverMedio("fondo-ia", `${c.id}/fondo.jpg`)).toBe(join(datos, "ia", c.id, "fondo.jpg"));
+  expect(await resolverMedio("fondo-ia", `${c.id}/../x`)).toBeNull();
+});

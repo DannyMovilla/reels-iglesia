@@ -39,7 +39,7 @@ export const argsPortada = (mp4: string, t: number, salida: string): string[] =>
   ["-v", "error", "-y", "-ss", t.toFixed(2), "-i", mp4, "-frames:v", "1", "-q:v", "2", salida];
 
 /** Texto para pegar en cada red, en un solo archivo junto a los MP4. */
-export function textosDelClip(c: ClipSpec): string {
+export function textosDelClip(c: { redes: Redes }): string {
   return (Object.keys(NOMBRE_RED) as (keyof Redes)[])
     .map((red) => `=== ${NOMBRE_RED[red]} ===\n${textoParaPublicar(c.redes, red)}\n`)
     .join("\n");
