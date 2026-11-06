@@ -29,6 +29,7 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
   const [abierto] = useState(() => new Date().toISOString());
   const vista = useRef<ControlVistaPrevia>(null);
   const guardando = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendiente = useRef<ClipSpec | null>(null);
 
   const recargar = useCallback(async () => {
     const api = window.reels!;
@@ -60,10 +61,22 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
     const editado: ClipSpec = { ...c, estado: c.estado === "sugerido" ? "editado" : c.estado };
     setClips((cs) => cs.map((x) => (x.id === editado.id ? editado : x)));
     if (guardando.current) clearTimeout(guardando.current);
-    guardando.current = setTimeout(() => {
-      guardando.current = null;
-      void window.reels!.guardarClip(proyectoId, editado);
-    }, 400);
+    pendiente.current = editado;
+    guardando.current = setTimeout(() => void guardarYa(), 400);
+  };
+
+  /** Guarda ya la última edición (la exportación toma el clip del disco: debe llevar lo que la persona ve). */
+  const guardarYa = async () => {
+    if (guardando.current) clearTimeout(guardando.current);
+    const c = pendiente.current;
+    pendiente.current = null;
+    if (c) await window.reels!.guardarClip(proyectoId, c);
+    if (!pendiente.current) guardando.current = null;
+  };
+
+  const exportar = async (id: string, clipIds: string[]) => {
+    await guardarYa();
+    await window.reels!.exportar(id, clipIds);
   };
 
   /** Nuevo corte: el versículo se desplaza para seguir en el mismo momento del video. */
@@ -84,7 +97,7 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
           alProcesar={(desde) => void window.reels!.procesar(proyecto.id, desde)} />
         <div className="titulo-seccion">Clips <span>{clips.length === 1 ? "1 sugerido" : clips.length ? `${clips.length} sugeridos` : ""}</span></div>
         {clips.length > 1 && (
-          <button type="button" className="btn pequeno exportar-todos" onClick={() => void window.reels!.exportar(proyecto.id, clips.map((c) => c.id))}>
+          <button type="button" className="btn pequeno exportar-todos" onClick={() => void exportar(proyecto.id, clips.map((c) => c.id))}>
             <Download size={13} aria-hidden="true" />Exportar {clips.length} clips
           </button>
         )}
@@ -115,7 +128,7 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
         {clip && (
           <div className="inspector-pie">
             <button type="button" className="btn primario" disabled={clip.formatos.length === 0}
-              onClick={() => void window.reels!.exportar(proyecto.id, [clip.id])}>
+              onClick={() => void exportar(proyecto.id, [clip.id])}>
               <Download size={15} aria-hidden="true" />Exportar este clip
             </button>
           </div>

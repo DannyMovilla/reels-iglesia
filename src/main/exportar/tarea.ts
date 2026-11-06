@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs";
-import { readdir, rm } from "node:fs/promises";
-import { join } from "node:path";
+import { copyFile, link, readdir, rm } from "node:fs/promises";
+import { extname, join } from "node:path";
 import { construirComposicion } from "@shared/reel/composicion";
 import type { Caras, ClipSpec, Formato, Transcripcion } from "@shared/tipos";
 import type { Ejecutor } from "../cola/cola";
@@ -44,12 +44,15 @@ export function crearEjecutorExportar(deps: DepsExportar = {}): Ejecutor {
     if (!transcripcion) throw new Error("No hay transcripción para este proyecto. Vuelve a procesar la prédica.");
 
     ctx.alProgreso(1, "Preparando…");
+    // HyperFrames corta el src en "#" o "?": esas rutas van como un enlace dentro de la carpeta temporal.
+    const enlazar = /[#?%]/.test(proyecto.video.ruta);
+    const fuenteVideo = enlazar ? `video${extname(proyecto.video.ruta).toLowerCase()}` : proyecto.video.ruta.replace(/\\/g, "/");
     const comp = construirComposicion({
       clip, transcripcion, formato,
       caras: await leerJson<Caras>(t.proyectoId, "caras.json"),
       marca: await leerMarca(),
       dimensiones: await dimensiones(proyecto.video.ruta),
-      fuenteVideo: proyecto.video.ruta.replace(/\\/g, "/"),
+      fuenteVideo,
       recursos: { gsap: "recursos/gsap.min.js", fuentes: "recursos/fuentes" },
       modo: "render",
     });
@@ -58,6 +61,7 @@ export function crearEjecutorExportar(deps: DepsExportar = {}): Ejecutor {
     const exportados = join(carpeta, "exportados");
     try {
       await prepararCarpeta(tmp, comp.html);
+      if (enlazar) await link(proyecto.video.ruta, join(tmp, fuenteVideo)).catch(() => copyFile(proyecto.video.ruta, join(tmp, fuenteVideo)));
       const existentes = new Set(existsSync(exportados) ? await readdir(exportados) : []);
       const nombre = nombreSalida(clip.titulo, formato, existentes);
       await renderizar(tmp, join(exportados, nombre), {

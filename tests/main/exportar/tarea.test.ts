@@ -66,6 +66,25 @@ describe("ejecutor exportar", () => {
     expect(existsSync(join(carpetaProyecto(id), "tmp", "t1"))).toBe(false);
   });
 
+  test("un video con # o ? en la ruta se pasa a HyperFrames como un archivo de la carpeta temporal (no se corta la ruta)", async () => {
+    const raro = join(mkdtempSync(join(tmpdir(), "reels-v-")), "Culto #45 ¿fe.mp4");
+    writeFileSync(raro, "x");
+    const otro = (await crearProyecto({ nombre: "Culto 45", video: { ruta: raro, tamano: 1, modificado: 0, duracion: 100 }, rango: { inicio: 0, fin: 75 } })).id;
+    await guardarJson(otro, "transcripcion.json", JSON.parse(readFileSync(join(FIX, "transcripcion-muestra.json"), "utf8")));
+    let src = "";
+    let existe = false;
+    await crearEjecutorExportar(deps({
+      renderizar: async (dir, salida) => {
+        src = /<video[^>]*\ssrc="([^"]+)"/.exec(readFileSync(join(dir, "index.html"), "utf8"))![1];
+        existe = existsSync(join(dir, src));
+        writeFileSync(salida, "mp4");
+      },
+    }))({ ...tarea(clip), proyectoId: otro }, ctx());
+    expect(src).not.toMatch(/[#?%]/);
+    expect(existe).toBe(true);
+    expect(existsSync(raro)).toBe(true);
+  });
+
   test("sin GPU NVIDIA exporta sin --gpu", async () => {
     await crearEjecutorExportar(deps({ gpu: async () => false }))(tarea(clip), ctx());
     expect(llamadas[0].gpu).toBe(false);

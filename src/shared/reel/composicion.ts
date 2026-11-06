@@ -82,7 +82,9 @@ export function construirComposicion(e: EntradaComposicion): { html: string; dur
   // Gancho: durante la apertura (o los primeros 4,5 s), centrado debajo o encima de la cara.
   if (c.gancho.trim()) {
     const dur = apertura ? apertura.duracion : Math.min(4.5, clip.duracion);
-    const top = Math.round(posicionGancho(caraY, formato) * H * 10) / 10;
+    // La cara en el cuadro de salida (con zoom y desplazamiento de cámara); su alto ≈ 1,2 × su ancho.
+    const cara = { centro: (pos(0.5, caraY).y + caraY * vh) / H, alto: ((pista?.caraAncho ?? 0.06) * vw * 1.2) / H };
+    const top = Math.round(posicionGancho(cara, formato) * H * 10) / 10;
     el.push(`<div id="gancho" class="clip gancho" data-start="0" data-duration="${n(dur)}" style="top:${top}px">${esc(c.gancho)}<i></i></div>`);
     js.push(`tl.from("#gancho", { opacity: 0, scale: 0.92, duration: 0.35, ease: "back.out(1.7)" }, 0);`);
     js.push(`tl.to("#gancho", { opacity: 0, duration: 0.3, ease: "power2.in" }, ${n(Math.max(0, dur - 0.3))});`);

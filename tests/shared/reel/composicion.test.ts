@@ -75,9 +75,17 @@ test("cierre de 2,6 s con nombre e invitación de la marca", () => {
   expect(cierre.textContent).toContain("Síguenos · Domingos 10:00 AM");
 });
 
-test("el gancho va debajo de la cara cuando la cara está arriba (9:16)", () => {
-  const g = dom(construirComposicion(entrada()).html).querySelector("#gancho") as HTMLElement;
-  expect(g.getAttribute("style")).toContain("top:1017.6px");
+const topGancho = (r: { html: string }) => Number(/top:([\d.]+)px/.exec((dom(r.html).querySelector("#gancho") as HTMLElement).getAttribute("style")!)![1]);
+
+test("el gancho va debajo de la cara cuando la cara está arriba (9:16, zoom 1,25)", () => {
+  // cara en y 0,25 del video → en la salida ocupa ~0,17–0,43 del alto
+  expect(topGancho(construirComposicion(entrada())) / 1920).toBeGreaterThan(0.45);
+});
+
+test("con zoom 1 y la cara a media altura el gancho no cae sobre la boca: va arriba", () => {
+  const carasMedio: Caras = Array.from({ length: 160 }, (_, i) => [i * 0.5, [[0.5, 0.45, 0.06, 0.9]]]);
+  const r = construirComposicion({ ...entrada("9:16", clip({ encuadre: { modo: "auto", x: 0.5, zoom: 1 } })), caras: carasMedio });
+  expect(topGancho(r) / 1920).toBeLessThan(0.3);
 });
 
 test("sin recursos de internet y con el texto escapado", () => {

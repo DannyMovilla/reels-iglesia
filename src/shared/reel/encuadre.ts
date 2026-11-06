@@ -7,7 +7,7 @@ export interface ClaveCamara { t: number; x: number; y: number }
  * elige la cara más grande y cercana a la anterior, zona muerta 0,035 en x / 0,05 en y,
  * y corte seco cuando la cara salta más de 0,15 y se queda ahí (cambio de cámara).
  */
-export function pistaCamara(caras: Caras, desde: number, hasta: number): { keys: ClaveCamara[]; caraY: number } | null {
+export function pistaCamara(caras: Caras, desde: number, hasta: number): { keys: ClaveCamara[]; caraY: number; caraAncho: number } | null {
   const muestras = caras.filter(([t]) => t >= desde - 1 && t <= hasta + 1);
   if (muestras.length === 0) return null;
   let previa: [number, number, number, number] | null = null;
@@ -43,11 +43,38 @@ export function pistaCamara(caras: Caras, desde: number, hasta: number): { keys:
     if (Math.abs(ty - cam.y) > 0.05) cam.y += (ty - cam.y) * 0.4;
     keys.push({ t, x: cam.x, y: cam.y });
   });
-  const ys = lleno.filter((_, i) => crudo[i].t >= desde && crudo[i].t <= hasta).map((f) => f[1]).sort((a, b) => a - b);
-  return { keys, caraY: ys.length ? ys[ys.length >> 1] : 0.3 };
+  const dentro = lleno.filter((_, i) => crudo[i].t >= desde && crudo[i].t <= hasta);
+  const mediana = (v: number[], d: number) => (v.length ? [...v].sort((a, b) => a - b)[v.length >> 1] : d);
+  return { keys, caraY: mediana(dentro.map((f) => f[1]), 0.3), caraAncho: mediana(dentro.map((f) => f[2]), 0.06) };
 }
 
-/** Centro vertical del gancho (fracción del alto): debajo de la cara si la cara está arriba (solo 9:16). */
-export function posicionGancho(caraY: number, formato: Formato): number {
-  return formato === "9:16" && caraY < 0.5 ? 0.53 : 0.12;
+/** Cara en el cuadro de salida: centro y alto como fracción del alto del reel. */
+export interface CaraEnCuadro { centro: number; alto: number }
+
+/** Medio alto del cartel del gancho (2 líneas) como fracción del alto de cada formato. */
+const MEDIO_GANCHO: Record<Formato, number> = { "9:16": 0.055, "4:5": 0.075, "1:1": 0.095 };
+
+/**
+ * Centro vertical del gancho (fracción del alto de salida): en la franja libre más grande,
+ * arriba o debajo de la cabeza (pelo ≈ 0,9 alto de cara por encima del centro, mentón ≈ 0,7 por debajo),
+ * sin bajar a la zona de los subtítulos.
+ */
+export function posicionGancho(cara: CaraEnCuadro, formato: Formato): number {
+  const m = MEDIO_GANCHO[formato];
+  const cabezaArriba = cara.centro - cara.alto * 0.9 - 0.03;
+  const cabezaAbajo = cara.centro + cara.alto * 0.7 + 0.03;
+  const tam = (f: [number, number]) => f[1] - f[0];
+  const elegir = (limArriba: number, limAbajo: number): [number, number] => {
+    const arriba: [number, number] = [limArriba, cabezaArriba];
+    const abajo: [number, number] = [cabezaAbajo, limAbajo];
+    return tam(arriba) >= tam(abajo) ? arriba : abajo;
+  };
+  // Primero sin bajar a los subtítulos; si no cabe, puede llegar al borde del cuadro.
+  let franja = elegir(0.04, formato === "9:16" ? 0.68 : 0.72);
+  if (tam(franja) < 2 * m) franja = elegir(0.01, 0.99);
+  const [a, b] = franja;
+  const r3 = (x: number) => Math.round(x * 1000) / 1000;
+  if (tam(franja) < 2 * m) return r3((a + b) / 2);
+  // Lo más cerca posible de la cabeza sin tocarla (se lee junto a quien habla).
+  return r3(b === cabezaArriba ? b - m - 0.02 : a + m + 0.02);
 }

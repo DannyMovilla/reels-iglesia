@@ -115,9 +115,20 @@ describe("encuadre", () => {
     expect(p.keys[corte].t).toBeCloseTo(10, 1);
   });
 
-  test("posición del gancho según la cara y el formato", () => {
-    expect(posicionGancho(0.25, "9:16")).toBe(0.53);
-    expect(posicionGancho(0.6, "9:16")).toBe(0.12);
-    expect(posicionGancho(0.25, "1:1")).toBe(0.12);
+  test("el gancho va en la franja libre más grande, nunca sobre la cabeza (posiciones en el cuadro de salida)", () => {
+    // El cartel (medio alto m) no se cruza con la cabeza: del pelo (0,9 alto sobre el centro) al mentón (0,7 bajo el centro).
+    const tapa = (g: number, cara: { centro: number; alto: number }, m: number) => g + m > cara.centro - cara.alto * 0.9 && g - m < cara.centro + cara.alto * 0.7;
+    const arriba = { centro: 0.25, alto: 0.12 };
+    expect(posicionGancho(arriba, "9:16")).toBeGreaterThan(arriba.centro); // cara arriba → debajo
+    expect(tapa(posicionGancho(arriba, "9:16"), arriba, 0.055)).toBe(false);
+    const media = { centro: 0.45, alto: 0.18 }; // zoom 1: la cara llega a la mitad
+    expect(posicionGancho(media, "9:16")).toBeLessThan(media.centro);
+    expect(tapa(posicionGancho(media, "9:16"), media, 0.055)).toBe(false);
+    const abajo = { centro: 0.6, alto: 0.12 };
+    expect(posicionGancho(abajo, "4:5")).toBeLessThan(abajo.centro);
+    expect(tapa(posicionGancho(abajo, "4:5"), abajo, 0.075)).toBe(false);
+    const cuadrado = { centro: 0.4, alto: 0.25 };
+    expect(tapa(posicionGancho(cuadrado, "1:1"), cuadrado, 0.095)).toBe(false);
   });
+
 });
