@@ -1,23 +1,41 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { BookOpen, Contrast, Sparkles, TrendingUp, TriangleAlert } from "lucide-react";
-import type { ClipSpec, Proyecto, Tarea } from "@shared/tipos";
+import { TriangleAlert } from "lucide-react";
+import type { Caras, ClipSpec, Marca, Proyecto, Tarea, Transcripcion } from "@shared/tipos";
 import { formatoTiempo } from "@shared/validar";
+import { Inspector } from "../componentes/Inspector";
 import { ListaClips } from "../componentes/ListaClips";
 import { PanelProceso } from "../componentes/PanelProceso";
+import { VistaPrevia, type ControlVistaPrevia } from "../componentes/VistaPrevia";
+
+interface Datos {
+  transcripcion: Transcripcion | null;
+  caras: Caras | null;
+  marca: Marca | null;
+  dimensiones: { ancho: number; alto: number } | null;
+}
 
 export function Editor({ proyectoId }: { proyectoId: string }) {
   const [proyecto, setProyecto] = useState<Proyecto | null>(null);
   const [clips, setClips] = useState<ClipSpec[]>([]);
   const [tareas, setTareas] = useState<Tarea[]>([]);
   const [sel, setSel] = useState<string | undefined>();
-  const video = useRef<HTMLVideoElement>(null);
+  const [datos, setDatos] = useState<Datos>({ transcripcion: null, caras: null, marca: null, dimensiones: null });
+  const [avisos, setAvisos] = useState<string[]>([]);
+  const vista = useRef<ControlVistaPrevia>(null);
+  const guardando = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const recargar = useCallback(async () => {
     const api = window.reels!;
     const [p, c] = await Promise.all([api.leerProyecto(proyectoId), api.leerClips(proyectoId)]);
     setProyecto(p);
-    setClips(c);
-    setSel((s) => s ?? [...c].sort((a, b) => b.puntaje - a.puntaje)[0]?.id);
+    if (!guardando.current) setClips(c); // no pisar una edición que todavía no se guardó
+    setSel((s) => (s && c.some((x) => x.id === s) ? s : [...c].sort((a, b) => b.puntaje - a.puntaje)[0]?.id));
+    if (p.pasos.transcripcion.estado === "ok" && p.videoDisponible) {
+      const [transcripcion, caras, marca, dimensiones] = await Promise.all([
+        api.leerTranscripcion(proyectoId), api.leerCaras(proyectoId), api.leerMarca(), api.infoVideo(proyectoId).catch(() => null),
+      ]);
+      setDatos((d) => (d.transcripcion && d.dimensiones ? d : { transcripcion, caras, marca, dimensiones }));
+    }
   }, [proyectoId]);
 
   useEffect(() => {
@@ -32,14 +50,19 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
     });
   }, [proyectoId, recargar]);
 
-  const clip = clips.find((c) => c.id === sel);
-
-  useEffect(() => {
-    if (clip && video.current) { video.current.currentTime = clip.inicio; }
-  }, [clip?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  const cambiarClip = (c: ClipSpec) => {
+    const editado: ClipSpec = { ...c, estado: c.estado === "sugerido" ? "editado" : c.estado };
+    setClips((cs) => cs.map((x) => (x.id === editado.id ? editado : x)));
+    if (guardando.current) clearTimeout(guardando.current);
+    guardando.current = setTimeout(() => {
+      guardando.current = null;
+      void window.reels!.guardarClip(proyectoId, editado);
+    }, 400);
+  };
 
   if (!proyecto) return <div className="cargando">Cargando…</div>;
-  const url = window.reels!.urlVideo(proyecto.id);
+  const clip = clips.find((c) => c.id === sel);
+  const listo = clip && datos.transcripcion && datos.marca && datos.dimensiones;
 
   return (
     <div className="editor">
@@ -49,7 +72,7 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
           alProcesar={(desde) => void window.reels!.procesar(proyecto.id, desde)} />
         <div className="titulo-seccion">Clips <span>{clips.length === 1 ? "1 sugerido" : clips.length ? `${clips.length} sugeridos` : ""}</span></div>
         {clips.length > 0 ? (
-          <ListaClips clips={clips} seleccionado={sel} alElegir={setSel} urlVideo={proyecto.videoDisponible ? url : undefined} />
+          <ListaClips clips={clips} seleccionado={sel} alElegir={setSel} urlVideo={proyecto.videoDisponible ? window.reels!.urlVideo(proyecto.id) : undefined} />
         ) : (
           <p className="vacio">Los clips aparecerán aquí cuando Claude termine de analizar la prédica.</p>
         )}
@@ -60,34 +83,14 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
           <p className="aviso" role="alert"><TriangleAlert size={16} aria-hidden="true" />No encuentro el video original en «{proyecto.video.ruta}». Si lo moviste, vuelve a ponerlo ahí. La transcripción y los clips se conservan.</p>
         )}
         {clip && <div className="centro-cabeza"><h2>{clip.titulo}</h2><span>{clip.categoria} · {formatoTiempo(clip.fin - clip.inicio)}</span></div>}
-        {proyecto.videoDisponible && (
-          <video ref={video} className="reproductor" src={url} controls preload="metadata"
-            onTimeUpdate={(e) => { if (clip && e.currentTarget.currentTime >= clip.fin) e.currentTarget.pause(); }} />
+        {listo && (
+          <VistaPrevia ref={vista} proyectoId={proyecto.id} clip={clip} transcripcion={datos.transcripcion!} caras={datos.caras}
+            marca={datos.marca!} dimensiones={datos.dimensiones!} alAvisos={setAvisos} />
         )}
       </main>
 
       <aside className="editor-der" aria-label="Datos del clip">
-        {clip ? (
-          <>
-            <div className="dato"><span className="etiqueta">Gancho en pantalla</span><b>{clip.gancho}</b>
-              {clip.ganchosAlternativos.length > 0 && (
-                <div className="alternativas">{clip.ganchosAlternativos.map((g) => <span key={g} className="alt"><Sparkles size={12} aria-hidden="true" />{g}</span>)}</div>
-              )}
-            </div>
-            <div className="porque"><TrendingUp size={16} aria-hidden="true" /><div><b>{clip.puntaje} · Por qué funciona.</b> {clip.razon}</div></div>
-            {clip.versiculos.map((v) => (
-              <div key={v.ref} className="tarjeta"><div className="tarjeta-cabeza"><BookOpen size={16} aria-hidden="true" /><b>{v.ref}</b><span className="mono">{formatoTiempo(v.en)}</span></div>
-                <p>Los subtítulos se ocultarán mientras aparezca la cita.</p></div>
-            ))}
-            {clip.apertura && (
-              <div className="tarjeta"><div className="tarjeta-cabeza"><Contrast size={16} aria-hidden="true" /><b>Apertura en blanco y negro</b></div>
-                <p>«{clip.apertura.frase}» · {(clip.apertura.fin - clip.apertura.inicio).toFixed(1)} s</p></div>
-            )}
-            <div className="dato"><span className="etiqueta">Texto para publicar</span><p>{clip.descripcion}</p><p className="mono hashtags">{clip.hashtags.join(" ")}</p></div>
-          </>
-        ) : (
-          <p className="vacio">Elige un clip para ver sus datos.</p>
-        )}
+        {clip ? <Inspector clip={clip} avisos={avisos} alCambiar={cambiarClip} /> : <p className="vacio">Elige un clip para editarlo.</p>}
       </aside>
     </div>
   );

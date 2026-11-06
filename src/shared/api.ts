@@ -1,4 +1,4 @@
-import type { ClipSpec, Formato, Proyecto, Tarea, TipoTarea, Transcripcion, VideoOrigen } from "./tipos";
+import type { Caras, ClipSpec, Formato, Marca, Proyecto, Tarea, TipoTarea, Transcripcion, VideoOrigen } from "./tipos";
 
 export interface Chequeo {
   ok: boolean;
@@ -27,6 +27,12 @@ export interface ApiReels {
   leerProyecto(id: string): Promise<Proyecto>;
   leerClips(id: string): Promise<ClipSpec[]>;
   leerTranscripcion(id: string): Promise<Transcripcion | null>;
+  leerCaras(id: string): Promise<Caras | null>;
+  /** Guarda un clip editado (reemplaza el de mismo id en clips.json). */
+  guardarClip(proyectoId: string, clip: ClipSpec): Promise<void>;
+  leerMarca(): Promise<Marca>;
+  /** Ancho y alto del video original (para encuadrar). */
+  infoVideo(id: string): Promise<{ ancho: number; alto: number }>;
   /** Encola el procesamiento desde un paso (por defecto, desde la transcripción). */
   procesar(id: string, desde?: TipoTarea): Promise<void>;
   /** Encola una exportación por clip y formato (por defecto, los formatos marcados en cada clip). */

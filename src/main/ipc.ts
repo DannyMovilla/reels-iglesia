@@ -4,12 +4,12 @@ import { extname, join } from "node:path";
 import { Readable } from "node:stream";
 import { dialog, ipcMain, protocol, shell, type BrowserWindow } from "electron";
 import type { DatosNuevoProyecto, EstadoSistema } from "@shared/api";
-import type { ClipSpec, Formato, TipoTarea, Transcripcion } from "@shared/tipos";
+import type { Caras, ClipSpec, Formato, TipoTarea, Transcripcion } from "@shared/tipos";
 import type { Cola } from "./cola/cola";
-import { duracionVideo } from "./procesos/video";
+import { dimensionesVideo, duracionVideo } from "./procesos/video";
 import { carpetaProyecto, raizApp } from "./rutas";
 import { esquemaVista, registrarComposicion, servirVista } from "./vista";
-import { crearProyecto, leerJson, leerProyecto, listarProyectos } from "./proyectos/almacen";
+import { crearProyecto, guardarClip, leerJson, leerMarca, leerProyecto, listarProyectos } from "./proyectos/almacen";
 
 export interface DepsIpc {
   cola: Cola;
@@ -93,6 +93,14 @@ export function registrarIpc(deps: DepsIpc): void {
   ipcMain.handle("proyectos:leer", (_e, id: string) => leerProyecto(id));
   ipcMain.handle("proyectos:clips", async (_e, id: string) => (await leerJson<ClipSpec[]>(id, "clips.json")) ?? []);
   ipcMain.handle("proyectos:transcripcion", (_e, id: string) => leerJson<Transcripcion>(id, "transcripcion.json"));
+  ipcMain.handle("proyectos:caras", (_e, id: string) => leerJson<Caras>(id, "caras.json"));
+  ipcMain.handle("proyectos:guardarClip", (_e, id: string, clip: ClipSpec) => guardarClip(id, clip));
+  ipcMain.handle("marca:leer", () => leerMarca());
+  const dims = new Map<string, Promise<{ ancho: number; alto: number }>>();
+  ipcMain.handle("proyectos:infoVideo", async (_e, id: string) => {
+    if (!dims.has(id)) dims.set(id, leerProyecto(id).then((p) => dimensionesVideo(p.video.ruta)));
+    return dims.get(id);
+  });
   ipcMain.handle("proyectos:procesar", (_e, id: string, desde?: TipoTarea) => void cola.agregar(id, desde ?? "transcribir"));
   ipcMain.handle("exportar:encolar", async (_e, id: string, clipIds: string[], formatos?: Formato[]) => {
     const clips = (await leerJson<ClipSpec[]>(id, "clips.json")) ?? [];

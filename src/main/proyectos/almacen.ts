@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import { mkdir, readdir, readFile, rename, stat, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import type { Marca, Proyecto, VideoOrigen } from "@shared/tipos";
+import type { ClipSpec, Marca, Proyecto, VideoOrigen } from "@shared/tipos";
 import { validarRango } from "@shared/validar";
 import { carpetaDatos, carpetaProyecto, carpetaProyectos } from "../rutas";
 
@@ -94,4 +94,11 @@ export async function leerMarca(): Promise<Marca> {
   } catch {
     return { ...MARCA_POR_DEFECTO };
   }
+}
+
+/** Reemplaza un clip por id en clips.json (un clip que no existe se ignora). */
+export async function guardarClip(proyectoId: string, clip: ClipSpec): Promise<void> {
+  const clips = (await leerJson<ClipSpec[]>(proyectoId, "clips.json")) ?? [];
+  if (!clips.some((c) => c.id === clip.id)) return;
+  await guardarJson(proyectoId, "clips.json", clips.map((c) => (c.id === clip.id ? clip : c)));
 }

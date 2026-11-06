@@ -63,3 +63,12 @@ test("listarProyectos devuelve el más nuevo primero", async () => {
   const lista = await listarProyectos();
   expect(lista.map((p) => p.nombre)).toEqual(["Segundo", "Primero"]);
 });
+
+test("guardarClip reemplaza solo el clip con ese id", async () => {
+  const { guardarClip } = await import("../../../src/main/proyectos/almacen");
+  const p = await crearProyecto({ nombre: "Culto", video, rango: { inicio: 0, fin: 60 } }, DOS_NOV);
+  await guardarJson(p.id, "clips.json", [{ id: "a", gancho: "A" }, { id: "b", gancho: "B" }]);
+  await guardarClip(p.id, { id: "b", gancho: "B2" } as never);
+  await guardarClip(p.id, { id: "zzz", gancho: "X" } as never);
+  expect(await leerJson(p.id, "clips.json")).toEqual([{ id: "a", gancho: "A" }, { id: "b", gancho: "B2" }]);
+});

@@ -32,6 +32,23 @@ test("nueva prédica → procesar → ver clips sugeridos", async () => {
   const lista = v.getByRole("list", { name: "Clips sugeridos" });
   await expect(lista.getByRole("heading", { name: "El quebrantamiento activa la gloria" })).toBeVisible();
   await expect(v.getByLabel("Datos del clip")).toContainText("Romanos 8:28");
+
+  // Vista previa en vivo: el reproductor de HyperFrames queda listo con la composición del clip.
+  let listo = false;
+  for (let i = 0; i < 100 && !listo; i++) {
+    listo = await v.evaluate(() => Boolean((document.querySelector("hyperframes-player") as unknown as { ready?: boolean } | null)?.ready));
+    if (!listo) await v.waitForTimeout(200);
+  }
+  expect(listo).toBe(true);
+  await v.waitForTimeout(1500);
   await v.screenshot({ path: join(RAIZ, "test-results", "editor.png") });
+
+  // Editar el gancho se guarda solo y sobrevive a reabrir el proyecto.
+  const gancho = v.getByLabel("Gancho en pantalla");
+  await gancho.fill("Dios sigue siendo fiel");
+  await v.waitForTimeout(800);
+  await v.getByRole("link", { name: "Prédicas" }).click();
+  await v.getByRole("list", { name: "Prédicas" }).getByRole("button").first().click();
+  await expect(v.getByLabel("Gancho en pantalla")).toHaveValue("Dios sigue siendo fiel");
   await app.close();
 });
