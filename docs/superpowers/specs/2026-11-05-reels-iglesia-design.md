@@ -133,7 +133,10 @@ Nombre de la iglesia, logo (PNG con y sin fondo, tamaño), color principal, text
 
 ## 5. Flujo del usuario
 
-1. **Nuevo proyecto:** elegir el video (arrastrar o buscar). Se muestra un reproductor con la forma
+1. **Nuevo proyecto:** elegir el video (arrastrar o buscar) **o pegar el enlace** del culto
+   (Facebook, YouTube…; plan 3): la app lo descarga con yt-dlp a la carpeta de datos, con progreso en
+   la cola y errores en español (enlace privado, sin internet). Solo videos que la iglesia puede usar.
+   Se muestra un reproductor con la forma
    de onda; el usuario marca inicio y fin de la prédica (botones "Marcar aquí" + campos de tiempo).
 2. **Procesar** (automático, en cola): transcribir → detectar caras → analizar con Claude. Cada paso
    muestra estado, tiempo y errores comprensibles (panel "Proceso" de la maqueta).
