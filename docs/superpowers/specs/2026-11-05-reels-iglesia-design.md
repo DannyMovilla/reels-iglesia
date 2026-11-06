@@ -135,7 +135,7 @@ Nombre de la iglesia, logo (PNG con y sin fondo, tamaño), color principal, text
 
 1. **Nuevo proyecto:** elegir el video (arrastrar o buscar) **o pegar el enlace** del culto
    (Facebook, YouTube…; plan 3): la app lo descarga con yt-dlp a la carpeta de datos, con progreso en
-   la cola y errores en español (enlace privado, sin internet). Solo videos que la iglesia puede usar.
+   pantalla y errores en español (enlace privado, sin internet). Solo videos que la iglesia puede usar.
    Se muestra un reproductor con la forma
    de onda; el usuario marca inicio y fin de la prédica (botones "Marcar aquí" + campos de tiempo).
 2. **Procesar** (automático, en cola): transcribir → detectar caras → analizar con Claude. Cada paso
@@ -250,8 +250,7 @@ macOS/Linux, edición multicámara, traducción de subtítulos.
 3. Análisis con Claude (`claude -p`) y lista de clips.
 4. Editor: vista previa en vivo, inspector, línea de tiempo.
 5. Exportación con HyperFrames (formatos, cola, notificaciones) + regla del versículo + cierre.
-6. Marca, música generada y mezcla.
-7. Primer uso, empaquetado del instalador y pruebas E2E.
+6. Plan 3 (todo junto, decidido 2026-11-06 por la persona): ver sección 14.
 
 ## 13. Riesgos
 
@@ -263,3 +262,37 @@ macOS/Linux, edición multicámara, traducción de subtítulos.
 | Empaquetar Python + CUDA (~2 GB) | Fase 1: el asistente de primer uso crea el `.venv` e instala dependencias; el instalador no las incluye. |
 | Límite de uso de la suscripción | Una llamada por proyecto; mostrar el error de límite con claridad. |
 | Texto bíblico (RVR1960 con derechos de autor) | No se incluye la Biblia; Claude propone cada versículo citado y la persona lo confirma; la tarjeta indica "RVR1960". |
+
+## 14. Plan 3 — alcance (decidido 2026-11-06)
+
+La persona pidió todo en un solo plan:
+
+1. **Marca:** pantalla para nombre, logo (tamaño ajustable, sin recortar), color, invitación, redes
+   (@ de Instagram/TikTok/Facebook/YouTube) y nombre del predicador por defecto, con vista previa en vivo.
+2. **Estilo de la iglesia:** la combinación de subtítulos, música, efectos, cortes, cierre y formatos se
+   guarda en la marca y se aplica a los clips nuevos; botones "Guardar como estilo de la iglesia" y
+   "Aplicar a todos los clips".
+3. **Música:** banco CC0 elegido por ánimo + pads generados (sección 7.7). Claude devuelve el ánimo de
+   cada clip en el mismo análisis.
+4. **Mezcla:** la música entra fuerte (~1,8 s), baja bajo la voz, sube un poco en pausas largas y se
+   desvanece al final.
+5. **Audio limpio:** la voz de la prédica se limpia una vez por proyecto (ruido y eco, filtro de graves)
+   y el reel final se normaliza a −14 LUFS con pico máximo −1 dBTP (nivel de Instagram/TikTok).
+6. **Cortes de pausas y muletillas** (opcional por clip, activo según el estilo): pausas de más de 0,7 s
+   se acortan a 0,25 s y se quitan muletillas sueltas ("eh", "em", "mmm"); subtítulos, versículo y
+   apertura siguen sincronizados.
+7. **Estilos de subtítulos del catálogo de HyperFrames** (Apache 2.0, con crédito en NOTICE): además de
+   Pop/Caja/Limpio, estilos tipo resaltado, karaoke en píldora, impacto y neón.
+8. **Efectos:** transición con destello/luz al pasar del B/N al color, textura de grano opcional,
+   rótulo con el nombre del predicador al inicio, cierre animado con las redes de la iglesia.
+9. **Textos por red:** Claude escribe, en el mismo análisis, texto y hashtags para Instagram, TikTok,
+   Facebook y YouTube Shorts (título), dentro de los límites de cada red y sin sonar a IA. Pestaña
+   Publicar con contador y botón Copiar; al exportar se guarda `<slug>-textos.txt`.
+10. **Portada:** al exportar, una imagen JPG del reel con el gancho visible (`<slug>-<formato>-portada.jpg`).
+11. **Nueva prédica desde enlace** (yt-dlp) o archivo (sección 5.1).
+12. **Primer uso:** asistente que revisa y arregla con un clic Python + entorno, FFmpeg y la sesión de Claude.
+13. **Instalador** de Windows (NSIS) que funciona sin el repositorio.
+14. **Pendientes menores** de los planes 1 y 2 que afectan a la persona (ubicar video movido, errores en
+    inglés, guion doble en nombres, versículo fuera del corte, etc.).
+
+Fuera del plan 3: publicar directo en las redes, generación de música con IA.
