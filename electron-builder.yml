@@ -21,6 +21,7 @@ extraResources:
     to: modelos
 win:
   target: nsis
+  icon: build/icon.ico
   # Sin firma de código: winCodeSign necesita el modo de desarrollador de Windows (D4).
   signAndEditExecutable: false
 nsis:
@@ -29,4 +30,7 @@ nsis:
   allowToChangeInstallationDirectory: true
   createDesktopShortcut: true
   shortcutName: Reels Iglesia
+  installerIcon: build/icon.ico
+  uninstallerIcon: build/icon.ico
 npmRebuild: false
+afterPack: build/despues-empaquetar.cjs

@@ -27,6 +27,8 @@ function crearVentana(): BrowserWindow {
     frame: false,
     backgroundColor: "#0a0c16",
     title: "Reels Iglesia",
+    // Instalada, la ventana toma el ícono del .exe; en desarrollo, el de build/.
+    ...(app.isPackaged ? {} : { icon: join(raizApp(), "build", "icon.png") }),
     show: false,
     webPreferences: { preload: join(__dirname, "../preload/index.js"), contextIsolation: true, sandbox: true },
   });
