@@ -11,6 +11,8 @@ export interface OpcionesProceso {
   env?: NodeJS.ProcessEnv;
   entrada?: string;
   alProgreso?(p: Progreso): void;
+  /** Cada línea de stdout que no es progreso JSON (p. ej. "@hf-progress {...}" de HyperFrames). */
+  alLinea?(linea: string): void;
   senal?: AbortSignal;
 }
 
@@ -44,7 +46,10 @@ export function ejecutarConProgreso(cmd: string, args: string[], op: OpcionesPro
       for (const l of lineas) {
         const p = esProgreso(l);
         if (p) op.alProgreso?.(p);
-        else stdout += l.replace(/\r$/, "") + "\n";
+        else {
+          stdout += l.replace(/\r$/, "") + "\n";
+          op.alLinea?.(l.replace(/\r$/, ""));
+        }
       }
     });
     hijo.stderr.on("data", (t: string) => (stderr += t));
