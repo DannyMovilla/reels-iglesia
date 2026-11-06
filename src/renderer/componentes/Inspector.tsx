@@ -133,6 +133,10 @@ export function Inspector({ clip: c, avisos, alCambiar, alGuardarEstilo, alAplic
                 <input type="range" min={0.55} max={0.86} step={0.01} value={c.subtitulos.altura} onChange={(e) => cambiar({ subtitulos: { ...c.subtitulos, altura: Number(e.target.value) } })} />
               </label>
             </div>
+            <div className="grupo"><h3>Ritmo</h3>
+              <div className="fila"><Interruptor activo={c.cortes.pausas} etiqueta="Acortar pausas largas" alCambiar={(pausas) => cambiar({ cortes: { ...c.cortes, pausas } })} /> Acortar pausas largas</div>
+              <div className="fila"><Interruptor activo={c.cortes.muletillas} etiqueta="Quitar muletillas" alCambiar={(muletillas) => cambiar({ cortes: { ...c.cortes, muletillas } })} /> Quitar muletillas («eh», «em»)</div>
+            </div>
             <div className="grupo"><h3>Música</h3>
               <Segmentos etiqueta="Música" valor={c.musica.modo} opciones={[["auto", "Automática"], ["pista", "Mi pista"], ["pad", "Pad"], ["ninguna", "Sin música"]]}
                 alCambiar={(modo) => cambiar({ musica: { ...c.musica, modo } })} />

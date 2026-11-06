@@ -1,5 +1,5 @@
 import type { ClipSpec, EstiloSub } from "../tipos";
-import type { Palabra, Parte } from "./tiempo";
+import { videoAReel, type Palabra, type Parte } from "./tiempo";
 import { type Ventana, ventanaVersiculo } from "./versiculo";
 
 export interface PalabraBloque { texto: string; desde: number; hasta: number; clave: boolean }
@@ -36,18 +36,19 @@ export function bloquesSubtitulos(c: ClipSpec, palabras: Palabra[], partes: Part
   const bloques: Bloque[] = [];
   for (const parte of partes) {
     if (parte.tipo === "cierre") continue;
-    const aReel = (t: number) => parte.inicioReel + (t - parte.inicioVideo);
+    const aReel = (t: number) => videoAReel(parte, t) ?? parte.inicioReel + (t - parte.inicioVideo);
     const finReel = parte.inicioReel + parte.duracion;
     let actual: Bloque | null = null;
     let previa: Palabra | null = null;
     const propios: Bloque[] = [];
     for (const w of palabras) {
       if (w.e <= parte.inicioVideo || w.s >= parte.finVideo) continue;
+      if (parte.tramos && videoAReel(parte, (w.s + w.e) / 2) === null) continue; // palabra cortada (muletilla)
       const texto = w.t.replace(/\s+/g, " ").trim();
       if (!texto) continue;
       const letras = actual ? actual.palabras.reduce((a, p) => a + p.texto.length + 1, 0) : 0;
       if (!actual || actual.palabras.length >= lim.palabras || letras + texto.length > lim.letras
-        || (previa && w.s - previa.e > 0.6) || (previa && /[.?!¿¡:;]$/.test(previa.t))) {
+        || (previa && aReel(w.s) - aReel(previa.e) > 0.6) || (previa && /[.?!¿¡:;]$/.test(previa.t))) {
         actual = { desde: Math.max(parte.inicioReel, aReel(w.s)), hasta: 0, palabras: [] };
         propios.push(actual);
       }

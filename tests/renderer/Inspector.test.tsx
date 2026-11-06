@@ -79,3 +79,11 @@ test("en Estilo se elige la música: modo, ánimo, tonalidad del pad y volumen",
   expect(alCambiar.mock.calls.at(-1)![0].musica.modo).toBe("ninguna");
   expect(screen.queryByLabelText("Volumen de la música")).toBeNull();
 });
+
+test("en Estilo se apagan los cortes de pausas y muletillas", async () => {
+  const alCambiar = vi.fn();
+  render(<Prueba alCambiar={alCambiar} />);
+  await userEvent.click(screen.getByRole("tab", { name: "Estilo" }));
+  await userEvent.click(screen.getByRole("switch", { name: "Quitar muletillas" }));
+  expect(alCambiar.mock.calls.at(-1)![0].cortes.muletillas).toBe(!base.cortes.muletillas);
+});

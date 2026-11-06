@@ -42,9 +42,9 @@ const n = (x: number) => String(r2(x));
 export function construirComposicion(e: EntradaComposicion): { html: string; duracion: number; ancho: number; alto: number; avisos: string[] } {
   const { clip: c, marca, formato } = e;
   const W = ANCHO, H = ALTOS[formato];
-  const partes = partesDelReel(c);
-  const duracion = r2(partes.reduce((a, p) => a + p.duracion, 0));
   const palabras = palabrasDe(e.transcripcion);
+  const partes = partesDelReel(c, palabras);
+  const duracion = r2(partes.reduce((a, p) => a + p.duracion, 0));
   const avisos: string[] = [];
   const el: string[] = [];
   const js: string[] = [];
@@ -59,23 +59,28 @@ export function construirComposicion(e: EntradaComposicion): { html: string; dur
   const pista = c.encuadre.modo === "auto" && e.caras ? pistaCamara(e.caras, Math.min(...partes.filter((p) => p.tipo !== "cierre").map((p) => p.inicioVideo)), c.fin) : null;
   const caraY = pista?.caraY ?? 0.3;
 
-  partes.forEach((p, i) => {
+  let nVideo = 0;
+  partes.forEach((p) => {
     if (p.tipo === "cierre") return;
-    const id = `v${i}`;
     const bn = p.tipo === "apertura" ? "filter: grayscale(1) contrast(1.15) brightness(0.95);" : "";
-    const sonido = e.voz ? `data-has-audio="false" muted` : `data-has-audio="true"`;
-    el.push(`<video id="${id}" class="clip video" src="${esc(e.fuenteVideo)}" data-start="${n(p.inicioReel)}" data-duration="${n(p.duracion)}" data-media-start="${n(p.inicioVideo)}" ${sonido} playsinline style="width:${r2(vw)}px;height:${r2(vh)}px;${bn}"></video>`);
-    if (e.voz) el.push(`<audio id="voz${i}" class="clip voz" src="${esc(e.voz.src)}" data-start="${n(p.inicioReel)}" data-duration="${n(p.duracion)}" data-media-start="${n(p.inicioVideo - e.voz.inicioRango)}" data-volume="1"></audio>`);
-    const claves: ClaveCamara[] = pista ? pista.keys.filter((k) => k.t >= p.inicioVideo && k.t <= p.finVideo) : [];
-    const ini = pos(pista ? (claves[0]?.x ?? pista.keys[0].x) : c.encuadre.x, caraY);
-    js.push(`tl.set("#${id}", { x: ${ini.x}, y: ${ini.y} }, ${n(p.inicioReel)});`);
-    let previa = ini;
-    for (const k of claves) {
-      const q = pos(k.x, k.y);
-      const t = p.inicioReel + (k.t - p.inicioVideo);
-      if (Math.abs(q.x - previa.x) > W * 0.6) js.push(`tl.set("#${id}", { x: ${q.x}, y: ${q.y} }, ${n(t)});`);
-      else if (q.x !== previa.x || q.y !== previa.y) js.push(`tl.to("#${id}", { x: ${q.x}, y: ${q.y}, duration: 0.5, ease: "sine.inOut", overwrite: "auto" }, ${n(Math.max(p.inicioReel, t - 0.5))});`);
-      previa = q;
+    const tramos = p.tramos ?? [{ inicioVideo: p.inicioVideo, finVideo: p.finVideo, inicioReel: p.inicioReel, duracion: p.duracion }];
+    for (const tr of tramos) {
+      const i = nVideo++;
+      const id = `v${i}`;
+      const sonido = e.voz ? `data-has-audio="false" muted` : `data-has-audio="true"`;
+      el.push(`<video id="${id}" class="clip video" src="${esc(e.fuenteVideo)}" data-start="${n(tr.inicioReel)}" data-duration="${n(tr.duracion)}" data-media-start="${n(tr.inicioVideo)}" ${sonido} playsinline style="width:${r2(vw)}px;height:${r2(vh)}px;${bn}"></video>`);
+      if (e.voz) el.push(`<audio id="voz${i}" class="clip voz" src="${esc(e.voz.src)}" data-start="${n(tr.inicioReel)}" data-duration="${n(tr.duracion)}" data-media-start="${n(tr.inicioVideo - e.voz.inicioRango)}" data-volume="1"></audio>`);
+      const claves: ClaveCamara[] = pista ? pista.keys.filter((k) => k.t >= tr.inicioVideo && k.t <= tr.finVideo) : [];
+      const ini = pos(pista ? (claves[0]?.x ?? pista.keys[0].x) : c.encuadre.x, caraY);
+      js.push(`tl.set("#${id}", { x: ${ini.x}, y: ${ini.y} }, ${n(tr.inicioReel)});`);
+      let previa = ini;
+      for (const k of claves) {
+        const q = pos(k.x, k.y);
+        const t = tr.inicioReel + (k.t - tr.inicioVideo);
+        if (Math.abs(q.x - previa.x) > W * 0.6) js.push(`tl.set("#${id}", { x: ${q.x}, y: ${q.y} }, ${n(t)});`);
+        else if (q.x !== previa.x || q.y !== previa.y) js.push(`tl.to("#${id}", { x: ${q.x}, y: ${q.y}, duration: 0.5, ease: "sine.inOut", overwrite: "auto" }, ${n(Math.max(tr.inicioReel, t - 0.5))});`);
+        previa = q;
+      }
     }
     if (p.tipo === "apertura") el.push(`<div id="vineta" class="clip vineta" data-start="${n(p.inicioReel)}" data-duration="${n(p.duracion)}"></div>`);
   });

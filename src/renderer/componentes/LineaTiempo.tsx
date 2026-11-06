@@ -2,7 +2,7 @@ import { useMemo, useRef, useState, type KeyboardEvent, type PointerEvent } from
 import { BookOpen, Captions, Contrast, EyeOff, Film, Flag, Layers } from "lucide-react";
 import { ajustarCorte, DURACION_MINIMA } from "@shared/reel/cortes";
 import { bloquesSubtitulos } from "@shared/reel/subtitulos";
-import { partesDelReel, type Palabra, type Parte } from "@shared/reel/tiempo";
+import { partesDelReel, reelAVideo, type Palabra, type Parte } from "@shared/reel/tiempo";
 import { ventanaVersiculo, type Ventana } from "@shared/reel/versiculo";
 import type { ClipSpec } from "@shared/tipos";
 import { formatoTiempo } from "@shared/validar";
@@ -24,7 +24,7 @@ export function LineaTiempo({ clip, palabras, tiempoActual, alBuscar, alCambiarC
   const [arrastre, setArrastre] = useState<{ borde: "inicio" | "fin"; delta: number } | null>(null);
   const carriles = useRef<HTMLDivElement>(null);
 
-  const partes = useMemo(() => partesDelReel(clip), [clip]);
+  const partes = useMemo(() => partesDelReel(clip, palabras), [clip, palabras]);
   const total = partes.reduce((a, p) => a + p.duracion, 0);
   const parteClip = partes.find((p) => p.tipo === "clip")!;
   const ventanas = useMemo(
@@ -34,7 +34,7 @@ export function LineaTiempo({ clip, palabras, tiempoActual, alBuscar, alCambiarC
   const bloques = useMemo(() => (clip.subtitulos.activos ? bloquesSubtitulos(clip, palabras, partes) : []), [clip, palabras, partes]);
   const pct = (t: number) => `${(t / total) * 100}%`;
   const videoEnCabezal = tiempoActual >= parteClip.inicioReel && tiempoActual <= parteClip.inicioReel + parteClip.duracion
-    ? parteClip.inicioVideo + (tiempoActual - parteClip.inicioReel) : null;
+    ? reelAVideo(parteClip, tiempoActual) : null;
 
   function cortar(inicio: number, fin: number) {
     if (fin - inicio < DURACION_MINIMA) {

@@ -2,7 +2,7 @@ import { existsSync } from "node:fs";
 import { copyFile, link, readdir, rm } from "node:fs/promises";
 import { extname, join } from "node:path";
 import { construirComposicion } from "@shared/reel/composicion";
-import { duracionReel } from "@shared/reel/tiempo";
+import { duracionReel, palabrasDe } from "@shared/reel/tiempo";
 import type { Caras, ClipSpec, Formato, Proyecto, Transcripcion } from "@shared/tipos";
 import type { Ejecutor } from "../cola/cola";
 import { argsVozLimpia } from "../procesos/audio";
@@ -90,7 +90,7 @@ export function crearEjecutorExportar(deps: DepsExportar = {}): Ejecutor {
     const carpeta = carpetaProyecto(t.proyectoId);
     const voz = join(carpeta, "voz.m4a");
     if (!existsSync(voz)) await crearVoz(proyecto, voz, ctx.senal);
-    const pista = await elegirMusica(clip, proyecto, duracionReel(clip));
+    const pista = await elegirMusica(clip, proyecto, duracionReel(clip, palabrasDe(transcripcion)));
     const musica = pista ? `musica${extname(pista).toLowerCase()}` : undefined;
     const marca = await leerMarca();
     const logo = marca.logo && existsSync(marca.logo) ? `recursos/logo${extname(marca.logo).toLowerCase()}` : undefined;

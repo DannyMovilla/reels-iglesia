@@ -1,4 +1,4 @@
-import { r2, type Palabra, type Parte } from "./tiempo";
+import { r2, videoAReel, type Palabra, type Parte } from "./tiempo";
 
 export interface Tramo { desde: number; hasta: number }
 export interface Punto { t: number; v: number }
@@ -18,8 +18,9 @@ export function tramosDeVoz(partes: Parte[], palabras: Palabra[]): Tramo[] {
     if (p.tipo === "cierre") continue;
     for (const w of palabras) {
       if (w.e <= p.inicioVideo || w.s >= p.finVideo) continue;
-      const desde = p.inicioReel + Math.max(0, w.s - p.inicioVideo);
-      const hasta = p.inicioReel + Math.min(p.duracion, w.e - p.inicioVideo);
+      const desde = videoAReel(p, Math.max(w.s, p.inicioVideo));
+      const hasta = videoAReel(p, Math.min(w.e, p.finVideo));
+      if (desde === null || hasta === null || hasta <= desde) continue;
       crudos.push({ desde: r2(desde), hasta: r2(hasta) });
     }
   }

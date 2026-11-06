@@ -1,5 +1,5 @@
 import type { ClipSpec } from "../tipos";
-import { type Parte, r2 } from "./tiempo";
+import { type Parte, r2, siguienteConservado, videoAReel } from "./tiempo";
 
 export interface Ventana { desde: number; hasta: number }
 
@@ -14,7 +14,8 @@ export function ventanaVersiculo(v: ClipSpec["versiculos"][number], clip: Parte)
   if (!v.activo) return null;
   const finClip = r2(clip.inicioReel + clip.duracion);
   const dur = Math.min(duracionLectura(v.texto), clip.duracion);
-  let desde = r2(clip.inicioReel + Math.min(Math.max(0, v.en), clip.duracion));
+  const enVideo = siguienteConservado(clip, clip.inicioVideo + Math.max(0, v.en));
+  let desde = r2(Math.min(videoAReel(clip, enVideo) ?? clip.inicioReel + Math.max(0, v.en), clip.inicioReel + clip.duracion));
   let hasta = r2(desde + dur);
   if (hasta > finClip) {
     hasta = finClip;
