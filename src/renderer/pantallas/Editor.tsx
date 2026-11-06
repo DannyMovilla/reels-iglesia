@@ -3,6 +3,8 @@ import { TriangleAlert } from "lucide-react";
 import type { Caras, ClipSpec, Marca, Proyecto, Tarea, Transcripcion } from "@shared/tipos";
 import { formatoTiempo } from "@shared/validar";
 import { palabrasDe } from "@shared/reel/tiempo";
+import { Download } from "lucide-react";
+import { ColaExportacion } from "../componentes/ColaExportacion";
 import { Inspector } from "../componentes/Inspector";
 import { LineaTiempo } from "../componentes/LineaTiempo";
 import { ListaClips } from "../componentes/ListaClips";
@@ -24,6 +26,7 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
   const [datos, setDatos] = useState<Datos>({ transcripcion: null, caras: null, marca: null, dimensiones: null });
   const [avisos, setAvisos] = useState<string[]>([]);
   const [tiempo, setTiempo] = useState(0);
+  const [abierto] = useState(() => new Date().toISOString());
   const vista = useRef<ControlVistaPrevia>(null);
   const guardando = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -80,11 +83,20 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
         <PanelProceso proyecto={proyecto} tareas={tareas} alReintentar={(id) => void window.reels!.reintentar(id)}
           alProcesar={(desde) => void window.reels!.procesar(proyecto.id, desde)} />
         <div className="titulo-seccion">Clips <span>{clips.length === 1 ? "1 sugerido" : clips.length ? `${clips.length} sugeridos` : ""}</span></div>
+        {clips.length > 1 && (
+          <button type="button" className="btn pequeno exportar-todos" onClick={() => void window.reels!.exportar(proyecto.id, clips.map((c) => c.id))}>
+            <Download size={13} aria-hidden="true" />Exportar {clips.length} clips
+          </button>
+        )}
         {clips.length > 0 ? (
           <ListaClips clips={clips} seleccionado={sel} alElegir={setSel} urlVideo={proyecto.videoDisponible ? window.reels!.urlVideo(proyecto.id) : undefined} />
         ) : (
           <p className="vacio">Los clips aparecerán aquí cuando Claude termine de analizar la prédica.</p>
         )}
+        <span className="espacio" />
+        <ColaExportacion proyectoId={proyecto.id}
+          tareas={tareas.filter((t) => t.creada >= abierto || t.estado === "pendiente" || t.estado === "corriendo")}
+          alCancelar={(id) => void window.reels!.cancelar(id)} alAbrirCarpeta={() => void window.reels!.abrirCarpetaExportados(proyecto.id)} />
       </aside>
 
       <main className="editor-centro" aria-label="Vista previa">
@@ -100,6 +112,14 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
 
       <aside className="editor-der" aria-label="Datos del clip">
         {clip ? <Inspector clip={clip} avisos={avisos} alCambiar={cambiarClip} /> : <p className="vacio">Elige un clip para editarlo.</p>}
+        {clip && (
+          <div className="inspector-pie">
+            <button type="button" className="btn primario" disabled={clip.formatos.length === 0}
+              onClick={() => void window.reels!.exportar(proyecto.id, [clip.id])}>
+              <Download size={15} aria-hidden="true" />Exportar este clip
+            </button>
+          </div>
+        )}
       </aside>
 
       <div className="editor-abajo">

@@ -38,6 +38,7 @@ export interface ApiReels {
   /** Encola una exportación por clip y formato (por defecto, los formatos marcados en cada clip). */
   exportar(proyectoId: string, clipIds: string[], formatos?: Formato[]): Promise<void>;
   abrirCarpetaExportados(proyectoId: string): Promise<void>;
+  listarExportados(): Promise<{ proyectoId: string; nombre: string; archivos: { nombre: string; tamano: number }[] }[]>;
   tareas(): Promise<Tarea[]>;
   alCambiarTareas(cb: (t: Tarea[]) => void): () => void;
   reintentar(idTarea: string): Promise<void>;

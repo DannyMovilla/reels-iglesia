@@ -16,6 +16,7 @@ const api: ApiReels = {
   procesar: (id, desde) => ipcRenderer.invoke("proyectos:procesar", id, desde),
   exportar: (id, clipIds, formatos) => ipcRenderer.invoke("exportar:encolar", id, clipIds, formatos),
   abrirCarpetaExportados: (id) => ipcRenderer.invoke("exportar:abrir", id),
+  listarExportados: () => ipcRenderer.invoke("exportar:listar"),
   tareas: () => ipcRenderer.invoke("tareas:lista"),
   alCambiarTareas: (cb) => {
     const oyente = (_e: unknown, t: Tarea[]) => cb(t);

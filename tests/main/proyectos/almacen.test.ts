@@ -1,4 +1,4 @@
-import { mkdtempSync, renameSync, writeFileSync, existsSync, statSync, readdirSync } from "node:fs";
+import { mkdtempSync, renameSync, writeFileSync, existsSync, statSync, readdirSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { beforeEach, expect, test } from "vitest";
@@ -71,4 +71,32 @@ test("guardarClip reemplaza solo el clip con ese id", async () => {
   await guardarClip(p.id, { id: "b", gancho: "B2" } as never);
   await guardarClip(p.id, { id: "zzz", gancho: "X" } as never);
   expect(await leerJson(p.id, "clips.json")).toEqual([{ id: "a", gancho: "A" }, { id: "b", gancho: "B2" }]);
+});
+
+test("listarExportados devuelve los MP4 de cada proyecto, el más nuevo primero", async () => {
+  const { listarExportados } = await import("../../../src/main/proyectos/almacen");
+  const { carpetaProyecto } = await import("../../../src/main/rutas");
+  const p = await crearProyecto({ nombre: "Culto", video, rango: { inicio: 0, fin: 60 } }, DOS_NOV);
+  writeFileSync(join(carpetaProyecto(p.id), "exportados", "a-9x16.mp4"), "123");
+  writeFileSync(join(carpetaProyecto(p.id), "exportados", "nota.txt"), "x");
+  const l = await listarExportados();
+  expect(l).toEqual([{ proyectoId: p.id, nombre: "Culto", archivos: [{ nombre: "a-9x16.mp4", tamano: 3 }] }]);
+});
+
+test("escribirAtomico reintenta si Windows tiene el archivo ocupado (EPERM) y usa un temporal propio", async () => {
+  const { escribirAtomico } = await import("../../../src/main/proyectos/almacen");
+  const destino = join(datos, "x.json");
+  const temporales: string[] = [];
+  let fallas = 2;
+  await escribirAtomico(destino, { a: 1 }, {
+    renombrar: async (de: string, a: string) => {
+      temporales.push(de);
+      if (fallas-- > 0) throw Object.assign(new Error("EPERM: operation not permitted, rename"), { code: "EPERM" });
+      const { rename } = await import("node:fs/promises");
+      await rename(de, a);
+    },
+  });
+  expect(JSON.parse(readFileSync(destino, "utf8"))).toEqual({ a: 1 });
+  expect(temporales).toHaveLength(3);
+  expect(temporales[0]).not.toBe(destino + ".tmp");
 });

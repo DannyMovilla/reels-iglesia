@@ -1,5 +1,5 @@
 import { existsSync } from "node:fs";
-import { mkdir, readdir, readFile, rename, stat, writeFile } from "node:fs/promises";
+import { mkdir, readdir, readFile, rename, rm, stat, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import type { ClipSpec, Marca, Proyecto, VideoOrigen } from "@shared/tipos";
 import { validarRango } from "@shared/validar";
@@ -16,10 +16,27 @@ function slug(texto: string): string {
 
 const fecha = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
-async function escribirAtomico(ruta: string, datos: unknown): Promise<void> {
-  const tmp = ruta + ".tmp";
+/**
+ * Escribe en un temporal propio y lo renombra. En Windows el rename falla con EPERM/EBUSY/EACCES si
+ * otro proceso tiene el archivo abierto un instante (p. ej. la ventana leyendo el proyecto): se reintenta.
+ */
+export async function escribirAtomico(ruta: string, datos: unknown, ops: { renombrar?: (de: string, a: string) => Promise<void> } = {}): Promise<void> {
+  const renombrar = ops.renombrar ?? rename;
+  const tmp = `${ruta}.${process.pid}.${Math.random().toString(36).slice(2, 8)}.tmp`;
   await writeFile(tmp, JSON.stringify(datos, null, 2), "utf8");
-  await rename(tmp, ruta);
+  for (let intento = 0; ; intento++) {
+    try {
+      await renombrar(tmp, ruta);
+      return;
+    } catch (e) {
+      const codigo = (e as NodeJS.ErrnoException).code;
+      if (intento >= 9 || !["EPERM", "EBUSY", "EACCES"].includes(codigo ?? "")) {
+        await rm(tmp, { force: true });
+        throw e;
+      }
+      await new Promise((r) => setTimeout(r, 20 * (intento + 1)));
+    }
+  }
 }
 
 export async function crearProyecto(
@@ -101,4 +118,21 @@ export async function guardarClip(proyectoId: string, clip: ClipSpec): Promise<v
   const clips = (await leerJson<ClipSpec[]>(proyectoId, "clips.json")) ?? [];
   if (!clips.some((c) => c.id === clip.id)) return;
   await guardarJson(proyectoId, "clips.json", clips.map((c) => (c.id === clip.id ? clip : c)));
+}
+
+export interface ExportadosProyecto { proyectoId: string; nombre: string; archivos: { nombre: string; tamano: number }[] }
+
+/** Los MP4 exportados de cada proyecto (los proyectos sin exportaciones no aparecen). */
+export async function listarExportados(): Promise<ExportadosProyecto[]> {
+  const salida: ExportadosProyecto[] = [];
+  for (const p of await listarProyectos()) {
+    const dir = join(carpetaProyecto(p.id), "exportados");
+    if (!existsSync(dir)) continue;
+    const archivos: { nombre: string; tamano: number }[] = [];
+    for (const nombre of (await readdir(dir)).filter((n) => n.toLowerCase().endsWith(".mp4")).sort()) {
+      archivos.push({ nombre, tamano: (await stat(join(dir, nombre))).size });
+    }
+    if (archivos.length) salida.push({ proyectoId: p.id, nombre: p.nombre, archivos });
+  }
+  return salida;
 }

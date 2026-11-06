@@ -9,7 +9,7 @@ import type { Cola } from "./cola/cola";
 import { dimensionesVideo, duracionVideo } from "./procesos/video";
 import { carpetaProyecto, raizApp } from "./rutas";
 import { esquemaVista, registrarComposicion, servirVista } from "./vista";
-import { crearProyecto, guardarClip, leerJson, leerMarca, leerProyecto, listarProyectos } from "./proyectos/almacen";
+import { crearProyecto, guardarClip, leerJson, leerMarca, leerProyecto, listarExportados, listarProyectos } from "./proyectos/almacen";
 
 export interface DepsIpc {
   cola: Cola;
@@ -113,6 +113,7 @@ export function registrarIpc(deps: DepsIpc): void {
     await mkdir(dir, { recursive: true });
     await shell.openPath(dir);
   });
+  ipcMain.handle("exportar:listar", () => listarExportados());
   ipcMain.handle("tareas:lista", () => cola.lista());
   ipcMain.handle("tareas:reintentar", (_e, id: string) => cola.reintentar(id));
   ipcMain.handle("tareas:cancelar", (_e, id: string) => cola.cancelar(id));

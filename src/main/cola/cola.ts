@@ -1,9 +1,10 @@
 import { randomUUID } from "node:crypto";
 import { EventEmitter } from "node:events";
 import { existsSync } from "node:fs";
-import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rename } from "node:fs/promises";
 import { dirname } from "node:path";
 import type { Tarea, TipoTarea } from "@shared/tipos";
+import { escribirAtomico } from "../proyectos/almacen";
 
 export type { Tarea, TipoTarea, EstadoTarea } from "@shared/tipos";
 
@@ -107,8 +108,7 @@ export class Cola extends EventEmitter {
     this.escritura = this.escritura
       .then(async () => {
         await mkdir(dirname(this.archivoEstado), { recursive: true });
-        await writeFile(this.archivoEstado + ".tmp", datos, "utf8");
-        await rename(this.archivoEstado + ".tmp", this.archivoEstado);
+        await escribirAtomico(this.archivoEstado, JSON.parse(datos));
       })
       .catch(() => undefined);
   }
