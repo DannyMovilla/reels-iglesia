@@ -112,3 +112,13 @@ test("la librería de escenas se carga al final, cuando el canvas ya existe", ()
   const html = construir().html;
   expect(html.indexOf('<script src="recursos/escenas/shaders.iife.js">')).toBeGreaterThan(html.indexOf("<canvas"));
 });
+
+test("las palabras, el gancho y la reflexión empiezan ocultos: nunca se ve el texto completo antes de su animación", () => {
+  const html = construir().html;
+  expect(html).toMatch(/\.tarjeta \.p \{[^}]*opacity: 0/);
+  expect(html).toMatch(/\.gancho-ia \{[^}]*opacity: 0/);
+  expect(html).toMatch(/\.reflexion \{[^}]*opacity: 0/);
+  // Cada palabra entra con tl.to (desde el estado oculto del CSS), no con fromTo sin estado inicial.
+  expect(html).toMatch(/tl\.to\("#t0p0", \{ opacity: 1/);
+  expect(html).not.toMatch(/tl\.fromTo\("#t0p0"/);
+});

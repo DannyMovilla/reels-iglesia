@@ -111,7 +111,8 @@ export function construirReelVersiculo(e: EntradaReelVersiculo): { html: string;
   // Gancho
   if (c.gancho.trim()) {
     el.push(`<div id="gancho" class="clip gancho-ia" data-start="0" data-duration="${n(t.gancho.hasta)}">${esc(c.gancho)}</div>`);
-    js.push(`tl.fromTo("#gancho", { opacity: 0, y: 40, scale: 0.94 }, { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "back.out(1.6)", immediateRender: false }, 0.1);`);
+    js.push(`tl.set("#gancho", { y: 40, scale: 0.94 }, 0);`);
+    js.push(`tl.to("#gancho", { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "back.out(1.6)" }, 0.1);`);
     js.push(`tl.to("#gancho", { opacity: 0, y: -30, duration: 0.35, ease: "power2.in" }, ${n(t.gancho.hasta - 0.35)});`);
   }
 
@@ -124,7 +125,7 @@ export function construirReelVersiculo(e: EntradaReelVersiculo): { html: string;
     const ref = `<div class="referencia">${esc(c.versiculo.ref)} <small>RVR1960</small></div>`;
     el.push(`<div id="t${i}" class="clip tarjeta" data-start="${n(tar.desde)}" data-duration="${n(tar.hasta - tar.desde)}"><p>${spans}</p>${ultima || t.tarjetas.length === 1 ? ref : `<div class="referencia sigue">${esc(c.versiculo.ref)}</div>`}</div>`);
     const ritmo = Math.min(0.32, ((tar.hasta - tar.desde) * 0.55) / ws.length);
-    ws.forEach((_, j) => js.push(`tl.fromTo("#t${i}p${j}", { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.35, ease: "power3.out", immediateRender: false }, ${n(tar.desde + 0.2 + j * ritmo)});`));
+    ws.forEach((_, j) => js.push(`tl.to("#t${i}p${j}", { opacity: 1, y: 0, duration: 0.35, ease: "power3.out" }, ${n(tar.desde + 0.2 + j * ritmo)});`));
     js.push(`tl.from("#t${i} .referencia", { opacity: 0, y: 16, duration: 0.4 }, ${n(tar.desde + 0.3 + ws.length * ritmo)});`);
     js.push(`tl.to("#t${i}", { opacity: 0, duration: 0.3, ease: "power2.in" }, ${n(tar.hasta - 0.3)});`);
   });
@@ -132,7 +133,7 @@ export function construirReelVersiculo(e: EntradaReelVersiculo): { html: string;
   // Reflexión
   if (t.reflexion.hasta > t.reflexion.desde) {
     el.push(`<div id="reflexion" class="clip reflexion" data-start="${n(t.reflexion.desde)}" data-duration="${n(t.reflexion.hasta - t.reflexion.desde)}">${esc(c.reflexion)}</div>`);
-    js.push(`tl.fromTo("#reflexion", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out", immediateRender: false }, ${n(t.reflexion.desde + 0.1)});`);
+    js.push(`tl.to("#reflexion", { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, ${n(t.reflexion.desde + 0.1)});`);
     js.push(`tl.to("#reflexion", { opacity: 0, duration: 0.3 }, ${n(t.reflexion.hasta - 0.3)});`);
   }
 
@@ -161,16 +162,16 @@ function cssReelVersiculo(W: number, H: number, color: string): string {
 img.fondo, video.fondo { position: absolute; inset: 0; width: ${W}px; height: ${H}px; object-fit: cover; transform-origin: 50% 50%; }
 .velo-fondo { position: absolute; inset: 0; background: rgba(5,7,14,.55); backdrop-filter: blur(3px); }
 .gancho-ia { position: absolute; left: 70px; right: 70px; top: ${Math.round(H * 0.42)}px; transform: translateY(-50%); text-align: center; color: #fff;
-  font: 900 ${grande + 14}px/1.08 Montserrat, sans-serif; text-transform: uppercase; text-shadow: 0 6px 30px rgba(0,0,0,.6); }
+  font: 900 ${grande + 14}px/1.08 Montserrat, sans-serif; text-transform: uppercase; text-shadow: 0 6px 30px rgba(0,0,0,.6); opacity: 0; }
 .tarjeta { position: absolute; left: 80px; right: 80px; top: ${Math.round(H * 0.5)}px; transform: translateY(-50%); text-align: center; color: #fff; }
 .tarjeta p { margin: 0; font: 800 ${grande}px/1.22 Montserrat, sans-serif; text-shadow: 0 4px 24px rgba(0,0,0,.65); }
-.tarjeta .p { display: inline-block; }
+.tarjeta .p { display: inline-block; opacity: 0; transform: translateY(26px); }
 .tarjeta .clave { color: var(--marca); text-shadow: 0 0 22px var(--marca), 0 4px 24px rgba(0,0,0,.65); }
 .referencia { margin-top: 38px; font: 800 ${Math.round(grande * 0.55)}px Figtree, sans-serif; color: var(--marca); letter-spacing: .04em; }
 .referencia small { font-weight: 600; font-size: .6em; color: rgba(255,255,255,.75); margin-left: 10px; letter-spacing: .12em; }
 .referencia.sigue { opacity: .8; font-size: ${Math.round(grande * 0.4)}px; }
 .reflexion { position: absolute; left: 90px; right: 90px; top: ${Math.round(H * 0.5)}px; transform: translateY(-50%); text-align: center; color: #fff;
-  font: 800 ${Math.round(grande * 0.82)}px/1.3 Figtree, sans-serif; text-shadow: 0 4px 24px rgba(0,0,0,.65); }
+  font: 800 ${Math.round(grande * 0.82)}px/1.3 Figtree, sans-serif; text-shadow: 0 4px 24px rgba(0,0,0,.65); opacity: 0; }
 .fondo-cierre { position: absolute; inset: 0; background: radial-gradient(circle at 50% 40%, #1b2140, #0a0c16 70%); }
 `;
 }
