@@ -24,6 +24,22 @@ export interface DepsExportar {
   gpu?: () => Promise<boolean>;
   dimensiones?: (ruta: string) => Promise<{ ancho: number; alto: number }>;
   renderizar?: (dir: string, salida: string, op: OpcionesRender) => Promise<void>;
+  borrar?: (dir: string) => Promise<void>;
+}
+
+/**
+ * Borra la carpeta temporal. En Windows el navegador del render puede tenerla ocupada (EBUSY) un rato
+ * después de terminar: se reintenta y, si sigue ocupada, se deja (el reel ya está listo).
+ */
+async function borrarTemporal(dir: string, borrar: (dir: string) => Promise<void>): Promise<void> {
+  for (let intento = 0; intento < 5; intento++) {
+    try {
+      await borrar(dir);
+      return;
+    } catch {
+      await new Promise((r) => setTimeout(r, 30 * (intento + 1)));
+    }
+  }
 }
 
 /** Ejecutor de la cola para "exportar": arma la composición desde la instantánea del clip y la renderiza. */
@@ -31,6 +47,7 @@ export function crearEjecutorExportar(deps: DepsExportar = {}): Ejecutor {
   const gpu = deps.gpu ?? (() => hayNvenc());
   const dimensiones = deps.dimensiones ?? ((r: string) => dimensionesVideo(r));
   const renderizar = deps.renderizar ?? renderizarReal;
+  const borrar = deps.borrar ?? ((d: string) => rm(d, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 }));
 
   return async (t, ctx) => {
     const clip = t.instantanea;
@@ -73,7 +90,7 @@ export function crearEjecutorExportar(deps: DepsExportar = {}): Ejecutor {
       await guardarJson(t.proyectoId, "clips.json", clips.map((c) => (c.id === clip.id ? { ...c, estado: "exportado" } : c)));
       ctx.alProgreso(100, nombre);
     } finally {
-      await rm(tmp, { recursive: true, force: true });
+      await borrarTemporal(tmp, borrar);
     }
   };
 }

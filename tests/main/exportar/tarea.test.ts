@@ -85,6 +85,15 @@ describe("ejecutor exportar", () => {
     expect(existsSync(raro)).toBe(true);
   });
 
+  test("si Windows tiene ocupada la carpeta temporal (EBUSY) la exportación igual termina bien", async () => {
+    let intentos = 0;
+    const ocupado = async () => { intentos++; throw Object.assign(new Error("EBUSY: resource busy or locked, rmdir"), { code: "EBUSY" }); };
+    await crearEjecutorExportar(deps({ borrar: ocupado }))(tarea(clip), ctx());
+    expect(readdirSync(join(carpetaProyecto(id), "exportados"))).toEqual(["el-quebrantamiento-9x16.mp4"]);
+    expect((await leerJson<ClipSpec[]>(id, "clips.json"))?.[0].estado).toBe("exportado");
+    expect(intentos).toBeGreaterThan(1);
+  });
+
   test("sin GPU NVIDIA exporta sin --gpu", async () => {
     await crearEjecutorExportar(deps({ gpu: async () => false }))(tarea(clip), ctx());
     expect(llamadas[0].gpu).toBe(false);
