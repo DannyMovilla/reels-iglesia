@@ -28,7 +28,32 @@
     "hashtags": [
       "#oracion",
       "#fe"
-    ]
+    ],
+    "animo": "victoria",
+    "redes": {
+      "instagram": {
+        "texto": "¿Cuándo fue la última vez que oraste con el corazón quebrantado? Dios responde a un corazón humilde.",
+        "hashtags": [
+          "#oración",
+          "#fe",
+          "#iglesia"
+        ]
+      },
+      "tiktok": {
+        "texto": "Tu quebranto abre el cielo 🙏 ¿Lo has vivido?",
+        "hashtags": [
+          "#fe",
+          "#oración"
+        ]
+      },
+      "facebook": {
+        "texto": "Hoy el pastor nos recordó que Dios no desprecia un corazón contrito. ¿Cuándo fue la última vez que oraste así?"
+      },
+      "youtube": {
+        "titulo": "Tu quebranto abre el cielo | Prédica",
+        "texto": "Un llamado a orar con humildad."
+      }
+    }
   },
   {
     "titulo": "Muy corto",

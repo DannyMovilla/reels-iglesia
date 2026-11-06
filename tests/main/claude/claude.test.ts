@@ -150,3 +150,24 @@ test("el análisis guarda el texto RVR1960 de Claude sin confirmar y con la refe
   expect(clips?.[0].versiculos[0]).toMatchObject({ ref: "Salmos 51:17", confirmado: false, activo: true });
   expect(clips?.[0].versiculos[0].texto).toMatch(/^Los sacrificios de Dios/);
 });
+
+
+test("el ánimo y los textos por red vienen en el mismo análisis", async () => {
+  const { RespuestaClaude } = await import("../../../src/main/claude/esquema");
+  const r = RespuestaClaude.parse([{ titulo: "T", gancho: "G", categoria: "Esperanza", inicio: "0:00:01", fin: "0:00:40", puntaje: 90,
+    animo: "Adoración", redes: { instagram: { texto: "i", hashtags: ["#fe"] }, tiktok: { texto: "t", hashtags: [] }, facebook: { texto: "f" }, youtube: { titulo: "y", texto: "yt" } } }]);
+  expect(r[0].animo).toBe("adoracion");
+  expect(r[0].redes?.youtube.titulo).toBe("y");
+  const sinRedes = RespuestaClaude.parse([{ titulo: "T", gancho: "G", categoria: "Esperanza", inicio: "0:00:01", fin: "0:00:40", puntaje: 90 }]);
+  expect(sinRedes[0].redes).toBeUndefined();
+  expect(sinRedes[0].animo).toBeUndefined();
+});
+
+test("el prompt pide ánimo y textos por red con sus límites, sin sonar a IA", async () => {
+  const { construirPrompt } = await import("../../../src/main/claude/prompt");
+  const p = construirPrompt({ formato: "pulpito-transcripcion/1", inicio: 0, fin: 60, modelo: "", dispositivo: "", segmentos: [{ s: 0, e: 5, t: "Hola", w: [] }] }, 4);
+  for (const a of ["reflexivo", "esperanza", "victoria", "adoracion", "tension"]) expect(p).toContain(a);
+  expect(p).toContain("2200");
+  expect(p).toContain("100 caracteres");
+  expect(p).toMatch(/no es X, es Y/);
+});

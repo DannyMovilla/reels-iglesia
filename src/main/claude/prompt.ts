@@ -24,7 +24,7 @@ Prioriza: la verdad central del mensaje, frases memorables, explicaciones claras
 "inicio" debe ser el inicio de una línea de la transcripción y "fin" el final de una línea (usa exactamente esas marcas, en formato H:MM:SS).
 
 Responde solo con un arreglo JSON, de mayor a menor puntaje, con esta forma:
-[{"titulo":"La fidelidad de Dios en todo tiempo","gancho":"Tu prueba no es el final","ganchos_alternativos":["Dios no ha terminado contigo","¿Sientes que todo se acabó?"],"categoria":"Esperanza","inicio":"0:18:32","fin":"0:19:26","intro_frase":"Dios no ha terminado contigo","palabras_clave":["Dios","prueba","fiel"],"versiculos":[{"ref":"Romanos 8:28","cita":"todas las cosas les ayudan a bien","texto":"Y sabemos que a los que aman a Dios, todas las cosas les ayudan a bien, esto es, a los que conforme a su propósito son llamados."}],"puntaje":92,"razon":"Por qué generaría interacción, en una oración.","descripcion":"Texto para publicar, 1 o 2 oraciones, que termine con una pregunta que invite a comentar.","hashtags":["#fe","#esperanza"]}]
+[{"titulo":"La fidelidad de Dios en todo tiempo","gancho":"Tu prueba no es el final","ganchos_alternativos":["Dios no ha terminado contigo","¿Sientes que todo se acabó?"],"categoria":"Esperanza","inicio":"0:18:32","fin":"0:19:26","intro_frase":"Dios no ha terminado contigo","palabras_clave":["Dios","prueba","fiel"],"versiculos":[{"ref":"Romanos 8:28","cita":"todas las cosas les ayudan a bien","texto":"Y sabemos que a los que aman a Dios, todas las cosas les ayudan a bien, esto es, a los que conforme a su propósito son llamados."}],"puntaje":92,"razon":"Por qué generaría interacción, en una oración.","descripcion":"Texto para publicar, 1 o 2 oraciones, que termine con una pregunta que invite a comentar.","hashtags":["#fe","#esperanza"],"animo":"esperanza","redes":{"instagram":{"texto":"…","hashtags":["#fe","#iglesia"]},"tiktok":{"texto":"…","hashtags":["#fe"]},"facebook":{"texto":"…"},"youtube":{"titulo":"…","texto":"…"}}}]
 
 "gancho": máximo 8 palabras, va escrito como título en los primeros segundos.
 "ganchos_alternativos": otras 2 opciones de gancho con un enfoque distinto.
@@ -33,6 +33,13 @@ Responde solo con un arreglo JSON, de mayor a menor puntaje, con esta forma:
 "versiculos": solo los pasajes bíblicos que el predicador menciona o lee DENTRO del clip. "ref" es la referencia (libro capítulo:versículo) y "cita" son 4 a 10 palabras exactas de la transcripción donde lo menciona y "texto" es el versículo completo en la Reina-Valera 1960, palabra por palabra (la persona lo revisará antes de publicar). Nunca inventes versículos; si no menciona ninguno, usa [].
 "categoria": una de Enseñanza, Reflexión, Exhortación, Esperanza, Testimonio, Llamado.
 "puntaje": de 0 a 100, qué tanto crees que va a funcionar.
+"animo": el ánimo de la música de fondo que va con el mensaje: uno de reflexivo, esperanza, victoria, adoracion, tension.
+"redes": el texto para publicar en cada red, fiel a lo que dijo el predicador:
+- instagram: texto de hasta 2200 caracteres (lo ideal, 2 a 4 líneas) y de 3 a 8 hashtags (máximo 30);
+- tiktok: texto corto de hasta 2200 caracteres, directo, con 3 a 5 hashtags;
+- facebook: texto de hasta 5000 caracteres, un poco más cálido y explicativo, sin hashtags;
+- youtube: "titulo" de hasta 100 caracteres (para YouTube Shorts) y "texto" de hasta 5000.
+Escribe como habla la iglesia, cercano y en español sencillo. Que no suene a inteligencia artificial: nada de "no es X, es Y", ni listas de tres por costumbre, ni "sumérgete", "descubre", "transforma tu vida", ni un emoji en cada línea (como mucho uno o dos). Termina con una pregunta que invite a comentar.
 
 Transcripción:
 ${lineas}`;

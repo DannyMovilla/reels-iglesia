@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { completarClip, ESTILO_POR_DEFECTO } from "@shared/clip";
+import { recortarRedes } from "@shared/redes";
 import type { ClipSpec, EstiloIglesia, Transcripcion } from "@shared/tipos";
 import { formatearReferencia } from "../biblia/biblia";
 import type { ClipClaude } from "./esquema";
@@ -72,7 +73,8 @@ export function normalizarClips(r: ClipClaude[], t: Transcripcion, estilo: Estil
       hashtags: c.hashtags,
       encuadre: { modo: "auto", x: 0.5, zoom: 1.25 },
       subtitulos: { activos: true, estilo: estilo.subtitulos.estilo, tamano: estilo.subtitulos.tamano, altura: 0.74 },
-      musica: { modo: estilo.musica.modo, pista: null, volumen: estilo.musica.volumen },
+      musica: { modo: estilo.musica.modo, pista: null, volumen: estilo.musica.volumen, ...(c.animo ? { animo: c.animo } : {}) },
+      ...(c.redes ? { redes: recortarRedes(c.redes) } : {}),
       cierre: estilo.cierre,
       formatos: [...estilo.formatos],
       estado: "sugerido",
