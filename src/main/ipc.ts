@@ -1,7 +1,5 @@
-import { createReadStream } from "node:fs";
 import { mkdir, stat } from "node:fs/promises";
-import { basename, extname, join } from "node:path";
-import { Readable } from "node:stream";
+import { basename, join } from "node:path";
 import { dialog, ipcMain, protocol, shell, type BrowserWindow } from "electron";
 import type { DatosNuevoProyecto, EstadoSistema } from "@shared/api";
 import { descargarVideo } from "./descargas/ytdlp";
@@ -21,12 +19,10 @@ export interface DepsIpc {
   accionSistema(accion: string, alProgreso: (p: { pct: number; texto?: string }) => void): Promise<void>;
 }
 
-const MIME: Record<string, string> = { ".jpg": "image/jpeg", ".mp3": "audio/mpeg", ".wav": "audio/wav", ".m4a": "audio/mp4", ".ogg": "audio/ogg", ".flac": "audio/flac", ".mp4": "video/mp4", ".mov": "video/quicktime", ".m4v": "video/mp4", ".webm": "video/webm", ".mkv": "video/x-matroska" };
 
 /** Debe llamarse antes de app.ready. */
 export function registrarEsquemaVideo(): void {
   protocol.registerSchemesAsPrivileged([
-    { scheme: "reels-video", privileges: { stream: true, supportFetchAPI: true, bypassCSP: false } },
     esquemaVista,
   ]);
 }
@@ -35,49 +31,23 @@ export function registrarEsquemaVideo(): void {
 const elegidos = new Set<string>();
 
 /**
- * reels-video://proyecto/<id> sirve el video original de un proyecto;
- * reels-video://archivo/<ruta> sirve un video elegido con el diálogo. Con soporte de rangos para adelantar.
+ * Qué archivo entrega el servidor de medios (ver servidor-medios.ts):
+ * proyecto/<id> el video original; archivo/<ruta> un video elegido con el diálogo o descargado;
+ * musica/<archivo> una pista; exportado/<proyecto>/<archivo> una portada o un MP4 exportado.
  */
-function servirVideo(): void {
-  protocol.handle("reels-video", async (req) => {
-    const url = new URL(req.url);
-    const valor = decodeURIComponent(url.pathname.replace(/^\//, ""));
-    let ruta: string;
-    if (url.hostname === "archivo") {
-      if (!elegidos.has(valor)) return new Response("No permitido", { status: 403 });
-      ruta = valor;
-    } else if (url.hostname === "exportado") {
-      // <proyecto>/<archivo>: solo nombres simples dentro de exportados/ de un proyecto existente.
-      const [id, archivo] = url.pathname.replace(/^\//, "").split("/").map(decodeURIComponent);
-      const simple = (x?: string) => !!x && x === basename(x) && !x.startsWith(".");
-      if (!simple(id) || !simple(archivo)) return new Response("No permitido", { status: 403 });
-      ruta = join(carpetaProyecto(id), "exportados", archivo);
-    } else if (url.hostname === "musica") {
-      // Solo un nombre de archivo de la carpeta de música (sin carpetas ni "..").
-      if (!valor || valor !== basename(valor) || valor.startsWith(".")) return new Response("No permitido", { status: 403 });
-      ruta = join(carpetaMusica(), valor);
-    } else {
-      ruta = (await leerProyecto(valor)).video.ruta;
-    }
-    const { size } = await stat(ruta);
-    const tipo = MIME[extname(ruta).toLowerCase()] ?? "video/mp4";
-    const rango = /bytes=(\d*)-(\d*)/.exec(req.headers.get("range") ?? "");
-    if (!rango) {
-      return new Response(Readable.toWeb(createReadStream(ruta)) as ReadableStream, {
-        status: 200, headers: { "Content-Type": tipo, "Content-Length": String(size), "Accept-Ranges": "bytes" },
-      });
-    }
-    const ini = rango[1] ? Number(rango[1]) : 0;
-    const fin = rango[2] ? Math.min(Number(rango[2]), size - 1) : size - 1;
-    return new Response(Readable.toWeb(createReadStream(ruta, { start: ini, end: fin })) as ReadableStream, {
-      status: 206,
-      headers: { "Content-Type": tipo, "Content-Length": String(fin - ini + 1), "Content-Range": `bytes ${ini}-${fin}/${size}`, "Accept-Ranges": "bytes" },
-    });
-  });
+export async function resolverMedio(tipo: string, valor: string): Promise<string | null> {
+  const simple = (x?: string) => !!x && x === basename(x) && !x.startsWith(".");
+  if (tipo === "archivo") return elegidos.has(valor) ? valor : null;
+  if (tipo === "musica") return simple(valor) ? join(carpetaMusica(), valor) : null;
+  if (tipo === "exportado") {
+    const [id, archivo] = valor.split("/");
+    return simple(id) && simple(archivo) ? join(carpetaProyecto(id), "exportados", archivo) : null;
+  }
+  if (tipo === "proyecto") return simple(valor) ? (await leerProyecto(valor).catch(() => null))?.video.ruta ?? null : null;
+  return null;
 }
 
 export function registrarIpc(deps: DepsIpc): void {
-  servirVideo();
   servirVista(raizApp(), carpetaDatos);
   ipcMain.handle("vista:registrar", (_e, id: string, html: string) => registrarComposicion(id, html));
   const { cola } = deps;

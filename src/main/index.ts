@@ -3,7 +3,8 @@ import { app, BrowserWindow, ipcMain } from "electron";
 import { analizarProyecto } from "./claude/analizar";
 import { abrirInicioSesionClaude, verificarSistema } from "./sistema/verificar";
 import { Cola } from "./cola/cola";
-import { registrarEsquemaVideo, registrarIpc } from "./ipc";
+import { registrarEsquemaVideo, registrarIpc, resolverMedio } from "./ipc";
+import { iniciarServidorMedios } from "./servidor-medios";
 import { avisarExportaciones } from "./exportar/avisos";
 import { crearEjecutorExportar } from "./exportar/tarea";
 import { crearEjecutores, marcarInterrumpidos } from "./pipeline/tareas";
@@ -51,6 +52,9 @@ app.whenReady().then(async () => {
   await cola.cargar();
   await marcarInterrumpidos(cola.lista());
 
+  // Antes de la ventana: el preload pide la dirección del servidor de medios al cargar.
+  const medios = await iniciarServidorMedios(resolverMedio);
+  ipcMain.on("medios:base", (e) => { e.returnValue = medios.base; });
   ventana = crearVentana();
   registrarIpc({
     cola,

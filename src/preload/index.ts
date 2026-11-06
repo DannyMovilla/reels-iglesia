@@ -2,6 +2,9 @@ import { contextBridge, ipcRenderer } from "electron";
 import type { ApiReels } from "@shared/api";
 import type { Tarea } from "@shared/tipos";
 
+/** http://127.0.0.1:<puerto>/<clave> del servidor de medios del proceso principal. */
+const medios = ipcRenderer.sendSync("medios:base") as string;
+
 const api: ApiReels = {
   elegirVideo: () => ipcRenderer.invoke("video:elegir"),
   descargarVideo: (url) => ipcRenderer.invoke("video:descargar", url),
@@ -22,8 +25,8 @@ const api: ApiReels = {
   listarPistas: () => ipcRenderer.invoke("musica:listar"),
   agregarPistas: () => ipcRenderer.invoke("musica:agregar"),
   cambiarAnimo: (id, animo) => ipcRenderer.invoke("musica:animo", id, animo),
-  urlPista: (id) => `reels-video://musica/${encodeURIComponent(id)}`,
-  urlExportado: (id, archivo) => `reels-video://exportado/${encodeURIComponent(id)}/${encodeURIComponent(archivo)}`,
+  urlPista: (id) => `${medios}/musica/${encodeURIComponent(id)}`,
+  urlExportado: (id, archivo) => `${medios}/exportado/${encodeURIComponent(id)}/${encodeURIComponent(archivo)}`,
   guardarMarca: (m) => ipcRenderer.invoke("marca:guardar", m),
   elegirLogo: () => ipcRenderer.invoke("marca:elegirLogo"),
   aplicarEstilo: (id) => ipcRenderer.invoke("proyectos:aplicarEstilo", id),
@@ -41,8 +44,8 @@ const api: ApiReels = {
   },
   reintentar: (id) => ipcRenderer.invoke("tareas:reintentar", id),
   cancelar: (id) => ipcRenderer.invoke("tareas:cancelar", id),
-  urlVideo: (id) => `reels-video://proyecto/${encodeURIComponent(id)}`,
-  urlArchivo: (ruta) => `reels-video://archivo/${encodeURIComponent(ruta)}`,
+  urlVideo: (id) => `${medios}/proyecto/${encodeURIComponent(id)}`,
+  urlArchivo: (ruta) => `${medios}/archivo/${encodeURIComponent(ruta)}`,
   registrarVista: (id, html) => ipcRenderer.invoke("vista:registrar", id, html),
   verificarSistema: (o) => ipcRenderer.invoke("sistema:verificar", o),
   alProgresoSistema: (cb) => {

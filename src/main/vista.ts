@@ -41,9 +41,9 @@ export function rutaRecurso(ruta: string, raiz: string, datos?: string): string 
 const TIPOS: Record<string, string> = {
   ".js": "text/javascript", ".woff2": "font/woff2", ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".svg": "image/svg+xml", ".webp": "image/webp",
 };
-const CSP = "default-src 'self' reels-comp: reels-video:; script-src 'self' 'unsafe-inline' reels-comp:; style-src 'self' 'unsafe-inline' reels-comp:; font-src reels-comp: data:; media-src reels-video: reels-comp: blob:; img-src reels-comp: data: blob:";
+const CSP = "default-src 'self' reels-comp: http://127.0.0.1:*; script-src 'self' 'unsafe-inline' reels-comp:; style-src 'self' 'unsafe-inline' reels-comp:; font-src reels-comp: data:; media-src http://127.0.0.1:* reels-comp: blob:; img-src reels-comp: data: blob:";
 
-/** Debe registrarse antes de app.ready (junto con reels-video). */
+/** Debe registrarse antes de app.ready. */
 export const esquemaVista = { scheme: "reels-comp", privileges: { standard: true, secure: true, supportFetchAPI: true, stream: true } };
 
 export function servirVista(raiz: string, datos: () => string): void {

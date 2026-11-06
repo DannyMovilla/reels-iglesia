@@ -18,7 +18,7 @@ export interface EntradaComposicion {
   formato: Formato;
   /** Tamaño del video original (para encuadrar la cara). */
   dimensiones: { ancho: number; alto: number };
-  /** reels-video://… en la vista previa; ruta absoluta del archivo original en el render. */
+  /** URL del servidor de medios (http://127.0.0.1…) en la vista previa; ruta absoluta del archivo original en el render. */
   fuenteVideo: string;
   /** Rutas relativas a la carpeta del reel (o a reels-comp:// en la vista previa). `logo` solo si la marca tiene logo. */
   recursos: { gsap: string; fuentes: string; runtime?: string; logo?: string };
