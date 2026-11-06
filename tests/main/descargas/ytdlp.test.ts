@@ -15,7 +15,7 @@ const bajar = (modo: string, senal = new AbortController().signal, progreso: num
 test("argumentos: mejor calidad hasta 1080p en MP4, sin listas, progreso por línea y la ruta final", () => {
   expect(argsYtdlp("https://youtu.be/x", "C:/datos/videos")).toEqual([
     "-f", "bv*[height<=1080]+ba/b[height<=1080]/b", "--merge-output-format", "mp4", "--no-playlist", "--newline",
-    "-o", "C:/datos/videos/%(title).80s.%(ext)s", "--print", "after_move:filepath", "https://youtu.be/x",
+    "-o", "C:/datos/videos/%(title).70s [%(id)s].%(ext)s", "--print", "after_move:filepath", "https://youtu.be/x",
   ]);
 });
 
@@ -48,4 +48,8 @@ test("reconoce enlaces", () => {
   expect(esEnlace("youtube.com/watch?v=abc")).toBe(true);
   expect(esEnlace("culto del domingo")).toBe(false);
   expect(existsSync(carpeta)).toBe(true);
+});
+
+test("revisión I2: el nombre lleva el id del video (dos cultos con el mismo título no se confunden)", () => {
+  expect(argsYtdlp("https://youtu.be/x", "C:/v")).toContain("C:/v/%(title).70s [%(id)s].%(ext)s");
 });

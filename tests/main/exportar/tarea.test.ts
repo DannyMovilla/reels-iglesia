@@ -189,3 +189,13 @@ describe("ejecutor exportar", () => {
     expect(llamadas).toEqual([]);
   });
 });
+
+test("revisión I3: la voz limpia se escribe en un temporal y solo queda como voz.m4a si FFmpeg terminó bien", async () => {
+  const { crearVozSegura } = await import("../../../src/main/exportar/tarea");
+  const dir = mkdtempSync(join(tmpdir(), "voz-"));
+  const destino = join(dir, "voz.m4a");
+  await expect(crearVozSegura(destino, async (tmp) => { writeFileSync(tmp, "medio"); return 1; })).rejects.toThrow();
+  expect(existsSync(destino)).toBe(false);
+  await crearVozSegura(destino, async (tmp) => { writeFileSync(tmp, "completa"); return 0; });
+  expect(readFileSync(destino, "utf8")).toBe("completa");
+});

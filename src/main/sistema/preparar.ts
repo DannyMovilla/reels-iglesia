@@ -4,13 +4,13 @@ import { ejecutarConProgreso, type OpcionesProceso, type ResultadoProceso } from
 
 type Ejecutar = (cmd: string, args: string[], op?: OpcionesProceso) => Promise<ResultadoProceso>;
 
-/** Un Python 3.10+ instalado en la PC: py -3.12, py -3 o python. null si no hay. */
+/** Un Python 3.11+ instalado en la PC: py -3.12, py -3 o python. null si no hay. */
 export async function buscarPython(ejecutar: Ejecutar): Promise<[string, string[]] | null> {
   for (const [cmd, args] of [["py", ["-3.12"]], ["py", ["-3"]], ["python", []]] as [string, string[]][]) {
     try {
       const r = await ejecutar(cmd, [...args, "--version"]);
       const m = /Python (\d+)\.(\d+)/.exec(`${r.stdout} ${r.stderr}`);
-      if (r.codigo === 0 && m && (Number(m[1]) > 3 || (Number(m[1]) === 3 && Number(m[2]) >= 10))) return [cmd, args];
+      if (r.codigo === 0 && m && (Number(m[1]) > 3 || (Number(m[1]) === 3 && Number(m[2]) >= 11))) return [cmd, args];
     } catch {
       /* no está */
     }

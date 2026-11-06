@@ -1,4 +1,4 @@
-import { mkdtempSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { beforeEach, expect, test } from "vitest";
@@ -108,12 +108,13 @@ test("audio limpia la voz con FFmpeg en la carpeta del proyecto y encola caras",
   const encoladas: TipoTarea[] = [];
   const ej = crearEjecutores({
     python: "py.exe", script: "s.py", encolar: (_id, t) => encoladas.push(t), analizar: async () => {},
-    ejecutar: async (cmd, args, op) => { llamadas.push([cmd, args]); op?.alLinea?.("out_time_ms=1435750000"); return { codigo: 0, stdout: "", stderr: "" }; },
+    ejecutar: async (cmd, args, op) => { llamadas.push([cmd, args]); writeFileSync(args.at(-1)!, "m4a"); op?.alLinea?.("out_time_ms=1435750000"); return { codigo: 0, stdout: "", stderr: "" }; },
   });
   const progresos: number[] = [];
   await ej.audio(tarea("audio"), { alProgreso: (pct) => progresos.push(pct), senal: new AbortController().signal });
   expect(llamadas[0][0]).toBe("ffmpeg");
-  expect(llamadas[0][1].at(-1)).toBe(join(carpetaProyecto(proyectoId), "voz.m4a"));
+  expect(llamadas[0][1].at(-1)).toBe(join(carpetaProyecto(proyectoId), "voz.tmp.m4a"));
+  expect(existsSync(join(carpetaProyecto(proyectoId), "voz.m4a"))).toBe(true);
   expect(progresos.some((x) => Math.abs(x - 50) < 1)).toBe(true);
   expect((await leerProyecto(proyectoId)).pasos.audio.estado).toBe("ok");
   expect(encoladas).toEqual(["caras"]);

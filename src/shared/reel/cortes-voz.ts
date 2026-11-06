@@ -27,22 +27,27 @@ export function tramosDelClip(c: ClipSpec, palabras: Palabra[]): { inicio: numbe
   const tramos: { inicio: number; fin: number }[] = [];
   let inicio = c.inicio;
   let previa: Palabra | null = null;
-  let quitada = false;
+  // Muletillas quitadas entre la palabra anterior y la actual (desde el inicio de la primera hasta el fin de la última).
+  let quitadaIni = Infinity, quitadaFin = -Infinity;
   ws.forEach((w, i) => {
     if (muletillas && esMuletillaSuelta(ws, i)) {
-      quitada = true;
+      quitadaIni = Math.min(quitadaIni, w.s);
+      quitadaFin = Math.max(quitadaFin, w.e);
       return;
     }
     if (previa) {
       const hueco = w.s - previa.e;
-      if (quitada || (pausas && hueco > PAUSA_MAXIMA)) {
-        const fin = previa.e + Math.min(MARGEN, hueco / 2);
+      const hubo = quitadaFin > -Infinity;
+      if (hubo || (pausas && hueco > PAUSA_MAXIMA)) {
+        // Con muletilla, el aire de cada lado se mide hasta la muletilla: nunca queda un pedazo del "eh".
+        const fin = previa.e + Math.min(MARGEN, Math.max(0, ((hubo ? quitadaIni : w.s) - previa.e) / 2));
         if (fin - inicio > 0.05) tramos.push({ inicio, fin: r3(fin) });
-        inicio = r3(w.s - Math.min(MARGEN, hueco / 2));
+        inicio = r3(w.s - Math.min(MARGEN, Math.max(0, (w.s - (hubo ? quitadaFin : previa.e)) / 2)));
       }
     }
     previa = w;
-    quitada = false;
+    quitadaIni = Infinity;
+    quitadaFin = -Infinity;
   });
   if (c.fin - inicio > 0.05) tramos.push({ inicio, fin: c.fin });
   return tramos.length ? tramos : [{ inicio: c.inicio, fin: c.fin }];

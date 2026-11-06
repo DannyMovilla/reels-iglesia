@@ -1,5 +1,5 @@
 import { existsSync } from "node:fs";
-import { copyFile, link, readdir, rm, writeFile } from "node:fs/promises";
+import { copyFile, link, readdir, rename, rm, writeFile } from "node:fs/promises";
 import { extname, join } from "node:path";
 import { construirComposicion } from "@shared/reel/composicion";
 import { duracionReel, palabrasDe } from "@shared/reel/tiempo";
@@ -62,10 +62,27 @@ async function portadaReal(mp4: string, t: number, salida: string): Promise<void
   if (r.codigo !== 0) throw new Error("No se pudo sacar la portada del reel.");
 }
 
+/**
+ * Escribe la voz limpia en un temporal y la deja como voz.m4a solo si FFmpeg terminó bien:
+ * una voz cortada a medias (cancelar, cerrar la app) nunca se toma por terminada.
+ */
+export async function crearVozSegura(destino: string, correr: (tmp: string) => Promise<number>): Promise<void> {
+  const tmp = destino.replace(/\.m4a$/i, ".tmp.m4a");
+  await rm(tmp, { force: true });
+  const codigo = await correr(tmp).catch(async (e) => {
+    await rm(tmp, { force: true });
+    throw e;
+  });
+  if (codigo !== 0 || !existsSync(tmp)) {
+    await rm(tmp, { force: true });
+    throw new Error("No se pudo limpiar el audio de la prédica. Revisa que el video original siga en su lugar y reintenta.");
+  }
+  await rename(tmp, destino);
+}
+
 /** voz.m4a con FFmpeg (mismo filtro que el paso "audio" de la cola). */
 async function crearVozReal(p: Proyecto, destino: string, senal: AbortSignal): Promise<void> {
-  const r = await ejecutarConProgreso("ffmpeg", argsVozLimpia(p.video.ruta, p.rango.inicio, p.rango.fin, destino), { senal });
-  if (r.codigo !== 0) throw new Error("No se pudo limpiar el audio de la prédica.");
+  await crearVozSegura(destino, async (tmp) => (await ejecutarConProgreso("ffmpeg", argsVozLimpia(p.video.ruta, p.rango.inicio, p.rango.fin, tmp), { senal })).codigo);
 }
 
 /** Enlace duro (instantáneo, sin ocupar disco) o copia si está en otro disco. */

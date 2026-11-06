@@ -92,3 +92,14 @@ test("un error de descarga se explica y se puede volver a intentar", async () =>
   expect(await screen.findByRole("alert")).toHaveTextContent("Ese video es privado o pide iniciar sesión.");
   expect(screen.getByRole("button", { name: "Descargar" })).toBeEnabled();
 });
+
+test("revisión M3: salir de la pantalla durante una descarga la cancela", async () => {
+  const cancelarDescarga = vi.fn(async () => {});
+  window.reels = { urlArchivo: () => "", alProgresoDescarga: () => () => {}, descargarVideo: () => new Promise(() => {}), cancelarDescarga } as unknown as ApiReels;
+  const { unmount } = render(<NuevaPredica alCrear={() => {}} alCancelar={() => {}} />);
+  await userEvent.click(screen.getByRole("tab", { name: "Enlace" }));
+  await userEvent.type(screen.getByLabelText("Enlace del video del culto"), "https://youtu.be/x");
+  await userEvent.click(screen.getByRole("button", { name: "Descargar" }));
+  unmount();
+  expect(cancelarDescarga).toHaveBeenCalled();
+});

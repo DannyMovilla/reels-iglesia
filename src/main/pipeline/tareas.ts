@@ -4,6 +4,7 @@ import { ejecutarConProgreso } from "../procesos/lineas";
 import { guardarProyecto, leerProyecto } from "../proyectos/almacen";
 import { join } from "node:path";
 import { argsVozLimpia, segundosDeProgreso } from "../procesos/audio";
+import { crearVozSegura } from "../exportar/tarea";
 import { carpetaProyecto } from "../rutas";
 
 export interface DepsPipeline {
@@ -71,20 +72,18 @@ export function crearEjecutores(deps: DepsPipeline): Record<TipoPaso, Ejecutor> 
   async function audio(proyectoId: string, ctx: ContextoTarea): Promise<void> {
     const p = await leerProyecto(proyectoId);
     const dur = p.rango.fin - p.rango.inicio;
-    let r;
     try {
-      r = await ejecutar("ffmpeg", argsVozLimpia(p.video.ruta, p.rango.inicio, p.rango.fin, join(carpetaProyecto(proyectoId), "voz.m4a")), {
+      await crearVozSegura(join(carpetaProyecto(proyectoId), "voz.m4a"), async (tmp) => (await ejecutar("ffmpeg", argsVozLimpia(p.video.ruta, p.rango.inicio, p.rango.fin, tmp), {
         senal: ctx.senal,
         alLinea: (l) => {
           const s = segundosDeProgreso(l);
           if (s !== null) ctx.alProgreso(Math.min(99, (s / dur) * 100), "Limpiando el audio…");
         },
-      });
+      })).codigo);
     } catch (e) {
       if ((e as NodeJS.ErrnoException).code === "ENOENT") throw new Error("Falta FFmpeg. Abre Ajustes para instalarlo.");
       throw e;
     }
-    if (r.codigo !== 0) throw new Error(`No se pudo limpiar el audio: ${r.stderr.trim().split(/\r?\n/).slice(-2).join(" ") || `código ${r.codigo}`}`);
   }
 
   return {

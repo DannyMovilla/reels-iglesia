@@ -71,3 +71,10 @@ test("la composición tiene un video y una voz por tramo con su segundo del orig
   expect(d.querySelectorAll("audio.voz")).toHaveLength(tramos.length);
   expect(r.duracion).toBeCloseTo(duracionReel(c, palabras), 2);
 });
+
+test("revisión I1: con tiempos pegados (como los da Whisper) no queda nada del «eh» en la voz", () => {
+  const ws: Palabra[] = [w(0.5, 1.0, "Dios"), w(1.0, 1.5, "eh"), w(1.7, 2.5, "responde"), w(2.6, 3, "hoy")];
+  const t = tramosDelClip(clip({ inicio: 0.5, fin: 3, cortes: { pausas: false, muletillas: true } }), ws);
+  expect(t[0].fin).toBeLessThanOrEqual(1.0);
+  expect(t[1].inicio).toBeGreaterThanOrEqual(1.5);
+});

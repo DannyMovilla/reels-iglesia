@@ -11,7 +11,7 @@ export const esEnlace = (texto: string): boolean => /^(https?:\/\/)?([a-z0-9-]+\
 export function argsYtdlp(url: string, carpeta: string): string[] {
   return [
     "-f", "bv*[height<=1080]+ba/b[height<=1080]/b", "--merge-output-format", "mp4", "--no-playlist", "--newline",
-    "-o", `${carpeta.replace(/\\/g, "/")}/%(title).80s.%(ext)s`, "--print", "after_move:filepath", url,
+    "-o", `${carpeta.replace(/\\/g, "/")}/%(title).70s [%(id)s].%(ext)s`, "--print", "after_move:filepath", url,
   ];
 }
 

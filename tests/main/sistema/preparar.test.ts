@@ -64,3 +64,8 @@ test("sin Python avisa que hay que instalarlo", async () => {
 test("winget instala sin preguntar de nuevo (la persona ya tocó el botón)", () => {
   expect(argsWinget("Gyan.FFmpeg")).toEqual(["install", "--id", "Gyan.FFmpeg", "-e", "--accept-source-agreements", "--accept-package-agreements"]);
 });
+
+test("revisión M7: Python 3.10 no sirve (los paquetes fijados piden 3.11 o más nuevo)", async () => {
+  expect(await buscarPython(async () => ({ codigo: 0, stdout: "Python 3.10.11", stderr: "" }))).toBeNull();
+  expect(await buscarPython(async () => ({ codigo: 0, stdout: "Python 3.11.9", stderr: "" }))).toEqual(["py", ["-3.12"]]);
+});

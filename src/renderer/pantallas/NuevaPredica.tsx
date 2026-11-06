@@ -28,6 +28,10 @@ export function NuevaPredica({ videoInicial, alCrear, alCancelar }: Props) {
   const [origen, setOrigen] = useState<"archivo" | "enlace">("archivo");
   const [enlace, setEnlace] = useState("");
   const [descarga, setDescarga] = useState<number | null>(null);
+  const descargando = useRef(false);
+  useEffect(() => () => {
+    if (descargando.current) void window.reels?.cancelarDescarga?.();
+  }, []);
   const enlaceValido = /^(https?:\/\/)?([a-z0-9-]+\.)+[a-z]{2,}(\/\S*)?$/i.test(enlace.trim());
 
   const error = video ? validarRango(leerTiempo(inicio), leerTiempo(fin), video.duracion) : null;
@@ -55,6 +59,7 @@ export function NuevaPredica({ videoInicial, alCrear, alCancelar }: Props) {
   async function descargar() {
     setErrorVideo(null);
     setDescarga(0);
+    descargando.current = true;
     const quitar = window.reels!.alProgresoDescarga((p) => setDescarga(p));
     try {
       usarVideo(await window.reels!.descargarVideo(enlace.trim()));
@@ -62,6 +67,7 @@ export function NuevaPredica({ videoInicial, alCrear, alCancelar }: Props) {
       setErrorVideo(limpiar(e));
     } finally {
       quitar();
+      descargando.current = false;
       setDescarga(null);
     }
   }
