@@ -51,6 +51,8 @@ export interface ApiReels {
   exportarCreacion(id: string, formatos: Formato[]): Promise<void>;
   /** URL de la foto o el video de fondo de una creación (vista previa). */
   urlFondo(id: string, archivo: string): string;
+  /** Música que sonará en el reel de versículo (vista previa), o null. */
+  urlMusicaCreacion(id: string, duracion: number): Promise<string | null>;
   listarPistas(): Promise<Pista[]>;
   /** Abre el diálogo para agregar pistas propias; devuelve las agregadas. */
   agregarPistas(): Promise<Pista[]>;

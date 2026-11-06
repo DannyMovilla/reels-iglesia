@@ -3,7 +3,7 @@ import { basename, join } from "node:path";
 import { dialog, ipcMain, protocol, shell, type BrowserWindow } from "electron";
 import type { DatosNuevoProyecto, EstadoSistema } from "@shared/api";
 import { descargarVideo } from "./descargas/ytdlp";
-import { agregarPista, cambiarAnimo, carpetaMusica, listarPistas, musicaParaVista } from "./musica/banco";
+import { agregarPista, cambiarAnimo, carpetaMusica, listarPistas, musicaParaVista, musicaVistaEn } from "./musica/banco";
 import { escribirCreacion } from "./ia/claude";
 import { carpetaCreacion, listarExportadosIa, borrarCreacion, copiarFondo, crearCreacion, guardarCreacion, leerCreacion, listarCreaciones } from "./ia/almacen";
 import type { Animo, Caras, ClipSpec, Creacion, Formato, Marca, TipoTarea, Transcripcion } from "@shared/tipos";
@@ -148,6 +148,8 @@ export function registrarIpc(deps: DepsIpc): void {
     await shell.openPath(dir);
   });
   ipcMain.handle("exportar:listar", async () => [...(await listarExportados()), ...(await listarExportadosIa())]);
+  ipcMain.handle("ia:musicaVista", async (_e, id: string, duracion: number) =>
+    musicaVistaEn((await leerCreacion(id)).musica, carpetaCreacion(id), duracion).catch(() => null));
   ipcMain.handle("ia:exportar", (_e, id: string, formatos: Formato[]) => {
     for (const formato of formatos) cola.agregar(`ia:${id}`, "exportar-ia", { creacionId: id, formato });
   });

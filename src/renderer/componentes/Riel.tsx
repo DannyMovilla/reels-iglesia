@@ -1,18 +1,18 @@
 import type { LucideIcon } from "lucide-react";
 import { AudioLines, Clapperboard, FolderOpen, MicVocal, Music, Palette, Settings, WandSparkles } from "lucide-react";
 
-export type Seccion = "predicas" | "proyectos" | "exportados" | "marca" | "musica" | "ajustes";
+export type Seccion = "predicas" | "proyectos" | "ia" | "exportados" | "marca" | "musica" | "ajustes";
 
 const PRINCIPALES: { id: Seccion; texto: string; Icono: LucideIcon }[] = [
   { id: "predicas", texto: "Prédicas", Icono: MicVocal },
   { id: "proyectos", texto: "Proyectos", Icono: FolderOpen },
+  { id: "ia", texto: "Con IA", Icono: WandSparkles },
   { id: "exportados", texto: "Exportados", Icono: Clapperboard },
   { id: "marca", texto: "Marca", Icono: Palette },
   { id: "musica", texto: "Música", Icono: AudioLines },
 ];
 const PRONTO: { texto: string; Icono: LucideIcon }[] = [
   { texto: "Canciones", Icono: Music },
-  { texto: "Con IA", Icono: WandSparkles },
 ];
 
 interface Props {

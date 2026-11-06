@@ -30,6 +30,10 @@ const api: ApiReels = {
   borrarCreacion: (id) => ipcRenderer.invoke("ia:borrar", id),
   elegirFondo: (id) => ipcRenderer.invoke("ia:elegirFondo", id),
   exportarCreacion: (id, formatos) => ipcRenderer.invoke("ia:exportar", id, formatos),
+  urlMusicaCreacion: async (id, duracion) => {
+    const r = (await ipcRenderer.invoke("ia:musicaVista", id, duracion)) as { tipo: string; nombre: string } | null;
+    return r ? `${medios}/${r.tipo}/${encodeURIComponent(r.nombre)}` : null;
+  },
   urlFondo: (id, archivo) => `${medios}/fondo-ia/${encodeURIComponent(id)}/${encodeURIComponent(archivo)}`,
   listarPistas: () => ipcRenderer.invoke("musica:listar"),
   agregarPistas: () => ipcRenderer.invoke("musica:agregar"),

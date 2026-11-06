@@ -77,7 +77,6 @@ async function recientesEn(carpeta: string): Promise<string[]> {
     return [];
   }
 }
-const recientes = (proyectoId: string) => recientesEn(carpetaProyecto(proyectoId));
 
 /**
  * Archivo de música para un reel según el modo:
@@ -110,12 +109,14 @@ export const musicaParaClip = (clip: ClipSpec, proyecto: Proyecto, duracion: num
  * Música para la VISTA PREVIA: la misma elección que al exportar, pero sin contarla como usada.
  * Sin pista, un pad de 2 minutos guardado en <datos>/cache por ánimo y tonalidad (se genera una sola vez).
  */
-export async function musicaParaVista(clip: ClipSpec, proyecto: Proyecto, duracion: number, deps: DepsMusica = depsReales): Promise<{ tipo: "musica" | "cache"; nombre: string } | null> {
-  const m = clip.musica;
+export const musicaParaVista = (clip: ClipSpec, proyecto: Proyecto, duracion: number, deps: DepsMusica = depsReales) =>
+  musicaVistaEn(clip.musica, carpetaProyecto(proyecto.id), duracion, deps);
+
+export async function musicaVistaEn(m: ClipSpec["musica"], carpeta: string, duracion: number, deps: DepsMusica = depsReales): Promise<{ tipo: "musica" | "cache"; nombre: string } | null> {
   if (m.modo === "ninguna") return null;
   if (m.modo === "pista" || m.modo === "auto") {
     const pistas = await listarPistas(deps);
-    const elegida = (m.modo === "pista" ? pistas.find((p) => p.id === m.pista) : undefined) ?? elegirPista(m.animo, pistas, await recientes(proyecto.id), duracion);
+    const elegida = (m.modo === "pista" ? pistas.find((p) => p.id === m.pista) : undefined) ?? elegirPista(m.animo, pistas, await recientesEn(carpeta), duracion);
     if (elegida) return { tipo: "musica", nombre: elegida.id };
   }
   const nombre = `pad-${m.animo}-${m.tonalidad}.wav`;

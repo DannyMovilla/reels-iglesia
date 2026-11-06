@@ -22,11 +22,11 @@ const TONALIDADES = ["Do", "Re", "Mi", "Fa", "Sol", "La", "Si", "Mib", "Lab", "S
 
 type Pestana = "clip" | "estilo" | "publicar";
 
-function Interruptor({ activo, etiqueta, alCambiar }: { activo: boolean; etiqueta: string; alCambiar(v: boolean): void }) {
+export function Interruptor({ activo, etiqueta, alCambiar }: { activo: boolean; etiqueta: string; alCambiar(v: boolean): void }) {
   return <button type="button" className="interruptor" role="switch" aria-checked={activo} aria-label={etiqueta} onClick={() => alCambiar(!activo)} />;
 }
 
-function Segmentos<T extends string>({ opciones, valor, etiqueta, alCambiar }: { opciones: [T, string][]; valor: T; etiqueta: string; alCambiar(v: T): void }) {
+export function Segmentos<T extends string>({ opciones, valor, etiqueta, alCambiar }: { opciones: [T, string][]; valor: T; etiqueta: string; alCambiar(v: T): void }) {
   return (
     <div className="seg" role="group" aria-label={etiqueta}>
       {opciones.map(([v, texto]) => <button key={v} type="button" aria-pressed={valor === v} onClick={() => alCambiar(v)}>{texto}</button>)}
@@ -214,7 +214,7 @@ function Contador({ n, max }: { n: number; max: number }) {
 }
 
 /** Pestaña Publicar: el texto de cada red, con su límite y un botón para copiarlo. */
-function Publicar({ redes, alCambiar }: { redes: Redes; alCambiar(r: Redes): void }) {
+export function Publicar({ redes, alCambiar }: { redes: Redes; alCambiar(r: Redes): void }) {
   const [red, setRed] = useState<keyof Redes>("instagram");
   const [copiado, setCopiado] = useState(false);
   const nombre = NOMBRE_RED[red];
