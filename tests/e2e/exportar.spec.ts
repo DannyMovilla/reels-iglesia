@@ -24,7 +24,7 @@ test("exportar un clip deja un MP4 de 1080×1920 en la carpeta de la prédica", 
   await expect(v.getByLabel("Fin de la prédica")).not.toHaveValue("");
   await v.getByRole("button", { name: "Procesar prédica" }).click();
   try {
-    await expect(v.getByRole("list", { name: "Proceso" }).locator(".paso.ok")).toHaveCount(3, { timeout: 240_000 });
+    await expect(v.getByRole("list", { name: "Proceso" }).locator(".paso.ok")).toHaveCount(4, { timeout: 240_000 });
   } catch (e) {
     console.log("PANEL:", await v.getByRole("list", { name: "Proceso" }).innerText());
     throw e;

@@ -5,6 +5,7 @@ import type { EstadoProyecto, Proyecto } from "@shared/tipos";
 const ESTADO: Record<EstadoProyecto, string> = {
   nuevo: "En espera",
   transcribiendo: "Transcribiendo…",
+  limpiando: "Limpiando el audio…",
   caras: "Buscando al predicador…",
   analizando: "Claude está analizando…",
   listo: "Listo",

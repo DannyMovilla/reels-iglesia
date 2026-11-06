@@ -16,7 +16,7 @@ const clip: ClipSpec = {
 const proyecto = {
   id: "p", nombre: "Culto", creado: "2026-11-06T00:00:00Z", video: { ruta: "C:/v.mp4", nombre: "v.mp4", tamano: 1, duracion: 100 },
   rango: { inicio: 0, fin: 100 }, estado: "listo", videoDisponible: true,
-  pasos: { transcripcion: { estado: "pendiente" }, caras: { estado: "pendiente" }, analisis: { estado: "ok" } },
+  pasos: { transcripcion: { estado: "pendiente" }, audio: { estado: "pendiente" }, caras: { estado: "pendiente" }, analisis: { estado: "ok" } },
 } as unknown as Proyecto;
 
 test("confirmar el versículo y exportar enseguida guarda el clip antes de encolar la exportación", async () => {

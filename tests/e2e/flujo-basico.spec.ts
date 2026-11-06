@@ -28,7 +28,7 @@ test("nueva prédica → procesar → ver clips sugeridos", async () => {
   await v.getByRole("button", { name: "Procesar prédica" }).click();
 
   const pasos = v.getByRole("list", { name: "Proceso" });
-  await expect(pasos.locator(".paso.ok")).toHaveCount(3, { timeout: 240_000 });
+  await expect(pasos.locator(".paso.ok")).toHaveCount(4, { timeout: 240_000 });
   const lista = v.getByRole("list", { name: "Clips sugeridos" });
   await expect(lista.getByRole("heading", { name: "El quebrantamiento activa la gloria" })).toBeVisible();
   await expect(v.getByLabel("Datos del clip")).toContainText("Romanos 8:28");

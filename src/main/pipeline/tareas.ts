@@ -2,6 +2,8 @@ import type { EstadoProyecto, NombrePaso, Tarea, TipoTarea } from "@shared/tipos
 import type { ContextoTarea, Ejecutor } from "../cola/cola";
 import { ejecutarConProgreso } from "../procesos/lineas";
 import { guardarProyecto, leerProyecto } from "../proyectos/almacen";
+import { join } from "node:path";
+import { argsVozLimpia, segundosDeProgreso } from "../procesos/audio";
 import { carpetaProyecto } from "../rutas";
 
 export interface DepsPipeline {
@@ -13,9 +15,9 @@ export interface DepsPipeline {
 }
 
 type TipoPaso = Exclude<TipoTarea, "exportar">;
-const PASO: Record<TipoPaso, NombrePaso> = { transcribir: "transcripcion", caras: "caras", analizar: "analisis" };
-const ESTADO: Record<TipoPaso, EstadoProyecto> = { transcribir: "transcribiendo", caras: "caras", analizar: "analizando" };
-const SIGUIENTE: Partial<Record<TipoPaso, TipoPaso>> = { transcribir: "caras", caras: "analizar" };
+const PASO: Record<TipoPaso, NombrePaso> = { transcribir: "transcripcion", audio: "audio", caras: "caras", analizar: "analisis" };
+const ESTADO: Record<TipoPaso, EstadoProyecto> = { transcribir: "transcribiendo", audio: "limpiando", caras: "caras", analizar: "analizando" };
+const SIGUIENTE: Partial<Record<TipoPaso, TipoPaso>> = { transcribir: "audio", audio: "caras", caras: "analizar" };
 
 /** Envuelve cada paso: marca el estado del proyecto, mide el tiempo y encola el paso siguiente. */
 export function crearEjecutores(deps: DepsPipeline): Record<TipoPaso, Ejecutor> {
@@ -66,8 +68,28 @@ export function crearEjecutores(deps: DepsPipeline): Record<TipoPaso, Ejecutor> 
       if (sig) deps.encolar(t.proyectoId, sig);
     };
 
+  async function audio(proyectoId: string, ctx: ContextoTarea): Promise<void> {
+    const p = await leerProyecto(proyectoId);
+    const dur = p.rango.fin - p.rango.inicio;
+    let r;
+    try {
+      r = await ejecutar("ffmpeg", argsVozLimpia(p.video.ruta, p.rango.inicio, p.rango.fin, join(carpetaProyecto(proyectoId), "voz.m4a")), {
+        senal: ctx.senal,
+        alLinea: (l) => {
+          const s = segundosDeProgreso(l);
+          if (s !== null) ctx.alProgreso(Math.min(99, (s / dur) * 100), "Limpiando el audio…");
+        },
+      });
+    } catch (e) {
+      if ((e as NodeJS.ErrnoException).code === "ENOENT") throw new Error("Falta FFmpeg. Abre Ajustes para instalarlo.");
+      throw e;
+    }
+    if (r.codigo !== 0) throw new Error(`No se pudo limpiar el audio: ${r.stderr.trim().split(/\r?\n/).slice(-2).join(" ") || `código ${r.codigo}`}`);
+  }
+
   return {
     transcribir: envolver("transcribir", (id, ctx) => python(id, "--solo-transcripcion", ctx)),
+    audio: envolver("audio", audio),
     caras: envolver("caras", (id, ctx) => python(id, "--solo-caras", ctx)),
     analizar: envolver("analizar", deps.analizar),
   };

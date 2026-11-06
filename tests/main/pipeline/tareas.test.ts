@@ -26,7 +26,7 @@ beforeEach(async () => {
 
 const tarea = (tipo: TipoTarea): Tarea => ({ id: "t", proyectoId, tipo, estado: "corriendo", pct: 0, creada: "" });
 
-test("transcribir llama a Python con los argumentos exactos, reenvía el progreso y encola caras", async () => {
+test("transcribir llama a Python con los argumentos exactos, reenvía el progreso y encola la limpieza del audio", async () => {
   const llamadas: string[][] = [];
   const encoladas: [string, TipoTarea][] = [];
   const progresos: number[] = [];
@@ -44,7 +44,7 @@ test("transcribir llama a Python con los argumentos exactos, reenvía el progres
   expect(progresos).toContain(40);
   const p = await leerProyecto(proyectoId);
   expect(p.pasos.transcripcion.estado).toBe("ok");
-  expect(encoladas).toEqual([[proyectoId, "caras"]]);
+  expect(encoladas).toEqual([[proyectoId, "audio"]]);
 });
 
 test("REELS_WHISPER_MODELO agrega --modelo", async () => {
@@ -101,4 +101,28 @@ test("al abrir la app, los proyectos con tareas interrumpidas dejan de mostrarse
   const q = await leerProyecto(proyectoId);
   expect(q.estado).toBe("error");
   expect(q.pasos.transcripcion).toEqual({ estado: "error", detalle: "Se interrumpió al cerrar la app." });
+});
+
+test("audio limpia la voz con FFmpeg en la carpeta del proyecto y encola caras", async () => {
+  const llamadas: [string, string[]][] = [];
+  const encoladas: TipoTarea[] = [];
+  const ej = crearEjecutores({
+    python: "py.exe", script: "s.py", encolar: (_id, t) => encoladas.push(t), analizar: async () => {},
+    ejecutar: async (cmd, args, op) => { llamadas.push([cmd, args]); op?.alLinea?.("out_time_ms=1435750000"); return { codigo: 0, stdout: "", stderr: "" }; },
+  });
+  const progresos: number[] = [];
+  await ej.audio(tarea("audio"), { alProgreso: (pct) => progresos.push(pct), senal: new AbortController().signal });
+  expect(llamadas[0][0]).toBe("ffmpeg");
+  expect(llamadas[0][1].at(-1)).toBe(join(carpetaProyecto(proyectoId), "voz.m4a"));
+  expect(progresos.some((x) => Math.abs(x - 50) < 1)).toBe(true);
+  expect((await leerProyecto(proyectoId)).pasos.audio.estado).toBe("ok");
+  expect(encoladas).toEqual(["caras"]);
+});
+
+test("un proyecto de antes sin el paso de audio lo lee como pendiente", async () => {
+  const { guardarProyecto } = await import("../../../src/main/proyectos/almacen");
+  const p = await leerProyecto(proyectoId);
+  delete (p.pasos as Partial<typeof p.pasos>).audio;
+  await guardarProyecto(p);
+  expect((await leerProyecto(proyectoId)).pasos.audio).toEqual({ estado: "pendiente" });
 });

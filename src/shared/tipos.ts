@@ -1,5 +1,5 @@
-export type EstadoProyecto = "nuevo" | "transcribiendo" | "caras" | "analizando" | "listo" | "error";
-export type NombrePaso = "transcripcion" | "caras" | "analisis";
+export type EstadoProyecto = "nuevo" | "transcribiendo" | "limpiando" | "caras" | "analizando" | "listo" | "error";
+export type NombrePaso = "transcripcion" | "audio" | "caras" | "analisis";
 
 export interface VideoOrigen {
   ruta: string;
@@ -45,7 +45,7 @@ export interface Transcripcion {
 /** [t, [[x, y, w, score], ...]] con coordenadas normalizadas 0–1. */
 export type Caras = [number, [number, number, number, number][]][];
 
-export type TipoTarea = "transcribir" | "caras" | "analizar" | "exportar";
+export type TipoTarea = "transcribir" | "audio" | "caras" | "analizar" | "exportar";
 export type EstadoTarea = "pendiente" | "corriendo" | "ok" | "error" | "cancelada" | "interrumpida";
 
 export interface Tarea {

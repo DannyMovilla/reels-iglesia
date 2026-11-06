@@ -56,7 +56,7 @@ export async function crearProyecto(
     video: datos.video,
     rango: datos.rango,
     estado: "nuevo",
-    pasos: { transcripcion: { estado: "pendiente" }, caras: { estado: "pendiente" }, analisis: { estado: "pendiente" } },
+    pasos: { transcripcion: { estado: "pendiente" }, audio: { estado: "pendiente" }, caras: { estado: "pendiente" }, analisis: { estado: "pendiente" } },
   };
   await mkdir(join(carpetaProyecto(id), "exportados"), { recursive: true });
   await mkdir(join(carpetaProyecto(id), "tmp"), { recursive: true });
@@ -71,6 +71,7 @@ export async function guardarProyecto(p: Proyecto): Promise<void> {
 
 export async function leerProyecto(id: string): Promise<Proyecto> {
   const p = JSON.parse(await readFile(join(carpetaProyecto(id), "proyecto.json"), "utf8")) as Proyecto;
+  p.pasos.audio ??= { estado: "pendiente" }; // proyectos de antes del plan 3
   try {
     const st = await stat(p.video.ruta);
     p.videoDisponible = st.size === p.video.tamano;
