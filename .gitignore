@@ -1,0 +1,19 @@
+# Entorno de Python
+.venv/
+__pycache__/
+
+# Videos, audios y renders (pesan mucho y pueden ser de la iglesia)
+*.mp4
+*.mov
+*.wav
+*.mp3
+*.pulpito.json
+*.srt
+renders/
+
+# Node
+node_modules/
+.hyperframes/
+
+# Imagenes del culto usadas en maquetas
+design/assets/

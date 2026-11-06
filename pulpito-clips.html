@@ -1,0 +1,1348 @@
+<meta charset="utf-8">
+<title>Púlpito Clips</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Figtree:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,700&family=JetBrains+Mono:wght@500&family=Montserrat:wght@900&display=swap">
+<style>
+/* Layout: mesa de trabajo en dos columnas — pasos del proceso a la izquierda, monitor vertical 9:16 y editor a la derecha. */
+:root {
+  --bg: #f1f2f6;
+  --surface: #ffffff;
+  --surface-2: #f6f7fa;
+  --ink: #16182a;
+  --muted: #5b5f76;
+  --line: #d9dbe5;
+  --accent: #c48a1c;
+  --accent-ink: #1b1405;
+  --accent-soft: #f6ead0;
+  --good: #1f7a4d;
+  --warn: #9a5b00;
+  --bad: #b3261e;
+  --stage: #0d0e19;
+  --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+  --font-body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  --radius: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e0f1b; --surface: #171929; --surface-2: #1d2033; --ink: #ecedf5; --muted: #9a9db5;
+    --line: #2b2e47; --accent: #e3b04b; --accent-ink: #1b1405; --accent-soft: #3a2f17;
+    --good: #5fcf96; --warn: #f0b45a; --bad: #ff8a80; --stage: #07080f; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e0f1b; --surface: #171929; --surface-2: #1d2033; --ink: #ecedf5; --muted: #9a9db5;
+  --line: #2b2e47; --accent: #e3b04b; --accent-ink: #1b1405; --accent-soft: #3a2f17;
+  --good: #5fcf96; --warn: #f0b45a; --bad: #ff8a80; --stage: #07080f; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { background: var(--bg); color: var(--ink); }
+body { font-family: var(--font-body); font-size: 15px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 48px; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.top { max-width: 1240px; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; padding-block: 22px 18px; }
+.top h1 { font-size: 30px; letter-spacing: -0.01em; }
+.top h1 span { color: var(--accent); }
+.top p { margin: 0; color: var(--muted); }
+
+.app { max-width: 1240px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 420px; gap: 20px; align-items: start; }
+@media (max-width: 920px) { .app { grid-template-columns: minmax(0, 1fr); } }
+.col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+
+.step { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.step-head { display: flex; align-items: baseline; gap: 10px; }
+.step-num { font-family: var(--font-mono); font-size: 12px; color: var(--accent); letter-spacing: 0.08em; }
+.step h2 { font-size: 19px; }
+.step .hint { margin: 0; color: var(--muted); font-size: 14px; max-width: 65ch; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.grow { flex: 1 1 160px; min-width: 0; }
+
+.btn { border: 1px solid var(--line); background: var(--surface-2); border-radius: 8px; padding: 8px 14px; cursor: pointer; font-weight: 600; font-size: 14px; }
+.btn:hover:not(:disabled) { border-color: var(--accent); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.small { padding: 4px 9px; font-size: 13px; }
+.btn.ghost { background: transparent; }
+
+label.field, .field { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); font-weight: 600; min-width: 0; }
+.input { border: 1px solid var(--line); background: var(--surface-2); border-radius: 8px; padding: 7px 10px; width: 100%; color: var(--ink); }
+.input.mono { font-family: var(--font-mono); font-size: 14px; font-variant-numeric: tabular-nums; }
+textarea.input { resize: vertical; min-height: 64px; }
+input[type=range] { accent-color: var(--accent); }
+.check { display: inline-flex; gap: 6px; align-items: center; font-size: 14px; color: var(--ink); font-weight: 500; }
+
+.drop { border: 1.5px dashed var(--line); border-radius: var(--radius); padding: 22px; text-align: center; cursor: pointer; background: var(--surface-2); }
+.drop:hover, .drop.over { border-color: var(--accent); }
+.drop strong { display: block; font-size: 16px; overflow-wrap: anywhere; }
+.drop span { color: var(--muted); font-size: 14px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+#src { width: 100%; max-height: 300px; border-radius: 8px; background: #000; }
+.meta { font-family: var(--font-mono); font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+
+.cmd { display: flex; gap: 8px; align-items: stretch; }
+.cmd code { flex: 1; min-width: 0; font-family: var(--font-mono); font-size: 13px; background: var(--stage); color: #e9e6da; padding: 10px 12px; border-radius: 8px; overflow-x: auto; white-space: nowrap; }
+
+.status { font-size: 14px; display: flex; gap: 8px; align-items: center; min-height: 22px; color: var(--muted); }
+.status.ok { color: var(--good); } .status.warn { color: var(--warn); } .status.err { color: var(--bad); }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; flex: none; }
+.spin { width: 14px; height: 14px; border: 2px solid var(--line); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; flex: none; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spin { animation-duration: 2.4s; } }
+
+.clips { display: flex; flex-direction: column; gap: 8px; }
+.clip { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 12px; align-items: start; text-align: left; border: 1px solid var(--line); background: var(--surface-2); border-radius: 8px; padding: 10px 12px; cursor: pointer; width: 100%; }
+.clip:hover { border-color: var(--accent); }
+.clip[aria-current="true"] { border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
+.score { font-family: var(--font-mono); font-size: 20px; font-weight: 500; text-align: center; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.score small { display: block; font-size: 10px; color: var(--muted); letter-spacing: 0.08em; }
+.clip h3 { margin: 0 0 2px; font-size: 15px; font-weight: 700; font-family: var(--font-body); }
+.clip p { margin: 0; font-size: 13px; color: var(--muted); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.chip { font-size: 12px; padding: 1px 8px; border-radius: 99px; background: var(--accent-soft); color: var(--ink); font-weight: 600; }
+.chip.time { background: transparent; border: 1px solid var(--line); font-family: var(--font-mono); font-weight: 500; font-variant-numeric: tabular-nums; }
+.empty { color: var(--muted); font-size: 14px; padding: 14px; border: 1px dashed var(--line); border-radius: 8px; }
+
+.monitor { background: var(--stage); border-radius: var(--radius); padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+#cv { width: 100%; max-width: 360px; aspect-ratio: 9 / 16; margin: 0 auto; display: block; border-radius: 6px; background: #000; }
+.transport { display: flex; align-items: center; gap: 10px; color: #e9e6da; }
+.transport .btn { background: #22243a; border-color: #34375a; color: #e9e6da; }
+.transport input[type=range] { flex: 1; min-width: 0; }
+.tc { font-family: var(--font-mono); font-size: 12px; font-variant-numeric: tabular-nums; }
+.group { display: flex; flex-direction: column; gap: 8px; padding-top: 12px; border-top: 1px solid var(--line); }
+.group h3 { font-family: var(--font-body); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+.nudge { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 6px; align-items: end; }
+.two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+@media (max-width: 420px) { .two { grid-template-columns: minmax(0, 1fr); } }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; flex-wrap: wrap; }
+.seg button { border: 0; background: var(--surface-2); padding: 6px 12px; cursor: pointer; font-size: 13px; font-weight: 600; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+.seg button:disabled { opacity: 0.45; cursor: not-allowed; }
+.labeled { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 10px; align-items: center; font-size: 13px; color: var(--muted); font-weight: 600; }
+.quote { font-size: 14px; color: var(--ink); background: var(--surface-2); border-left: 3px solid var(--accent); padding: 6px 10px; border-radius: 4px; font-style: italic; }
+progress { width: 100%; height: 8px; accent-color: var(--accent); }
+.result video { width: 100%; max-width: 240px; border-radius: 6px; display: block; }
+.swatch { width: 40px; height: 34px; border: 1px solid var(--line); border-radius: 8px; padding: 2px; background: var(--surface-2); }
+.logo-prev { height: 40px; max-width: 120px; object-fit: contain; border: 1px solid var(--line); border-radius: 6px; padding: 3px;
+  background: repeating-conic-gradient(var(--line) 0% 25%, transparent 0% 50%) 50% / 12px 12px; }
+details summary { cursor: pointer; font-weight: 600; font-size: 14px; }
+details pre { font-family: var(--font-mono); font-size: 12px; white-space: pre-wrap; background: var(--surface-2); padding: 10px; border-radius: 8px; max-height: 220px; overflow: auto; }
+</style>
+
+<header class="top">
+  <h1>Púlpito <span>Clips</span></h1>
+  <p>De la prédica del domingo a reels verticales, con subtítulos, música y la marca de tu iglesia.</p>
+</header>
+
+<main class="app">
+  <div class="col">
+    <!-- 1 · Video -->
+    <section class="step" aria-labelledby="h-video">
+      <div class="step-head"><span class="step-num">PASO 1</span><h2 id="h-video">Video del culto</h2></div>
+      <label class="drop" id="drop" for="f-video">
+        <strong>Elige el video del culto</strong>
+        <span>MP4 o MOV desde tu computadora. No se sube a ningún lado: todo se procesa en este navegador.</span>
+      </label>
+      <input class="sr" type="file" id="f-video" accept="video/*">
+      <video id="src" controls playsinline hidden></video>
+      <div class="meta" id="video-meta"></div>
+    </section>
+
+    <!-- 2 · Transcripción -->
+    <section class="step" aria-labelledby="h-trans">
+      <div class="step-head"><span class="step-num">PASO 2</span><h2 id="h-trans">Transcripción de la prédica</h2></div>
+      <p class="hint">Marca dónde empieza y termina la prédica (puedes usar el reproductor de arriba). Luego corre el transcriptor en tu PC y carga el archivo <code>.pulpito.json</code> que genera. También busca la cara del predicador para el encuadre automático.</p>
+      <div class="row">
+        <label class="field grow">Inicio de la prédica
+          <div class="row"><input class="input mono grow" id="r-ini" placeholder="0:42:10"><button class="btn small" id="b-ini" type="button">Marcar aquí</button></div>
+        </label>
+        <label class="field grow">Fin de la prédica
+          <div class="row"><input class="input mono grow" id="r-fin" placeholder="1:28:00"><button class="btn small" id="b-fin" type="button">Marcar aquí</button></div>
+        </label>
+      </div>
+      <div class="cmd"><code id="cmd">.venv\Scripts\python.exe transcribir.py "culto.mp4" --inicio 0:00:00</code><button class="btn small" id="b-copy" type="button">Copiar</button></div>
+      <div class="row">
+        <label class="btn" for="f-trans">Cargar transcripción (.pulpito.json, .srt o .vtt)</label>
+        <input class="sr" type="file" id="f-trans" accept=".json,.srt,.vtt,application/json,text/plain">
+      </div>
+      <div class="status" id="st-trans"><span class="dot"></span><span>Sin transcripción todavía.</span></div>
+      <details id="trans-prev" hidden><summary>Ver transcripción</summary><pre id="trans-text"></pre></details>
+    </section>
+
+    <!-- 3 · Clips -->
+    <section class="step" aria-labelledby="h-clips">
+      <div class="step-head"><span class="step-num">PASO 3</span><h2 id="h-clips">Momentos para reels</h2></div>
+      <p class="hint">Claude lee la prédica completa y elige los momentos que se entienden solos y que la gente querría comentar o compartir, con su frase gancho para abrir. Usa tu cuenta de Claude.</p>
+      <div class="row">
+        <label class="field">Cuántos clips
+          <select class="input" id="o-n"><option>4</option><option selected>6</option><option>8</option><option>10</option></select>
+        </label>
+        <label class="field">Análisis
+          <select class="input" id="o-tier"><option value="default" selected>Normal</option><option value="complex">Profundo (más lento)</option></select>
+        </label>
+        <div class="row" style="align-self:end"><button class="btn primary" id="b-analizar" type="button" disabled>Encontrar clips</button><button class="btn ghost" id="b-stop" type="button" hidden>Detener</button></div>
+      </div>
+      <div class="status" id="st-ana"></div>
+      <div class="clips" id="clips"><div class="empty">Los clips aparecerán aquí, ordenados por su potencial de interacción.</div></div>
+      <div class="row"><button class="btn small" id="b-manual" type="button" disabled>+ Clip manual desde la posición del video</button></div>
+    </section>
+
+    <!-- Marca -->
+    <section class="step" aria-labelledby="h-marca">
+      <div class="step-head"><span class="step-num">MARCA</span><h2 id="h-marca">Tu iglesia en cada reel</h2></div>
+      <div class="row">
+        <label class="field grow">Nombre que aparece abajo
+          <input class="input" id="m-nombre" placeholder="Iglesia Vida Nueva">
+        </label>
+        <label class="field">Color
+          <input type="color" class="swatch" id="m-color" value="#ffd34d">
+        </label>
+      </div>
+      <div class="row">
+        <span class="field" style="flex:none">Logo</span>
+        <label class="btn small" for="m-logo">Elegir logo</label>
+        <input class="sr" type="file" id="m-logo" accept="image/*">
+        <img class="logo-prev" id="m-logo-prev" alt="Vista previa del logo" hidden>
+        <label class="check" id="m-fondo-wrap" hidden><input type="checkbox" id="m-fondo" checked> Quitar fondo</label>
+        <button class="btn small ghost" id="m-logo-x" type="button" hidden>Quitar logo</button>
+      </div>
+      <div class="labeled" id="m-size-wrap" hidden>Tamaño del logo <input type="range" id="m-logo-size" min="60" max="300" step="5" value="120" aria-label="Tamaño del logo"></div>
+      <div class="status warn" id="m-logo-hint" hidden></div>
+      <div class="row">
+        <span class="field" style="flex:none">Pista propia</span>
+        <label class="btn small" for="m-musica">Elegir MP3</label>
+        <input class="sr" type="file" id="m-musica" accept="audio/*">
+        <span class="meta" id="m-musica-name">Opcional. Si no, la página genera la música.</span>
+      </div>
+    </section>
+  </div>
+
+  <!-- Editor -->
+  <aside class="col" aria-labelledby="h-editor">
+    <div class="monitor">
+      <canvas id="cv" width="1080" height="1920" aria-label="Vista previa del reel"></canvas>
+      <div class="transport">
+        <button class="btn small" id="b-play" type="button" disabled>▶ Reproducir</button>
+        <input type="range" id="scrub" min="0" max="1" step="0.01" value="0" disabled aria-label="Posición en el reel">
+        <span class="tc" id="tc">0:00 / 0:00</span>
+      </div>
+    </div>
+    <section class="step" aria-labelledby="h-editor">
+      <div class="step-head"><span class="step-num">EDITOR</span><h2 id="h-editor">Clip seleccionado</h2></div>
+      <div id="edit-empty" class="empty">Elige un clip de la lista para editarlo y exportarlo.</div>
+      <div id="edit-body" class="col" hidden>
+        <label class="field">Gancho (título)
+          <input class="input" id="e-gancho" maxlength="80">
+        </label>
+        <div class="two">
+          <div class="nudge">
+            <label class="field">Inicio<input class="input mono" id="e-ini"></label>
+            <button class="btn small" data-n="ini:-0.5" type="button" aria-label="Inicio medio segundo antes">−½s</button>
+            <button class="btn small" data-n="ini:0.5" type="button" aria-label="Inicio medio segundo después">+½s</button>
+          </div>
+          <div class="nudge">
+            <label class="field">Fin<input class="input mono" id="e-fin"></label>
+            <button class="btn small" data-n="fin:-0.5" type="button" aria-label="Fin medio segundo antes">−½s</button>
+            <button class="btn small" data-n="fin:0.5" type="button" aria-label="Fin medio segundo después">+½s</button>
+          </div>
+        </div>
+        <div class="meta" id="e-dur"></div>
+
+        <div class="group">
+          <h3>Apertura</h3>
+          <label class="check"><input type="checkbox" id="e-intro"> Abrir con la frase gancho en blanco y negro</label>
+          <div class="quote" id="e-intro-txt" hidden></div>
+          <div class="row"><button class="btn small" id="b-intro-here" type="button">Usar 5 s desde la posición actual</button></div>
+        </div>
+
+        <div class="group">
+          <h3>Encuadre</h3>
+          <div class="labeled">Formato
+            <div class="seg" role="group" aria-label="Formato">
+              <button type="button" data-mode="recorte" aria-pressed="true">Recorte 9:16</button>
+              <button type="button" data-mode="completo" aria-pressed="false">Completo + fondo</button>
+            </div>
+          </div>
+          <div id="crop-wrap" class="col" style="gap:8px">
+            <div class="labeled">Seguimiento
+              <div class="seg" role="group" aria-label="Seguimiento">
+                <button type="button" data-crop="auto" aria-pressed="false">Automático</button>
+                <button type="button" data-crop="fijo" aria-pressed="true">Fijo</button>
+                <button type="button" data-crop="ia" aria-pressed="false">Con Claude</button>
+              </div>
+            </div>
+            <div class="labeled" id="crop-x-wrap">Posición <input type="range" id="e-crop" min="0" max="1" step="0.01" value="0.5"></div>
+            <div class="labeled">Zoom <input type="range" id="e-zoom" min="1" max="2" step="0.05" value="1"></div>
+            <div class="status" id="st-detect"></div>
+          </div>
+        </div>
+
+        <div class="group">
+          <h3>Subtítulos</h3>
+          <label class="check"><input type="checkbox" id="e-subs" checked> Mostrar subtítulos</label>
+          <div class="labeled">Estilo
+            <div class="seg" role="group" aria-label="Estilo de subtítulos">
+              <button type="button" data-sub="pop" aria-pressed="true">Pop</button>
+              <button type="button" data-sub="caja" aria-pressed="false">Caja</button>
+              <button type="button" data-sub="limpio" aria-pressed="false">Limpio</button>
+            </div>
+          </div>
+          <div class="labeled">Tamaño
+            <div class="seg" role="group" aria-label="Tamaño de subtítulos">
+              <button type="button" data-size="s" aria-pressed="false">Chico</button>
+              <button type="button" data-size="m" aria-pressed="true">Medio</button>
+              <button type="button" data-size="l" aria-pressed="false">Grande</button>
+            </div>
+          </div>
+          <div class="labeled">Altura <input type="range" id="e-suby" min="0.5" max="0.86" step="0.01" value="0.74" aria-label="Altura de los subtítulos"></div>
+        </div>
+
+        <div class="group">
+          <h3>Música</h3>
+          <div class="labeled">Pista
+            <select class="input" id="e-musica">
+              <option value="auto">Automática según el clip</option>
+              <option value="esperanza">Esperanza (cálida)</option>
+              <option value="reflexion">Reflexión (suave)</option>
+              <option value="exhortacion">Exhortación (con pulso)</option>
+              <option value="archivo">Mi pista MP3</option>
+              <option value="no">Sin música</option>
+            </select>
+          </div>
+          <div class="labeled">Volumen <input type="range" id="e-vol" min="0" max="0.4" step="0.01" value="0.12" aria-label="Volumen de la música"></div>
+          <div class="status" id="st-music"></div>
+        </div>
+
+        <div class="group">
+          <h3>Marca</h3>
+          <label class="check"><input type="checkbox" id="e-hook" checked> Mostrar gancho</label>
+          <label class="check"><input type="checkbox" id="e-brand" checked> Mostrar logo y nombre</label>
+        </div>
+
+        <div class="row">
+          <label class="field">Calidad
+            <select class="input" id="o-res"><option value="1080">1080p (mejor imagen)</option><option value="720">720p (más fluido en PCs lentas)</option></select>
+          </label>
+          <button class="btn primary" id="b-export" type="button" style="align-self:end">Exportar reel</button>
+        </div>
+        <div id="exp-wrap" hidden><progress id="exp-prog" max="1" value="0"></progress><div class="status" id="st-exp"></div></div>
+        <div class="result" id="result" hidden></div>
+        <label class="field">Texto para publicar
+          <textarea class="input" id="e-post" rows="4"></textarea>
+        </label>
+        <div class="row"><button class="btn small" id="b-copy-post" type="button">Copiar texto</button><span class="meta" id="e-why"></span></div>
+      </div>
+    </section>
+  </aside>
+</main>
+
+<script>
+(() => {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const W = 1080, H = 1920;
+  const video = $("src"), cv = $("cv"), ctx = cv.getContext("2d");
+
+  // ---------- estado ----------
+  const S = { file: null, key: null, url: null, segs: [], words: [], caras: [], transMeta: null, clips: [], sel: -1,
+    brand: { name: "", color: "#ffd34d", logo: "", logoClean: "", quitarFondo: true }, logoImg: null,
+    musicFile: null, musicFileName: "", playing: false, exporting: false };
+  let sample = null, downloads = null, imgLimit = 0;
+
+  // ---------- utilidades ----------
+  const store = {
+    get(k) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : null; } catch { return null; } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* sin almacenamiento */ } },
+  };
+  function parseT(s) {
+    if (s == null) return NaN;
+    s = String(s).trim().replace(",", ".");
+    if (!s) return NaN;
+    const p = s.split(":").map(Number);
+    if (p.some((x) => isNaN(x))) return NaN;
+    return p.reduce((a, x) => a * 60 + x, 0);
+  }
+  function fmt(t, dec = false) {
+    if (!isFinite(t)) return "0:00";
+    const neg = t < 0; t = Math.abs(t);
+    const h = Math.floor(t / 3600), m = Math.floor((t % 3600) / 60), s = t % 60;
+    const ss = dec ? s.toFixed(1).padStart(4, "0") : String(Math.floor(s)).padStart(2, "0");
+    return (neg ? "-" : "") + (h ? `${h}:${String(m).padStart(2, "0")}:${ss}` : `${m}:${ss}`);
+  }
+  const fmtH = (t) => { const h = Math.floor(t / 3600), m = Math.floor((t % 3600) / 60), s = Math.floor(t % 60);
+    return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`; };
+  const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+  const norm = (s) => String(s).normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9ñ]+/g, "");
+  function setStatus(el, kind, text, spinning) {
+    el.className = "status" + (kind ? " " + kind : "");
+    el.replaceChildren();
+    if (!text) return;
+    const d = document.createElement("span"); d.className = spinning ? "spin" : "dot";
+    const t = document.createElement("span"); t.textContent = text;
+    el.append(d, t);
+  }
+  const debounce = (fn, ms) => { let h; return (...a) => { clearTimeout(h); h = setTimeout(() => fn(...a), ms); }; };
+  const slug = (s) => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 50) || "clip";
+  function pressed(attr, value) { document.querySelectorAll(`[${attr}]`).forEach((b) => b.setAttribute("aria-pressed", String(b.getAttribute(attr) === value))); }
+
+  // ---------- capacidades ----------
+  (async () => {
+    if (!window.claude?.use) { setStatus($("st-ana"), "warn", "Abre esta página en claude.ai para que Claude analice la prédica."); return; }
+    const [smp, dl] = await Promise.all([window.claude.use("sample"), window.claude.use("downloads")]);
+    sample = smp; downloads = dl;
+    if (!sample) setStatus($("st-ana"), "warn", "Claude no está disponible en esta vista. Ábrela en claude.ai con tu cuenta.");
+    if (sample?.limits) { try { const l = await sample.limits(); imgLimit = l?.images ? Math.min(6, l.images.maxCount) : 0; } catch { imgLimit = 0; } }
+    refreshButtons();
+  })();
+
+  // ---------- marca ----------
+  function loadBrand() {
+    const b = store.get("pulpito:marca");
+    if (b) Object.assign(S.brand, b);
+    $("m-nombre").value = S.brand.name; $("m-color").value = S.brand.color; $("m-fondo").checked = S.brand.quitarFondo !== false;
+    applyLogo();
+  }
+  function applyLogo() {
+    const src = S.brand.quitarFondo && S.brand.logoClean ? S.brand.logoClean : S.brand.logo;
+    S.logoImg = null;
+    $("m-logo-prev").hidden = $("m-logo-x").hidden = !src;
+    $("m-fondo-wrap").hidden = !S.brand.logoClean;
+    $("m-size-wrap").hidden = !src; $("m-logo-size").value = S.brand.logoSize || 120;
+    const old = !!S.brand.logo && !S.brand.logoV;
+    $("m-logo-hint").hidden = !old;
+    if (old) setStatus($("m-logo-hint"), "warn", "Este logo se guardó recortado con la versión anterior. Vuelve a elegirlo para que se vea completo.");
+    if (src) { const im = new Image(); im.onload = () => { S.logoImg = im; drawNow(); }; im.src = src; $("m-logo-prev").src = src; }
+    drawNow();
+  }
+  const saveBrand = () => store.set("pulpito:marca", S.brand);
+  $("m-nombre").addEventListener("input", (e) => { S.brand.name = e.target.value; saveBrand(); drawNow(); });
+  $("m-color").addEventListener("input", (e) => { S.brand.color = e.target.value; saveBrand(); drawNow(); });
+  $("m-logo-size").addEventListener("input", (e) => { S.brand.logoSize = Number(e.target.value); saveBrand(); drawNow(); });
+  $("o-res").addEventListener("change", (e) => store.set("pulpito:calidad", e.target.value));
+  $("m-fondo").addEventListener("change", (e) => { S.brand.quitarFondo = e.target.checked; saveBrand(); applyLogo(); });
+  $("m-logo-x").addEventListener("click", () => { S.brand.logo = S.brand.logoClean = ""; S.brand.logoV = 0; saveBrand(); applyLogo(); });
+  $("m-logo").addEventListener("change", async (e) => {
+    const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+    const im = await createImageBitmap(f);
+    const k = Math.min(1, 512 / Math.max(im.width, im.height));
+    const w = Math.max(1, Math.round(im.width * k)), h = Math.max(1, Math.round(im.height * k));
+    const c = document.createElement("canvas"); c.width = w; c.height = h;
+    const x = c.getContext("2d", { willReadFrequently: true }); x.drawImage(im, 0, 0, w, h);
+    S.brand.logo = c.toDataURL("image/png"); S.brand.logoV = 2;
+    S.brand.logoClean = removeBackground(x, w, h);
+    saveBrand(); applyLogo();
+  });
+  // Quita el fondo liso (blanco, negro u otro color) partiendo de los bordes, sin tocar el interior del logo.
+  function removeBackground(x, w, h) {
+    const img = x.getImageData(0, 0, w, h), d = img.data;
+    const px = (i) => [d[i * 4], d[i * 4 + 1], d[i * 4 + 2], d[i * 4 + 3]];
+    const corners = [0, w - 1, (h - 1) * w, h * w - 1].map(px);
+    if (corners.some((c) => c[3] < 200)) return ""; // ya es transparente
+    const ref = [0, 1, 2].map((k) => corners.reduce((a, c) => a + c[k], 0) / 4);
+    const dist = (i) => Math.hypot(d[i * 4] - ref[0], d[i * 4 + 1] - ref[1], d[i * 4 + 2] - ref[2]);
+    if (corners.some((c) => Math.hypot(c[0] - ref[0], c[1] - ref[1], c[2] - ref[2]) > 40)) return "";
+    const seen = new Uint8Array(w * h), stack = [];
+    for (let i = 0; i < w; i++) stack.push(i, (h - 1) * w + i);
+    for (let j = 0; j < h; j++) stack.push(j * w, j * w + w - 1);
+    let removed = 0;
+    while (stack.length) {
+      const i = stack.pop(); if (seen[i]) continue; seen[i] = 1;
+      const dd = dist(i); if (dd > 60) continue;
+      d[i * 4 + 3] = dd < 35 ? 0 : Math.round(((dd - 35) / 25) * 255); removed++;
+      const xx = i % w, yy = (i / w) | 0;
+      if (xx > 0) stack.push(i - 1); if (xx < w - 1) stack.push(i + 1);
+      if (yy > 0) stack.push(i - w); if (yy < h - 1) stack.push(i + w);
+    }
+    if (removed < w * h * 0.05) return "";
+    x.putImageData(img, 0, 0);
+    return x.canvas.toDataURL("image/png");
+  }
+  $("m-musica").addEventListener("change", async (e) => {
+    const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+    try {
+      const ac = new OfflineAudioContext(2, 44100, 44100);
+      S.musicFile = await ac.decodeAudioData(await f.arrayBuffer());
+      S.musicFileName = f.name; $("m-musica-name").textContent = `${f.name} · ${fmt(S.musicFile.duration)}`;
+      musicCache.clear(); const c = cur(); if (c) { c.musica = "archivo"; $("e-musica").value = "archivo"; saveClip(); prepareMusic(); }
+    } catch { $("m-musica-name").textContent = "No pude leer ese archivo de audio. Prueba con un MP3."; }
+  });
+
+  // ---------- paso 1: video ----------
+  function openVideo(f) {
+    if (!f) return;
+    stopPlay();
+    if (S.url) URL.revokeObjectURL(S.url);
+    S.file = f; S.key = `pulpito:v:${f.name}:${f.size}`; S.url = URL.createObjectURL(f);
+    video.src = S.url; video.hidden = false;
+    $("drop").querySelector("strong").textContent = f.name;
+    $("drop").querySelector("span").textContent = "Toca para elegir otro video.";
+    const saved = store.get(S.key);
+    S.segs = []; S.words = []; S.caras = []; S.clips = []; S.sel = -1; S.transMeta = null;
+    if (saved) {
+      if (saved.rango) { $("r-ini").value = saved.rango.ini || ""; $("r-fin").value = saved.rango.fin || ""; }
+      if (saved.segs?.length) setTranscript(saved.segs, saved.transMeta, saved.caras || [], true);
+      if (saved.clips?.length) S.clips = saved.clips.map(migrateClip);
+    }
+    renderClips(); selectClip(S.clips.length ? 0 : -1); updateCmd(); refreshButtons();
+  }
+  $("f-video").addEventListener("change", (e) => openVideo(e.target.files[0]));
+  const drop = $("drop");
+  drop.addEventListener("dragover", (e) => { e.preventDefault(); drop.classList.add("over"); });
+  drop.addEventListener("dragleave", () => drop.classList.remove("over"));
+  drop.addEventListener("drop", (e) => { e.preventDefault(); drop.classList.remove("over"); const f = e.dataTransfer.files[0]; if (f) openVideo(f); });
+  video.addEventListener("loadedmetadata", () => {
+    $("video-meta").textContent = `${S.file.name} · ${fmt(video.duration)} · ${video.videoWidth}×${video.videoHeight} · ${(S.file.size / 1e9).toFixed(2)} GB`;
+    const c = cur(); if (c) seekV(0); else drawNow();
+  });
+  video.addEventListener("seeked", () => { if (!S.playing && !S.exporting) drawNow(); });
+
+  const persist = debounce(() => {
+    if (!S.key) return;
+    store.set(S.key, { rango: { ini: $("r-ini").value, fin: $("r-fin").value }, segs: S.segs, caras: S.caras, transMeta: S.transMeta, clips: S.clips });
+  }, 400);
+
+  // ---------- paso 2: transcripción ----------
+  function updateCmd() {
+    const name = S.file ? S.file.name : "culto.mp4";
+    let c = `.venv\\Scripts\\python.exe transcribir.py "${name}"`;
+    const a = parseT($("r-ini").value), b = parseT($("r-fin").value);
+    c += ` --inicio ${isFinite(a) ? fmtH(a) : "0:00:00"}`;
+    if (isFinite(b)) c += ` --fin ${fmtH(b)}`;
+    $("cmd").textContent = c;
+  }
+  ["r-ini", "r-fin"].forEach((id) => $(id).addEventListener("input", () => { updateCmd(); persist(); }));
+  $("b-ini").addEventListener("click", () => { $("r-ini").value = fmtH(video.currentTime || 0); updateCmd(); persist(); });
+  $("b-fin").addEventListener("click", () => { $("r-fin").value = fmtH(video.currentTime || 0); updateCmd(); persist(); });
+  async function copyText(text, btn) {
+    const old = btn.textContent;
+    try { await navigator.clipboard.writeText(text); btn.textContent = "Copiado"; }
+    catch { btn.textContent = "Selecciona y copia"; }
+    setTimeout(() => (btn.textContent = old), 1500);
+  }
+  $("b-copy").addEventListener("click", (e) => {
+    const r = document.createRange(); r.selectNodeContents($("cmd")); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r);
+    copyText($("cmd").textContent, e.currentTarget);
+  });
+
+  function parseSubs(text) {
+    const segs = [];
+    const blocks = text.replace(/\r/g, "").split(/\n\s*\n/);
+    const re = /(\d{1,2}:)?(\d{1,2}):(\d{2})[,.](\d{1,3})\s*-->\s*(\d{1,2}:)?(\d{1,2}):(\d{2})[,.](\d{1,3})/;
+    const toS = (h, m, s, ms) => (parseInt(h || "0") * 3600) + parseInt(m) * 60 + parseInt(s) + parseInt(ms.padEnd(3, "0")) / 1000;
+    for (const b of blocks) {
+      const lines = b.split("\n"); const i = lines.findIndex((l) => re.test(l));
+      if (i < 0) continue;
+      const m = lines[i].match(re);
+      const t = lines.slice(i + 1).join(" ").replace(/<[^>]+>/g, "").trim();
+      if (t) segs.push({ s: toS(m[1]?.slice(0, -1), m[2], m[3], m[4]), e: toS(m[5]?.slice(0, -1), m[6], m[7], m[8]), t, w: [] });
+    }
+    return segs;
+  }
+  function wordsOf(seg) {
+    if (seg.w?.length) return seg.w.map(([s, e, t]) => ({ s, e, t }));
+    const parts = seg.t.split(/\s+/).filter(Boolean); const total = parts.reduce((a, p) => a + p.length + 1, 0);
+    let acc = 0; const dur = seg.e - seg.s;
+    return parts.map((p) => { const s = seg.s + (acc / total) * dur; acc += p.length + 1; return { s, e: seg.s + (acc / total) * dur, t: p }; });
+  }
+  function setTranscript(segs, meta, caras, fromCache) {
+    S.segs = segs; S.transMeta = meta || null; S.caras = Array.isArray(caras) ? caras : [];
+    S.words = segs.flatMap(wordsOf);
+    const nWords = S.words.length, span = segs.length ? segs[segs.length - 1].e - segs[0].s : 0;
+    const exact = segs.some((s) => s.w?.length);
+    const withFace = S.caras.filter(([, l]) => l.length).length;
+    let msg = `${segs.length} frases · ${nWords.toLocaleString("es")} palabras · ${fmt(span)} de prédica` + (exact ? " · tiempos por palabra" : " · tiempos aproximados")
+      + (S.caras.length ? ` · cara detectada en ${Math.round(withFace / S.caras.length * 100)}% del video` : " · sin datos de caras");
+    let kind = "ok";
+    if (meta?.tamano && S.file && meta.tamano !== S.file.size) { msg += ". Ojo: esta transcripción parece ser de otro video."; kind = "warn"; }
+    setStatus($("st-trans"), kind, (fromCache ? "Recuperada: " : "") + msg);
+    $("trans-prev").hidden = false;
+    $("trans-text").textContent = segs.map((s) => `[${fmtH(s.s)}] ${s.t}`).join("\n");
+    if (meta?.inicio != null && !$("r-ini").value) $("r-ini").value = fmtH(meta.inicio);
+    if (meta?.fin != null && !$("r-fin").value) $("r-fin").value = fmtH(meta.fin);
+    updateCmd(); refreshButtons();
+    const c = cur(); if (c) { if (S.caras.length && c.cropMode === "fijo" && !c.cropTouched) c.cropMode = "auto"; selectClip(S.sel); } else drawNow();
+  }
+  $("f-trans").addEventListener("change", async (e) => {
+    const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+    try {
+      const text = await f.text();
+      if (f.name.endsWith(".json") || text.trimStart().startsWith("{")) {
+        const d = JSON.parse(text);
+        if (!Array.isArray(d.segmentos)) throw new Error("El JSON no tiene 'segmentos'. ¿Es el archivo .pulpito.json?");
+        setTranscript(d.segmentos, { inicio: d.inicio, fin: d.fin, tamano: d.tamano, modelo: d.modelo }, d.caras);
+      } else {
+        const segs = parseSubs(text);
+        if (!segs.length) throw new Error("No encontré subtítulos con marcas de tiempo en el archivo.");
+        setTranscript(segs, null, []);
+      }
+      persist();
+    } catch (err) { setStatus($("st-trans"), "err", err.message || "No se pudo leer el archivo."); }
+  });
+
+  // ---------- paso 3: análisis con Claude ----------
+  function buildPrompt(n) {
+    const lines = S.segs.map((s) => `[${fmtH(s.s)} - ${fmtH(s.e)}] ${s.t}`).join("\n");
+    return `Eres el editor de redes sociales de una iglesia cristiana hispana. Abajo está la transcripción, con marcas de tiempo, de una prédica de un culto. Elige los ${n} mejores momentos para convertirlos en reels verticales (Instagram, TikTok, Facebook, YouTube Shorts) que generen interacción: que la gente comente, comparta o guarde.
+
+Cada clip debe:
+- durar entre 30 y 90 segundos (lo ideal es 45 a 60); si la prédica es corta, puede bajar a 15 segundos y puedes devolver menos clips,
+- entenderse solo, sin haber visto el resto de la prédica,
+- empezar con una frase fuerte: nunca a mitad de idea, ni con "y entonces", saludos o avisos,
+- terminar con la idea cerrada,
+- ser fiel al mensaje: no saques frases de contexto para que digan algo que el predicador no quiso decir.
+
+Prioriza: la verdad central del mensaje, frases memorables, explicaciones claras de un pasaje bíblico, historias o ilustraciones, momentos de esperanza o consuelo, exhortaciones y llamados a la acción. Evita: anuncios, ofrendas, oraciones largas, partes con música y clips que repitan la misma idea.
+
+"inicio" debe ser el inicio de una línea de la transcripción y "fin" el final de una línea (usa exactamente esas marcas, en formato H:MM:SS).
+
+Responde solo con un arreglo JSON, de mayor a menor puntaje, con esta forma:
+[{"titulo":"La fidelidad de Dios en todo tiempo","gancho":"Tu prueba no es el final","categoria":"Esperanza","inicio":"0:18:32","fin":"0:19:26","intro_frase":"Dios no ha terminado contigo","palabras_clave":["Dios","prueba","fiel"],"puntaje":92,"razon":"Por qué generaría interacción, en una oración.","versiculos":["Romanos 8:28"],"descripcion":"Texto para publicar, 1 o 2 oraciones, que termine con una pregunta que invite a comentar.","hashtags":["#fe","#esperanza"]}]
+
+"gancho": máximo 8 palabras, va escrito como título en los primeros segundos.
+"intro_frase": la frase más fuerte que se dice DENTRO del clip, copiada palabra por palabra de la transcripción, de 5 a 15 palabras (unos 3 a 6 segundos hablados). Se mostrará al inicio del reel, en blanco y negro, como adelanto antes del clip.
+"palabras_clave": de 3 a 6 palabras importantes que se dicen en el clip, para resaltarlas en los subtítulos.
+"categoria": una de Enseñanza, Reflexión, Exhortación, Esperanza, Testimonio, Llamado.
+"puntaje": de 0 a 100, qué tanto crees que va a funcionar.
+
+Transcripción:
+${lines}`;
+  }
+  function snap(t, key) {
+    let best = null;
+    for (const s of S.segs) if (!best || Math.abs(s[key] - t) < Math.abs(best[key] - t)) best = s;
+    return best ? best[key] : t;
+  }
+  // Ubica la frase gancho dentro del clip, palabra por palabra.
+  function findPhrase(phrase, a, b) {
+    const P = String(phrase || "").split(/\s+/).map(norm).filter(Boolean);
+    if (P.length < 2) return null;
+    const ws = S.words.filter((w) => w.s >= a - 0.5 && w.e <= b + 0.5);
+    let best = -1, bestScore = 0;
+    for (let i = 0; i < ws.length; i++) {
+      let sc = 0; for (let j = 0; j < P.length && i + j < ws.length; j++) if (norm(ws[i + j].t) === P[j]) sc++;
+      if (sc > bestScore) { bestScore = sc; best = i; }
+    }
+    if (best < 0 || bestScore < Math.ceil(P.length * 0.5)) return null;
+    const last = Math.min(ws.length - 1, best + P.length - 1);
+    let e = ws[last].e; const s = ws[best].s;
+    if (e - s > 8) e = s + 8;
+    if (e - s < 1.5) return null;
+    return { s: Math.max(0, s - 0.15), e: e + 0.25, frase: ws.slice(best, last + 1).map((w) => w.t).join(" ") };
+  }
+  function moodOf(cat) {
+    const k = norm(cat);
+    if (k.startsWith("exhort") || k.startsWith("llamad")) return "exhortacion";
+    if (k.startsWith("esperanz") || k.startsWith("testimon")) return "esperanza";
+    return "reflexion";
+  }
+  function migrateClip(c) {
+    const d = {
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), titulo: "Clip", gancho: "", categoria: "", puntaje: 0, razon: "",
+      versiculos: [], descripcion: "", hashtags: [], palabras_clave: [], intro: null, introOn: false,
+      modo: "recorte", cropMode: S.caras.length ? "auto" : "fijo", cropX: 0.5, crop: null, zoom: 1, cropTouched: false,
+      subs: true, subStyle: "pop", subSize: "m", subY: 0.74, hook: true, brand: true, musica: "auto", musicaVol: 0.12,
+    };
+    const m = Object.assign(d, c);
+    if (Array.isArray(c.crop) && !c.cropMode) { m.cropX = c.crop[0]?.x ?? 0.5; m.cropMode = c.crop.length > 1 ? "ia" : (S.caras.length ? "auto" : "fijo"); if (c.crop.length <= 1) m.crop = null; }
+    return m;
+  }
+  function normalizeClip(c, i) {
+    let a = parseT(c.inicio), b = parseT(c.fin);
+    if (!isFinite(a) || !isFinite(b)) return null;
+    a = snap(a, "s"); b = snap(b, "e");
+    if (b - a < 5) return null;
+    const intro = findPhrase(c.intro_frase, a, b);
+    return migrateClip({
+      id: Date.now().toString(36) + i, titulo: String(c.titulo || `Clip ${i + 1}`), gancho: String(c.gancho || ""),
+      categoria: String(c.categoria || ""), inicio: a, fin: b, puntaje: clamp(Math.round(Number(c.puntaje) || 0), 0, 100),
+      razon: String(c.razon || ""), versiculos: Array.isArray(c.versiculos) ? c.versiculos.map(String) : [],
+      descripcion: String(c.descripcion || ""), hashtags: Array.isArray(c.hashtags) ? c.hashtags.map(String) : [],
+      palabras_clave: Array.isArray(c.palabras_clave) ? c.palabras_clave.map(String) : [],
+      intro, introOn: !!intro,
+    });
+  }
+  let anaCtl = null;
+  $("b-stop").addEventListener("click", () => anaCtl?.abort());
+  $("b-analizar").addEventListener("click", async () => {
+    if (!sample || !S.segs.length) return;
+    const n = Number($("o-n").value), tier = $("o-tier").value;
+    anaCtl = new AbortController();
+    $("b-analizar").disabled = true; $("b-stop").hidden = false;
+    setStatus($("st-ana"), "", "Claude está leyendo la prédica… suele tardar entre 20 segundos y 2 minutos.", true);
+    try {
+      const out = await sample.json(buildPrompt(n), { modelTier: tier, signal: anaCtl.signal,
+        onText: ({ text }) => setStatus($("st-ana"), "", `Escribiendo clips… (${text.length.toLocaleString("es")} caracteres)`, true) });
+      const arr = Array.isArray(out) ? out : Array.isArray(out?.clips) ? out.clips : [];
+      const clips = arr.map(normalizeClip).filter(Boolean).sort((a, b) => b.puntaje - a.puntaje);
+      if (!clips.length) throw { code: "invalid_json", message: "Sin clips válidos" };
+      S.clips = clips; persist(); renderClips(); selectClip(0);
+      setStatus($("st-ana"), "ok", `${clips.length} clips encontrados.`);
+    } catch (e) {
+      const msg = {
+        cancelled: "", not_granted: "No se dio permiso para usar Claude en esta página.",
+        rate_limited: "Llegaste al límite de uso por ahora. Intenta de nuevo en un rato.",
+        prompt_too_large: "La transcripción es demasiado larga. Recorta el rango de la prédica.",
+        invalid_json: "Claude respondió en un formato que no pude leer. Vuelve a intentar.",
+        session_expired: "Tu sesión de Claude expiró. Vuelve a iniciar sesión.",
+        refused: "Claude no quiso procesar este texto. Revisa la transcripción.",
+      }[e?.code] ?? "Algo falló al hablar con Claude. Vuelve a intentar.";
+      setStatus($("st-ana"), e?.code === "cancelled" ? "" : "err", msg);
+    } finally { $("b-stop").hidden = true; refreshButtons(); }
+  });
+  $("b-manual").addEventListener("click", () => {
+    const a = video.currentTime || 0, b = Math.min(a + 45, video.duration || a + 45);
+    S.clips.push(migrateClip({ titulo: "Clip manual", inicio: a, fin: b })); persist(); renderClips(); selectClip(S.clips.length - 1);
+  });
+
+  function renderClips() {
+    const box = $("clips"); box.replaceChildren();
+    if (!S.clips.length) { const d = document.createElement("div"); d.className = "empty"; d.textContent = "Los clips aparecerán aquí, ordenados por su potencial de interacción."; box.append(d); return; }
+    S.clips.forEach((c, i) => {
+      const b = document.createElement("button"); b.type = "button"; b.className = "clip"; b.setAttribute("aria-current", String(i === S.sel));
+      b.innerHTML = `<div class="score"></div><div><h3></h3><p></p><div class="chips"></div></div>`;
+      b.querySelector(".score").innerHTML = `${c.puntaje || "–"}<small>PUNTOS</small>`;
+      b.querySelector("h3").textContent = c.titulo;
+      b.querySelector("p").textContent = c.razon || c.gancho;
+      const chips = b.querySelector(".chips");
+      const add = (t, cls) => { const s = document.createElement("span"); s.className = "chip" + (cls ? " " + cls : ""); s.textContent = t; chips.append(s); };
+      add(`${fmt(c.inicio)}–${fmt(c.fin)} · ${Math.round(c.fin - c.inicio)} s`, "time");
+      if (c.categoria) add(c.categoria);
+      c.versiculos.slice(0, 2).forEach((v) => add(v));
+      b.addEventListener("click", () => selectClip(i));
+      box.append(b);
+    });
+  }
+
+  // ---------- línea de tiempo (apertura en B/N + clip) ----------
+  const cur = () => S.clips[S.sel] || null;
+  const partsOf = (c) => (c.introOn && c.intro ? [{ s: c.intro.s, e: c.intro.e, bw: true }, { s: c.inicio, e: c.fin, bw: false }] : [{ s: c.inicio, e: c.fin, bw: false }]);
+  const totalOf = (c) => partsOf(c).reduce((a, p) => a + p.e - p.s, 0);
+  let pi = 0;
+  function vNow() {
+    const c = cur(); if (!c) return 0; const P = partsOf(c); pi = clamp(pi, 0, P.length - 1);
+    let off = 0; for (let i = 0; i < pi; i++) off += P[i].e - P[i].s;
+    return off + clamp(video.currentTime - P[pi].s, 0, P[pi].e - P[pi].s);
+  }
+  function seekTo(t) {
+    return new Promise((res) => {
+      if (Math.abs(video.currentTime - t) < 0.01 || video.readyState < 1) { drawNow(); return res(); }
+      const on = () => { video.removeEventListener("seeked", on); res(); }; video.addEventListener("seeked", on); video.currentTime = t;
+    });
+  }
+  async function seekV(v) {
+    const c = cur(); if (!c) return; const P = partsOf(c); let off = 0;
+    for (let i = 0; i < P.length; i++) { const d = P[i].e - P[i].s; if (v < off + d || i === P.length - 1) { pi = i; await seekTo(P[i].s + clamp(v - off, 0, d)); break; } off += d; }
+    drawNow(); updateTc();
+  }
+
+  // ---------- editor ----------
+  let chunks = [];
+  function selectClip(i) {
+    stopPlay();
+    S.sel = i; renderClips();
+    const c = cur();
+    $("edit-empty").hidden = !!c; $("edit-body").hidden = !c; $("result").hidden = true;
+    if (!c) { drawNow(); refreshButtons(); return; }
+    $("e-gancho").value = c.gancho; $("e-ini").value = fmt(c.inicio, true); $("e-fin").value = fmt(c.fin, true);
+    $("e-subs").checked = c.subs; $("e-hook").checked = c.hook; $("e-brand").checked = c.brand;
+    showIntro();
+    $("e-crop").value = c.cropX; $("e-zoom").value = c.zoom; $("e-suby").value = c.subY;
+    $("e-musica").value = c.musica; $("e-vol").value = c.musicaVol;
+    pressed("data-mode", c.modo); pressed("data-sub", c.subStyle); pressed("data-size", c.subSize);
+    const tags = c.hashtags.join(" ");
+    $("e-post").value = c.postText ?? [c.descripcion, c.versiculos.length ? "📖 " + c.versiculos.join(" · ") : "", tags].filter(Boolean).join("\n\n");
+    $("e-why").textContent = c.razon ? "Por qué: " + c.razon : "";
+    computeTrack(c); updateCropUI(); rebuildChunks(); updateDur(); refreshButtons(); prepareMusic();
+    pi = 0; if (video.readyState >= 1) seekV(0);
+  }
+  function updateCropUI() {
+    const c = cur(); if (!c) return;
+    $("crop-wrap").hidden = c.modo !== "recorte";
+    if (c.cropMode === "auto" && !c.track) c.cropMode = "fijo";
+    if (c.cropMode === "ia" && !c.crop) c.cropMode = "fijo";
+    pressed("data-crop", c.cropMode);
+    document.querySelector('[data-crop="auto"]').disabled = !c.track;
+    $("crop-x-wrap").hidden = c.cropMode !== "fijo";
+    const st = $("st-detect");
+    if (c.cropMode === "auto") setStatus(st, "ok", `Siguiendo la cara del predicador${c.track.cuts ? ` · ${c.track.cuts} cambio(s) de cámara` : ""}.`);
+    else if (c.cropMode === "ia") setStatus(st, "ok", `Encuadre de Claude (${c.crop.length} puntos).`);
+    else if (!S.caras.length) setStatus(st, "", "Para el encuadre automático, corre el transcriptor con caras (ver abajo).");
+    else setStatus(st, "", "");
+    if (!S.caras.length && c.modo === "recorte") st.title = "Agrega --solo-caras al comando del Paso 2 para detectar caras sin volver a transcribir.";
+  }
+  function updateDur() {
+    const c = cur(); if (!c) return; const T = totalOf(c);
+    $("e-dur").textContent = `Clip: ${(c.fin - c.inicio).toFixed(1)} s` + (c.introOn && c.intro ? ` · con apertura: ${T.toFixed(1)} s` : "");
+    $("scrub").min = 0; $("scrub").max = T; updateTc();
+  }
+  function updateTc() { const c = cur(); if (!c) return; const v = vNow(); $("scrub").value = v; $("tc").textContent = `${fmt(v)} / ${fmt(totalOf(c))}`; }
+  const saveClip = debounce(() => { persist(); renderClips(); }, 300);
+  $("e-gancho").addEventListener("input", (e) => { cur().gancho = e.target.value; saveClip(); drawNow(); });
+  function setRange(which, v) {
+    const c = cur(); if (!c || !isFinite(v)) return;
+    if (which === "ini") c.inicio = clamp(v, 0, c.fin - 3); else c.fin = clamp(v, c.inicio + 3, video.duration || 1e9);
+    $("e-ini").value = fmt(c.inicio, true); $("e-fin").value = fmt(c.fin, true);
+    computeTrack(c); rebuildChunks(); updateDur(); saveClip(); prepareMusic();
+    const P = partsOf(c); const last = P.length - 1; pi = last;
+    seekTo(which === "ini" ? c.inicio : Math.max(c.inicio, c.fin - 3)).then(() => { drawNow(); updateTc(); });
+  }
+  $("e-ini").addEventListener("change", (e) => setRange("ini", parseT(e.target.value)));
+  $("e-fin").addEventListener("change", (e) => setRange("fin", parseT(e.target.value)));
+  document.querySelectorAll("[data-n]").forEach((b) => b.addEventListener("click", () => {
+    const [w, d] = b.dataset.n.split(":"); const c = cur(); setRange(w, (w === "ini" ? c.inicio : c.fin) + Number(d));
+  }));
+  function showIntro() {
+    const c = cur(); if (!c) return;
+    $("e-intro").checked = c.introOn;
+    $("e-intro-txt").hidden = !c.intro;
+    $("e-intro-txt").textContent = c.intro ? `“${c.intro.frase}” · ${(c.intro.e - c.intro.s).toFixed(1)} s` : "";
+  }
+  // Si Claude no dio la frase (clips viejos o manuales), elige la oración del clip con más palabras clave que dure 2–7 s.
+  function autoIntro(c) {
+    const ws = S.words.filter((w) => w.s >= c.inicio && w.e <= c.fin);
+    const keys = new Set((c.palabras_clave || []).map(norm));
+    const sents = []; let cur0 = [];
+    ws.forEach((w, i) => { cur0.push(w); const gap = ws[i + 1] ? ws[i + 1].s - w.e : 9; if (/[.?!¡¿,;:]$/.test(w.t) || gap > 0.5 || i === ws.length - 1) { sents.push(cur0); cur0 = []; } });
+    let best = null, bestSc = -1;
+    for (const s of sents) {
+      const d = s[s.length - 1].e - s[0].s; if (d < 2 || d > 7.5) continue;
+      const sc = s.filter((w) => keys.has(norm(w.t))).length * 3 + s.length;
+      if (sc > bestSc) { bestSc = sc; best = s; }
+    }
+    if (!best) { const s0 = ws.filter((w) => w.s < c.inicio + 6); if (s0.length < 2) return null; best = s0; }
+    return { s: Math.max(0, best[0].s - 0.15), e: best[best.length - 1].e + 0.25, frase: best.map((w) => w.t).join(" ") };
+  }
+  $("e-intro").addEventListener("change", (e) => {
+    const c = cur(); c.introOn = e.target.checked;
+    if (c.introOn && !c.intro) { c.intro = autoIntro(c); if (!c.intro) { c.introOn = false; e.target.checked = false; } }
+    showIntro(); computeTrack(c); rebuildChunks(); updateDur(); saveClip(); prepareMusic(); stopPlay(); seekV(0);
+  });
+  $("b-intro-here").addEventListener("click", () => {
+    const c = cur(); if (!c) return; const a = video.currentTime;
+    const ws = S.words.filter((w) => w.s >= a - 0.05 && w.e <= a + 5.2);
+    c.intro = { s: a, e: a + 5, frase: ws.map((w) => w.t).join(" ") || "(sin texto)" }; c.introOn = true;
+    showIntro(); computeTrack(c); rebuildChunks(); updateDur(); saveClip(); prepareMusic(); stopPlay(); seekV(0);
+  });
+  document.querySelectorAll("[data-mode]").forEach((b) => b.addEventListener("click", () => {
+    const c = cur(); c.modo = b.dataset.mode; pressed("data-mode", c.modo); updateCropUI(); saveClip(); drawNow();
+  }));
+  document.querySelectorAll("[data-crop]").forEach((b) => b.addEventListener("click", () => {
+    const c = cur(); const m = b.dataset.crop;
+    if (m === "ia") { detectWithClaude(); return; }
+    c.cropMode = m; c.cropTouched = true; updateCropUI(); saveClip(); drawNow();
+  }));
+  $("e-crop").addEventListener("input", (e) => { const c = cur(); c.cropX = Number(e.target.value); c.cropMode = "fijo"; c.cropTouched = true; updateCropUI(); saveClip(); drawNow(); });
+  $("e-zoom").addEventListener("input", (e) => { cur().zoom = Number(e.target.value); saveClip(); drawNow(); });
+  $("e-suby").addEventListener("input", (e) => { cur().subY = Number(e.target.value); saveClip(); drawNow(); });
+  document.querySelectorAll("[data-sub]").forEach((b) => b.addEventListener("click", () => { const c = cur(); c.subStyle = b.dataset.sub; pressed("data-sub", c.subStyle); rebuildChunks(); saveClip(); drawNow(); }));
+  document.querySelectorAll("[data-size]").forEach((b) => b.addEventListener("click", () => { const c = cur(); c.subSize = b.dataset.size; pressed("data-size", c.subSize); saveClip(); drawNow(); }));
+  ["subs", "hook", "brand"].forEach((k) => $("e-" + k).addEventListener("change", (e) => { cur()[k] = e.target.checked; saveClip(); drawNow(); }));
+  $("e-musica").addEventListener("change", (e) => { const c = cur(); c.musica = e.target.value; saveClip(); stopPlay(); prepareMusic(); });
+  $("e-vol").addEventListener("input", (e) => { const c = cur(); c.musicaVol = Number(e.target.value); if (musicSrc) scheduleMusic(c, vNow()); saveClip(); });
+  $("b-copy-post").addEventListener("click", (e) => { $("e-post").select(); copyText($("e-post").value, e.currentTarget); });
+  $("e-post").addEventListener("input", (e) => { cur().postText = e.target.value; saveClip(); });
+
+  // ---------- subtítulos ----------
+  const SUB = {
+    pop: { font: (px) => `900 ${px}px Montserrat, Figtree, sans-serif`, upper: true, maxWords: 3, maxChars: 16, size: { s: 58, m: 70, l: 84 } },
+    caja: { font: (px) => `${px}px Anton, Impact, sans-serif`, upper: true, maxWords: 3, maxChars: 18, size: { s: 64, m: 78, l: 94 } },
+    limpio: { font: (px) => `800 ${px}px Figtree, sans-serif`, upper: false, maxWords: 6, maxChars: 30, size: { s: 50, m: 60, l: 72 } },
+  };
+  function rebuildChunks() {
+    chunks = []; const c = cur(); if (!c) return;
+    const st = SUB[c.subStyle] || SUB.pop;
+    const keys = new Set((c.palabras_clave || []).map(norm).filter(Boolean));
+    const a = Math.min(c.inicio, c.intro?.s ?? c.inicio), b = Math.max(c.fin, c.intro?.e ?? c.fin);
+    const ws = S.words.filter((w) => w.e > a && w.s < b);
+    let ch = null;
+    for (const w of ws) {
+      const text = w.t.replace(/\s+/g, " ").trim(); if (!text) continue;
+      const chars = ch ? ch.words.reduce((acc, x) => acc + x.t.length + 1, 0) : 0;
+      const prev = ch?.words[ch.words.length - 1];
+      if (!ch || ch.words.length >= st.maxWords || chars + text.length > st.maxChars || w.s - prev.e > 0.6 || /[.?!¿¡:;]$/.test(prev.t)) {
+        ch = { s: w.s, e: w.e, words: [] }; chunks.push(ch);
+      }
+      const n = norm(text);
+      ch.words.push({ s: w.s, e: w.e, t: text, key: n.length > 2 && [...keys].some((k) => n === k || (k.length > 4 && n.startsWith(k.slice(0, -1)))) }); ch.e = w.e;
+    }
+    for (let i = 0; i < chunks.length - 1; i++) if (chunks[i + 1].s - chunks[i].e < 0.5) chunks[i].e = chunks[i + 1].s;
+  }
+  function drawSubs(c, t) {
+    const ch = chunks.find((k) => t >= k.s - 0.05 && t < k.e + 0.25); if (!ch) return;
+    const st = SUB[c.subStyle] || SUB.pop; const px = st.size[c.subSize] || st.size.m; const color = S.brand.color || "#ffd34d";
+    ctx.save(); ctx.font = st.font(px); ctx.textBaseline = "middle"; ctx.textAlign = "center"; ctx.lineJoin = "round";
+    const sp = ctx.measureText(" ").width * (c.subStyle === "limpio" ? 1 : 1.1); const maxW = 900;
+    const words = ch.words.map((w) => { const T = st.upper ? w.t.toUpperCase() : w.t; return { ...w, T, w: ctx.measureText(T).width }; });
+    const lines = [[]]; let lw = 0;
+    for (const w of words) { if (lw + w.w > maxW && lines[lines.length - 1].length) { lines.push([]); lw = 0; } lines[lines.length - 1].push(w); lw += w.w + sp; }
+    const lh = px * 1.28; const appear = clamp((t - ch.s + 0.05) / 0.12, 0, 1);
+    const baseY = H * c.subY - (lines.length - 1) * lh / 2 + (1 - appear) * 18;
+    ctx.globalAlpha = appear;
+    lines.forEach((ln, li) => {
+      const total = ln.reduce((a, w) => a + w.w, 0) + sp * (ln.length - 1); let x = (W - total) / 2; const y = baseY + li * lh;
+      for (const w of ln) {
+        const cx = x + w.w / 2; const active = t >= w.s && t < w.e + 0.08;
+        if (c.subStyle === "pop") {
+          const k = active ? 1 + 0.16 * clamp(1 - (t - w.s) / 0.16, 0, 1) : 1;
+          ctx.save(); ctx.translate(cx, y); ctx.scale(k, k);
+          ctx.shadowColor = "rgba(0,0,0,0.55)"; ctx.shadowBlur = 18; ctx.shadowOffsetY = 6;
+          ctx.lineWidth = px * 0.17; ctx.strokeStyle = "#0b0b0b"; ctx.strokeText(w.T, 0, 0);
+          ctx.shadowColor = "transparent";
+          ctx.fillStyle = active || w.key ? color : "#ffffff"; ctx.fillText(w.T, 0, 0);
+          ctx.restore();
+        } else if (c.subStyle === "caja") {
+          if (active) { ctx.fillStyle = color; ctx.beginPath(); ctx.roundRect(x - 14, y - px * 0.62, w.w + 28, px * 1.24, 16); ctx.fill(); }
+          ctx.lineWidth = px * 0.16; ctx.strokeStyle = "rgba(0,0,0,0.85)"; if (!active) ctx.strokeText(w.T, cx, y);
+          ctx.fillStyle = active ? "#111" : w.key ? color : "#fff"; ctx.fillText(w.T, cx, y);
+        } else {
+          ctx.shadowColor = "rgba(0,0,0,0.75)"; ctx.shadowBlur = 16; ctx.shadowOffsetY = 3;
+          ctx.fillStyle = w.key ? color : "#fff"; ctx.fillText(w.T, cx, y); ctx.shadowColor = "transparent";
+          if (active) { ctx.fillStyle = color; ctx.fillRect(x, y + px * 0.55, w.w, 6); }
+        }
+        x += w.w + sp;
+      }
+    });
+    ctx.restore();
+  }
+
+  // ---------- encuadre ----------
+  // Elige la cara del predicador cuadro a cuadro, detecta cambios de cámara y mueve la "cámara" con zona muerta para que no tiemble.
+  function computeTrack(c) {
+    c.track = null;
+    if (!S.caras.length) return;
+    const a = Math.min(c.inicio, c.intro?.s ?? c.inicio) - 1, b = c.fin + 1;
+    const smp = S.caras.filter(([t]) => t >= a && t <= b); if (!smp.length) return;
+    let prev = null;
+    const raw = smp.map(([t, faces]) => {
+      const fs = faces.filter((f) => f[3] >= 0.7); if (!fs.length) return { t, f: null };
+      let best = null, bc = Infinity;
+      for (const f of fs) { const cost = (prev ? Math.abs(f[0] - prev[0]) * 2 : 0) - f[2] * 4; if (cost < bc) { bc = cost; best = f; } }
+      prev = best; return { t, f: best };
+    });
+    const known = raw.filter((r) => r.f); if (known.length < raw.length * 0.3) return;
+    let last = known[0].f; raw.forEach((r) => { if (r.f) last = r.f; else r.f = last; });
+    const keys = []; let cam = null, cuts = 0;
+    raw.forEach((r, i) => {
+      const [tx, ty] = r.f;
+      if (!cam) { cam = { x: tx, y: ty }; keys.push({ t: r.t, ...cam }); return; }
+      const nxt = raw[i + 1]?.f;
+      if (Math.abs(tx - cam.x) > 0.15 && (!nxt || Math.abs(nxt[0] - tx) < 0.06)) {
+        keys.push({ t: r.t - 0.02, ...cam }); cam = { x: tx, y: ty }; keys.push({ t: r.t, ...cam }); cuts++; return;
+      }
+      if (Math.abs(tx - cam.x) > 0.035) cam.x += (tx - cam.x) * 0.5;
+      if (Math.abs(ty - cam.y) > 0.05) cam.y += (ty - cam.y) * 0.4;
+      keys.push({ t: r.t, x: cam.x, y: cam.y });
+    });
+    const ys = raw.filter((r) => r.t >= c.inicio && r.t <= c.fin).map((r) => r.f[1]).sort((p, q) => p - q);
+    c.track = { keys, cuts, faceY: ys.length ? ys[ys.length >> 1] : 0.3 };
+  }
+  function interp(keys, t) {
+    if (t <= keys[0].t) return keys[0]; if (t >= keys[keys.length - 1].t) return keys[keys.length - 1];
+    let lo = 0, hi = keys.length - 1;
+    while (hi - lo > 1) { const m = (lo + hi) >> 1; if (keys[m].t <= t) lo = m; else hi = m; }
+    const A = keys[lo], B = keys[hi], u = (t - A.t) / (B.t - A.t), e = u * u * (3 - 2 * u);
+    return { x: A.x + (B.x - A.x) * e, y: (A.y ?? 0.3) + ((B.y ?? 0.3) - (A.y ?? 0.3)) * e };
+  }
+  function faceAt(c, t) {
+    if (c.cropMode === "auto" && c.track) return interp(c.track.keys, t);
+    if (c.cropMode === "ia" && c.crop?.length) return { x: interp(c.crop, t).x, y: c.track?.faceY ?? 0.3 };
+    return { x: c.cropX, y: c.track?.faceY ?? 0.3 };
+  }
+  function cropRect(c, t, vw, vh) {
+    const z = c.zoom || 1;
+    let ch = vh / z, cw = ch * 9 / 16;
+    if (cw > vw) { cw = vw; ch = cw * 16 / 9; }
+    const f = faceAt(c, t);
+    return { sx: clamp(f.x * vw - cw / 2, 0, vw - cw), sy: clamp(f.y * vh - ch * 0.33, 0, vh - ch), cw, ch, f };
+  }
+
+  // ---------- dibujo ----------
+  const blurC = document.createElement("canvas"); blurC.width = 27; blurC.height = 48;
+  const blurX = blurC.getContext("2d");
+  function wrap(text, maxW) {
+    const words = text.split(/\s+/).filter(Boolean); const lines = []; let line = "";
+    for (const w of words) { const t = line ? line + " " + w : w; if (ctx.measureText(t).width > maxW && line) { lines.push(line); line = w; } else line = t; }
+    if (line) lines.push(line); return lines;
+  }
+  function drawFrame(t) {
+    const c = cur(); const k = cv.width / W;
+    ctx.setTransform(k, 0, 0, k, 0, 0);
+    ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H);
+    const vw = video.videoWidth, vh = video.videoHeight;
+    if (!c) {
+      if (vw && video.readyState >= 2) { const k = W / vw; ctx.drawImage(video, 0, (H - vh * k) / 2, W, vh * k); }
+      ctx.fillStyle = "rgba(255,255,255,0.6)"; ctx.font = "600 44px Figtree, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillText(vw ? "Elige un clip para ver el reel" : "Aquí verás el reel en 9:16", W / 2, H * 0.78);
+      return;
+    }
+    const P = partsOf(c); const part = P[clamp(pi, 0, P.length - 1)]; const v = vNow(); const T = totalOf(c);
+    const bw = part.bw;
+    let hookCenter = H * 0.16;
+    if (vw && video.readyState >= 2) {
+      ctx.filter = bw ? "grayscale(1) contrast(1.15) brightness(0.95)" : "none";
+      if (c.modo === "recorte") {
+        const r = cropRect(c, t, vw, vh);
+        ctx.drawImage(video, r.sx, r.sy, r.cw, r.ch, 0, 0, W, H);
+        const startFace = cropRect(c, c.inicio, vw, vh);
+        const faceReel = (startFace.f.y * vh - startFace.sy) / startFace.ch;
+        hookCenter = faceReel < 0.5 ? H * 0.53 : H * 0.16;
+      } else {
+        const k = Math.max(27 / vw, 48 / vh);
+        blurX.filter = ctx.filter; blurX.drawImage(video, (27 - vw * k) / 2, (48 - vh * k) / 2, vw * k, vh * k);
+        ctx.imageSmoothingQuality = "high"; ctx.drawImage(blurC, 0, 0, W, H);
+        ctx.filter = "none"; ctx.fillStyle = "rgba(0,0,0,0.35)"; ctx.fillRect(0, 0, W, H);
+        ctx.filter = bw ? "grayscale(1) contrast(1.15)" : "none";
+        const h = W * vh / vw; ctx.drawImage(video, 0, (H - h) / 2 - 60, W, h);
+      }
+      ctx.filter = "none";
+    }
+    if (bw) { // viñeta cinematográfica para la apertura
+      const g = ctx.createRadialGradient(W / 2, H / 2, H * 0.25, W / 2, H / 2, H * 0.75);
+      g.addColorStop(0, "rgba(0,0,0,0)"); g.addColorStop(1, "rgba(0,0,0,0.55)"); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    }
+    const color = S.brand.color || "#ffd34d";
+    let g = ctx.createLinearGradient(0, H - 760, 0, H); g.addColorStop(0, "rgba(0,0,0,0)"); g.addColorStop(1, "rgba(0,0,0,0.6)");
+    ctx.fillStyle = g; ctx.fillRect(0, H - 760, W, 760);
+
+    // gancho (título): durante toda la apertura, o los primeros 4.5 s si no hay apertura
+    const hasIntro = P.length > 1;
+    const hookT = hasIntro ? (pi === 0 ? v : -1) : v; const hookEnd = hasIntro ? P[0].e - P[0].s : 4.5;
+    if (c.hook && c.gancho && (preT >= 0 || (hookT >= 0 && hookT < hookEnd))) {
+      const fadeIn = S.exporting ? 0 : 0.25;
+      const a = preT >= 0 ? Math.min(1, preT / 0.3) : hookT < fadeIn ? hookT / fadeIn : hookT > hookEnd - 0.5 ? Math.max(0, (hookEnd - hookT) / 0.5) : 1;
+      ctx.save(); ctx.globalAlpha = a;
+      ctx.font = "800 62px Figtree, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      const lines = wrap(c.gancho, 840); const lh = 76; const boxH = lines.length * lh + 50;
+      const boxW = Math.min(960, Math.max(...lines.map((l) => ctx.measureText(l).width)) + 90);
+      const y0 = hookCenter - boxH / 2 + (1 - a) * 16;
+      ctx.shadowColor = "rgba(0,0,0,0.35)"; ctx.shadowBlur = 30; ctx.shadowOffsetY = 10;
+      ctx.fillStyle = "#ffffff"; ctx.beginPath(); ctx.roundRect((W - boxW) / 2, y0, boxW, boxH, 26); ctx.fill();
+      ctx.shadowColor = "transparent";
+      ctx.fillStyle = "#111"; lines.forEach((l, i) => ctx.fillText(l, W / 2, y0 + 25 + lh * i + lh / 2));
+      ctx.fillStyle = color; ctx.beginPath(); ctx.roundRect((W - boxW) / 2 + 36, y0 + boxH - 12, boxW - 72, 8, 4); ctx.fill();
+      ctx.restore();
+    }
+    if (c.subs && preT < 0) drawSubs(c, t);
+
+    // marca
+    if (c.brand && (S.brand.name || S.logoImg)) {
+      ctx.save(); ctx.textBaseline = "middle"; ctx.textAlign = "left"; ctx.font = "700 40px Figtree, sans-serif";
+      let lw = 0, lh = 0;
+      const ls = S.brand.logoSize || 120;
+      if (S.logoImg) { const ar = S.logoImg.width / S.logoImg.height; lh = ls; lw = lh * ar; const maxW = Math.min(900, ls * 3.2); if (lw > maxW) { lw = maxW; lh = lw / ar; } }
+      const gap = S.logoImg && S.brand.name ? 22 : 0; const tw = S.brand.name ? ctx.measureText(S.brand.name).width : 0;
+      let x = (W - (lw + gap + tw)) / 2; const y = H - Math.max(150, lh / 2 + 60);
+      ctx.shadowColor = "rgba(0,0,0,0.55)"; ctx.shadowBlur = 16; ctx.shadowOffsetY = 4;
+      if (S.logoImg) {
+        const clean = S.brand.quitarFondo && S.brand.logoClean;
+        if (!clean) { ctx.save(); ctx.beginPath(); ctx.roundRect(x, y - lh / 2, lw, lh, 14); ctx.clip(); ctx.drawImage(S.logoImg, x, y - lh / 2, lw, lh); ctx.restore(); }
+        else ctx.drawImage(S.logoImg, x, y - lh / 2, lw, lh);
+        x += lw + gap;
+      }
+      if (S.brand.name) { ctx.fillStyle = "#fff"; ctx.fillText(S.brand.name, x, y); }
+      ctx.restore();
+    }
+    // destello al pasar de la apertura al clip
+    if (hasIntro && pi === 1) { const k = t - P[1].s; if (k >= 0 && k < 0.3) { ctx.fillStyle = `rgba(255,255,255,${0.85 * (1 - k / 0.3)})`; ctx.fillRect(0, 0, W, H); } }
+    // barra de progreso
+    const p = clamp(v / T, 0, 1);
+    ctx.fillStyle = "rgba(255,255,255,0.18)"; ctx.fillRect(0, H - 12, W, 12);
+    ctx.fillStyle = color; ctx.fillRect(0, H - 12, W * p, 12);
+  }
+  function drawNow() { drawFrame(video.currentTime || 0); }
+
+  // ---------- música generada ----------
+  const MOODS = {
+    esperanza: { bpm: 72, arp: 8, pulse: false, chords: [[48, 55, 60, 64], [43, 55, 59, 62], [45, 57, 60, 64], [41, 53, 57, 60]] },
+    reflexion: { bpm: 60, arp: 4, pulse: false, chords: [[45, 52, 57, 60], [41, 53, 57, 60], [48, 55, 60, 64], [43, 50, 55, 59]] },
+    exhortacion: { bpm: 84, arp: 8, pulse: true, chords: [[50, 57, 62, 66], [45, 57, 61, 64], [47, 54, 59, 62], [43, 55, 59, 62]] },
+  };
+  const mtof = (m) => 440 * Math.pow(2, (m - 69) / 12);
+  const musicCache = new Map();
+  async function renderMood(name, dur) {
+    const M = MOODS[name]; const sr = 44100; const len = Math.ceil((dur + 2) * sr);
+    const oc = new OfflineAudioContext(2, len, sr);
+    const master = oc.createGain(); master.connect(oc.destination);
+    master.gain.setValueAtTime(0, 0); master.gain.linearRampToValueAtTime(1, 0.25);
+    master.gain.setValueAtTime(1, Math.max(1.6, dur - 2)); master.gain.linearRampToValueAtTime(0, dur + 0.2);
+    // reverberación generada
+    const rev = oc.createConvolver(); const ir = oc.createBuffer(2, sr * 3, sr);
+    for (let ch = 0; ch < 2; ch++) { const d = ir.getChannelData(ch); for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 3); }
+    rev.buffer = ir; const wet = oc.createGain(); wet.gain.value = 0.45; rev.connect(wet); wet.connect(master);
+    const padBus = oc.createBiquadFilter(); padBus.type = "lowpass"; padBus.frequency.value = 1100; padBus.Q.value = 0.4;
+    const padGain = oc.createGain(); padGain.gain.value = 0.09; padBus.connect(padGain); padGain.connect(master); padGain.connect(rev);
+    const arpBus = oc.createBiquadFilter(); arpBus.type = "lowpass"; arpBus.frequency.value = 2800;
+    const arpGain = oc.createGain(); arpGain.gain.value = 0.12; arpBus.connect(arpGain); arpGain.connect(master); arpGain.connect(rev);
+    const beat = 60 / M.bpm, bar = beat * 4; const bars = Math.ceil((dur + 2) / bar);
+    for (let b = 0; b < bars; b++) {
+      const chord = M.chords[b % 4]; const t0 = b * bar;
+      chord.forEach((n, vi) => {
+        const env = oc.createGain(); env.gain.setValueAtTime(0, t0); env.gain.linearRampToValueAtTime(vi === 0 ? 0.9 : 0.6, t0 + 0.9);
+        env.gain.setValueAtTime(vi === 0 ? 0.9 : 0.6, t0 + bar - 0.2); env.gain.linearRampToValueAtTime(0, t0 + bar + 1.2); env.connect(padBus);
+        [-6, 6].forEach((det) => { const o = oc.createOscillator(); o.type = vi === 0 ? "triangle" : "sawtooth"; o.frequency.value = mtof(vi === 0 ? n - 12 : n); o.detune.value = det; o.connect(env); o.start(t0); o.stop(t0 + bar + 1.3); });
+      });
+      const up = chord.slice(1).map((n) => n + 12); const pat = [0, 1, 2, 1, 0, 2, 1, 2];
+      const steps = M.arp; const stepDur = bar / steps;
+      if (name !== "reflexion" || b % 2 === 1) for (let s = 0; s < steps; s++) {
+        const ts = t0 + s * stepDur; const o = oc.createOscillator(); o.type = "triangle"; o.frequency.value = mtof(up[pat[s % pat.length] % up.length]);
+        const e = oc.createGain(); e.gain.setValueAtTime(0.0001, ts); e.gain.exponentialRampToValueAtTime(0.7, ts + 0.012); e.gain.exponentialRampToValueAtTime(0.0001, ts + 0.9);
+        o.connect(e); e.connect(arpBus); o.start(ts); o.stop(ts + 1);
+      }
+      if (M.pulse) for (let k = 0; k < 4; k++) {
+        const ts = t0 + k * beat; const o = oc.createOscillator(); o.type = "sine";
+        o.frequency.setValueAtTime(110, ts); o.frequency.exponentialRampToValueAtTime(45, ts + 0.14);
+        const e = oc.createGain(); e.gain.setValueAtTime(0.35, ts); e.gain.exponentialRampToValueAtTime(0.0001, ts + 0.3);
+        o.connect(e); e.connect(master); o.start(ts); o.stop(ts + 0.32);
+      }
+    }
+    const buf = await oc.startRendering();
+    let peak = 0; for (let ch = 0; ch < 2; ch++) { const d = buf.getChannelData(ch); for (let i = 0; i < d.length; i += 7) peak = Math.max(peak, Math.abs(d[i])); }
+    if (peak > 0) { const k = 0.8 / peak; for (let ch = 0; ch < 2; ch++) { const d = buf.getChannelData(ch); for (let i = 0; i < d.length; i++) d[i] *= k; } }
+    return buf;
+  }
+  let musicReady = Promise.resolve(null), musicKey = "";
+  function prepareMusic() {
+    const c = cur(); const st = $("st-music");
+    if (!c || c.musica === "no") { musicKey = ""; musicReady = Promise.resolve(null); setStatus(st, "", ""); return musicReady; }
+    if (c.musica === "archivo") {
+      if (!S.musicFile) { setStatus(st, "warn", "Elige tu MP3 en la sección Marca."); musicReady = Promise.resolve(null); return musicReady; }
+      setStatus(st, "ok", `Tu pista: ${S.musicFileName}`); musicKey = "archivo"; musicReady = Promise.resolve(S.musicFile); return musicReady;
+    }
+    const mood = c.musica === "auto" ? moodOf(c.categoria) : c.musica;
+    const dur = Math.ceil(totalOf(c) + PRE) + 1; const key = `${mood}:${dur}`;
+    if (key === musicKey) return musicReady;
+    musicKey = key;
+    const label = { esperanza: "Esperanza", reflexion: "Reflexión", exhortacion: "Exhortación" }[mood];
+    if (musicCache.has(key)) { setStatus(st, "ok", `Música generada: ${label}.`); musicReady = Promise.resolve(musicCache.get(key)); return musicReady; }
+    setStatus(st, "", `Generando música (${label})…`, true);
+    musicReady = renderMood(mood, dur).then((b) => { musicCache.set(key, b); if (musicKey === key) setStatus(st, "ok", `Música generada: ${label}.`); return b; })
+      .catch(() => { setStatus(st, "err", "No se pudo generar la música en este navegador."); return null; });
+    return musicReady;
+  }
+
+  // ---------- audio ----------
+  // Voz → mezcla ← música; un limitador al final evita que la grabación sature.
+  let audio = null, musicSrc = null, musicShift = 0;
+  const PRE = 0.8; let preT = -1; // entrada de la exportación
+  function ensureAudio() {
+    if (audio) { audio.ctx.resume(); return audio; }
+    const actx = new AudioContext(); const src = actx.createMediaElementSource(video);
+    const voice = actx.createGain(); voice.gain.value = 0.85;
+    const music = actx.createGain(); music.gain.value = 0;
+    const mix = actx.createGain();
+    const lim = actx.createDynamicsCompressor();
+    lim.threshold.value = -9; lim.knee.value = 6; lim.ratio.value = 12; lim.attack.value = 0.003; lim.release.value = 0.2;
+    const mon = actx.createGain(); const dest = actx.createMediaStreamDestination();
+    src.connect(voice); voice.connect(mix); music.connect(mix); mix.connect(lim);
+    lim.connect(mon); mon.connect(actx.destination); lim.connect(dest);
+    audio = { ctx: actx, mon, music, dest }; return audio;
+  }
+  // Curva de la música en tiempo del reel: entra fuerte, baja debajo de la voz y sube un poco en las pausas largas.
+  function musicEvents(c) {
+    const base = c.musicaVol, high = Math.min(0.9, Math.max(base * 4, base + 0.3)), gap = Math.min(0.5, base * 1.8);
+    const P = partsOf(c); const speech = []; let off = 0;
+    for (const p of P) {
+      for (const w of S.words) if (w.e > p.s && w.s < p.e) speech.push([off + Math.max(0, w.s - p.s), off + Math.min(p.e, w.e) - p.s]);
+      off += p.e - p.s;
+    }
+    const merged = [];
+    for (const [x, y] of speech) { const l = merged[merged.length - 1]; if (l && x - l[1] < 0.7) l[1] = Math.max(l[1], y); else merged.push([x, y]); }
+    const ev = [{ t: 0, v: high, tc: 0.01 }, { t: 1.8, v: base, tc: 0.45 }];
+    for (let i = 0; i < merged.length - 1; i++) {
+      const g0 = merged[i][1], g1 = merged[i + 1][0];
+      if (g0 > 3 && g1 - g0 >= 0.7) { ev.push({ t: g0 + 0.05, v: gap, tc: 0.2 }); ev.push({ t: g1 - 0.25, v: base, tc: 0.08 }); }
+    }
+    ev.push({ t: Math.max(2, off - 1.2), v: 0, tc: 0.35 });
+    return ev.sort((p, q) => p.t - q.t);
+  }
+  function scheduleMusic(c, offset) {
+    if (!audio) return;
+    const g = audio.music.gain, now = audio.ctx.currentTime, ev = musicEvents(c);
+    g.cancelScheduledValues(now);
+    if (musicShift) ev.forEach((e, i) => { if (i > 0) e.t += musicShift; });
+    let v0 = ev[0].v; for (const e of ev) if (e.t <= offset) v0 = e.v;
+    g.setValueAtTime(v0, now);
+    for (const e of ev) if (e.t > offset) g.setTargetAtTime(e.v, now + (e.t - offset), e.tc);
+  }
+  async function startMusic(offset) {
+    stopMusic(); const c = cur(); const buf = await musicReady; if (!buf || !audio || (!S.playing && !S.exporting)) return;
+    offset += musicShift; scheduleMusic(c, offset);
+    musicSrc = audio.ctx.createBufferSource(); musicSrc.buffer = buf; musicSrc.loop = c.musica === "archivo";
+    musicSrc.connect(audio.music); musicSrc.start(0, c.musica === "archivo" ? offset % buf.duration : Math.min(offset, buf.duration - 0.01));
+  }
+  function stopMusic() {
+    if (musicSrc) { try { musicSrc.stop(); } catch { /* ya detenida */ } musicSrc.disconnect(); musicSrc = null; }
+    if (audio) { audio.music.gain.cancelScheduledValues(audio.ctx.currentTime); audio.music.gain.value = 0; }
+  }
+
+  // ---------- reloj ----------
+  // Un worker marca el ritmo (30 veces por segundo): el navegador no lo frena cuando la ventana queda tapada,
+  // como sí hace con requestAnimationFrame, que era lo que congelaba la imagen mientras el audio seguía.
+  const ticker = (() => {
+    try {
+      const src = "let h=null;onmessage=(e)=>{clearInterval(h);h=null;if(e.data>0)h=setInterval(()=>postMessage(0),e.data);};";
+      return new Worker(URL.createObjectURL(new Blob([src], { type: "text/javascript" })));
+    } catch { return null; }
+  })();
+  let ticking = false;
+  function startTicks() {
+    if (ticking) return; ticking = true;
+    if (ticker) { ticker.onmessage = step; ticker.postMessage(1000 / 30); }
+    else { const f = () => { if (!ticking) return; step(); requestAnimationFrame(f); }; requestAnimationFrame(f); }
+  }
+  function stopTicks() { ticking = false; ticker?.postMessage(0); }
+
+  // ---------- reproducción ----------
+  let busy = false, finishing = false, vtrack = null;
+  async function advance() {
+    // Devuelve true si se pasó a la siguiente parte o terminó.
+    const c = cur(); if (!c || busy || (!S.playing && !S.exporting)) return false;
+    const P = partsOf(c); if (video.currentTime < P[pi].e) return false;
+    if (pi < P.length - 1) {
+      busy = true; video.pause(); stopMusic(); if (S.exporting && rec?.state === "recording") rec.pause();
+      pi++; await seekTo(P[pi].s); drawNow(); vtrack?.requestFrame?.();
+      if (S.exporting && rec?.state === "paused") rec.resume();
+      try { await video.play(); } catch { /* el usuario pausó */ }
+      startMusic(vNow()); busy = false; return true;
+    }
+    if (S.exporting) { if (!finishing) { finishing = true; finishExport().finally(() => (finishing = false)); } } else stopPlay();
+    return true;
+  }
+  function step() {
+    if ((!S.playing && !S.exporting) || busy) return;
+    const c = cur(); if (!c) return; const t = video.currentTime;
+    drawFrame(t); updateTc();
+    if (S.exporting) { vtrack?.requestFrame?.(); $("exp-prog").value = clamp(vNow() / totalOf(c), 0, 1); }
+    if (t >= partsOf(c)[pi].e) advance();
+  }
+  video.addEventListener("timeupdate", () => {
+    if ((S.playing || S.exporting) && !busy) advance();
+    if (S.exporting && document.hidden) setStatus($("st-exp"), "warn", "La pestaña quedó en segundo plano: vuelve a ella para que la grabación no se congele.", true);
+  });
+  async function startPlay() {
+    const c = cur(); if (!c) return; ensureAudio(); audio.mon.gain.value = 1; prepareMusic();
+    if (vNow() >= totalOf(c) - 0.1) await seekV(0);
+    S.playing = true; $("b-play").textContent = "❚❚ Pausa";
+    try { await video.play(); } catch { stopPlay(); return; }
+    startMusic(vNow()); startTicks();
+  }
+  function stopPlay() { if (S.exporting) return; S.playing = false; stopTicks(); video.pause(); stopMusic(); $("b-play").textContent = "▶ Reproducir"; }
+  $("b-play").addEventListener("click", () => (S.playing ? stopPlay() : startPlay()));
+  $("scrub").addEventListener("input", async (e) => { const was = S.playing; if (was) stopPlay(); await seekV(Number(e.target.value)); if (was) startPlay(); });
+  const firstFrame = () => new Promise((r) => { if (video.requestVideoFrameCallback) { video.requestVideoFrameCallback(() => r()); setTimeout(r, 500); } else setTimeout(r, 80); });
+
+  // ---------- encuadre con Claude (respaldo si no hay datos de caras) ----------
+  async function detectWithClaude() {
+    const c = cur(); const st = $("st-detect");
+    if (!c || !sample || !imgLimit) { setStatus(st, "warn", "El encuadre con Claude funciona al abrir la página en claude.ai."); return; }
+    stopPlay(); const n = Math.max(2, Math.min(imgLimit, 6));
+    try {
+      setStatus(st, "", "Tomando cuadros del clip…", true);
+      const times = Array.from({ length: n }, (_, i) => c.inicio + ((i + 0.5) / n) * (c.fin - c.inicio));
+      const grab = document.createElement("canvas"); const gw = 768; grab.width = gw; grab.height = Math.round(gw * video.videoHeight / video.videoWidth);
+      const blobs = [];
+      for (const t of times) { await seekTo(t); grab.getContext("2d").drawImage(video, 0, 0, grab.width, grab.height); blobs.push(await new Promise((r) => grab.toBlob(r, "image/jpeg", 0.8))); }
+      setStatus(st, "", "Claude está ubicando al predicador…", true);
+      const res = await sample.json(`Estas ${n} imágenes son cuadros de un video de una prédica en una iglesia, en orden de tiempo. Para cada imagen, da la posición horizontal del centro de la cara de la persona que está predicando (normalmente quien tiene el micrófono o está en el púlpito), como un número entre 0 (borde izquierdo) y 1 (borde derecho). Si no se ve a nadie predicando, usa null. Responde solo con un arreglo JSON de ${n} valores, por ejemplo [0.48, 0.52, null, 0.6].`, { images: blobs, modelTier: "default" });
+      if (!Array.isArray(res)) throw { code: "invalid_json" };
+      let xs = res.slice(0, n).map((v) => (typeof v === "number" && v >= 0 && v <= 1 ? v : null));
+      const known = xs.filter((v) => v != null); if (!known.length) throw { code: "nobody" };
+      let last = known[0]; xs = xs.map((v) => (v == null ? last : (last = v)));
+      c.crop = times.map((t, i) => ({ t, x: xs[i] })); c.cropMode = "ia"; c.cropTouched = true;
+      persist(); updateCropUI(); await seekV(0);
+    } catch (e) {
+      setStatus(st, "err", e?.code === "nobody" ? "Claude no encontró a nadie predicando en esos cuadros. Ajusta el encuadre a mano."
+        : e?.code === "rate_limited" ? "Llegaste al límite de uso por ahora." : e?.code === "not_granted" ? "No se dio permiso para usar Claude." : "No se pudo detectar. Ajusta el encuadre a mano.");
+    }
+  }
+
+  // ---------- exportar ----------
+  let rec = null, recChunks = [], recMime = "";
+  function pickMime() {
+    const list = ['video/mp4;codecs="avc1.640028,mp4a.40.2"', "video/mp4;codecs=avc1,mp4a", "video/mp4", "video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"];
+    return list.find((m) => window.MediaRecorder && MediaRecorder.isTypeSupported(m)) || "";
+  }
+  $("b-export").addEventListener("click", async () => {
+    const c = cur(); if (!c || S.exporting) return;
+    if (!window.MediaRecorder) { setStatus($("st-exp"), "err", "Este navegador no puede grabar video. Usa Chrome o Edge."); $("exp-wrap").hidden = false; return; }
+    stopPlay(); ensureAudio(); audio.mon.gain.value = 0;
+    $("exp-wrap").hidden = false; $("result").hidden = true;
+    setStatus($("st-exp"), "", "Preparando…", true);
+    await Promise.all([document.fonts.ready, prepareMusic()]);
+    await seekV(0);
+    recMime = pickMime(); recChunks = [];
+    const res720 = $("o-res").value === "720";
+    cv.width = res720 ? 720 : W; cv.height = res720 ? 1280 : H; drawNow();
+    let stream = cv.captureStream(0); vtrack = stream.getVideoTracks()[0];
+    if (!vtrack?.requestFrame) { stream = cv.captureStream(30); vtrack = null; }
+    audio.dest.stream.getAudioTracks().forEach((tr) => stream.addTrack(tr));
+    rec = new MediaRecorder(stream, { mimeType: recMime || undefined, videoBitsPerSecond: res720 ? 5_000_000 : 8_000_000, audioBitsPerSecond: 160_000 });
+    rec.ondataavailable = (e) => { if (e.data.size) recChunks.push(e.data); };
+    S.exporting = true; refreshButtons();
+    setStatus($("st-exp"), "", `Grabando en tiempo real (${Math.round(totalOf(c) + PRE)} s). Deja esta pestaña abierta.`, true);
+    // Entrada de 0,8 s: el codificador del navegador tarda en encenderse y pierde los primeros cuadros.
+    // Se graba primero el cuadro inicial quieto mientras el título aparece y la música entra fuerte;
+    // así lo que se pierda no se nota, y el predicador empieza a hablar con todo ya fluido.
+    const P0 = partsOf(c); const warm = [];
+    for (const p of P0) for (let k = 0; k < 6; k++) warm.push(p.s + k * 0.45);
+    for (const ch of chunks.slice(0, 6)) for (const w of ch.words) warm.push(w.s + 0.02, w.s + 0.1);
+    for (const tw of warm) drawFrame(tw); // prepara en la GPU los efectos de texto antes de grabar
+    musicShift = PRE;
+    rec.start(1000); startMusic(-PRE);
+    const t0 = performance.now();
+    while (performance.now() - t0 < PRE * 1000) {
+      preT = (performance.now() - t0) / 1000; drawFrame(video.currentTime); vtrack?.requestFrame?.();
+      await new Promise((r) => setTimeout(r, 33));
+    }
+    preT = -1;
+    try { await video.play(); } catch { stopTicks(); stopMusic(); musicShift = 0; S.exporting = false; rec.stop(); resetCanvas(); setStatus($("st-exp"), "err", "No se pudo reproducir el video para grabarlo."); refreshButtons(); return; }
+    await firstFrame();
+    drawFrame(video.currentTime); vtrack?.requestFrame?.(); startTicks(); // la música ya viene sonando desde la entrada
+  });
+  function resetCanvas() { vtrack = null; if (cv.width !== W) { cv.width = W; cv.height = H; } drawNow(); }
+  async function finishExport() {
+    stopTicks(); video.pause(); stopMusic(); musicShift = 0;
+    await new Promise((r) => { rec.onstop = r; rec.stop(); });
+    S.exporting = false; audio.mon.gain.value = 1; refreshButtons(); resetCanvas();
+    const c = cur(); const type = (recMime || "video/webm").split(";")[0]; const ext = type.includes("mp4") ? "mp4" : "webm";
+    const blob = new Blob(recChunks, { type }); const name = `${slug(c.titulo)}.${ext}`;
+    $("exp-prog").value = 1;
+    const box = $("result"); box.replaceChildren(); box.hidden = false;
+    const v = document.createElement("video"); v.controls = true; v.playsInline = true; v.src = URL.createObjectURL(blob); box.append(v);
+    if (downloads) {
+      setStatus($("st-exp"), "", `Listo: ${name} (${(blob.size / 1e6).toFixed(1)} MB). Confirma la descarga.`, true);
+      try { await downloads.save({ filename: name, data: blob }); setStatus($("st-exp"), "ok", `Guardado: ${name}`); }
+      catch (e) {
+        setStatus($("st-exp"), e?.code === "declined" ? "" : "warn", e?.code === "declined" ? "Descarga cancelada." : "No se pudo descargar aquí.");
+        const again = document.createElement("button"); again.className = "btn small"; again.type = "button"; again.textContent = "Descargar de nuevo";
+        again.onclick = async () => { try { await downloads.save({ filename: name, data: blob }); setStatus($("st-exp"), "ok", `Guardado: ${name}`); } catch { /* el visor ya avisó */ } };
+        box.append(again);
+      }
+    } else {
+      setStatus($("st-exp"), "ok", `Listo: ${name} (${(blob.size / 1e6).toFixed(1)} MB).`);
+      const a = document.createElement("a"); a.href = v.src; a.download = name; a.textContent = "Descargar " + name; a.className = "btn small"; box.append(a);
+    }
+    pi = 0;
+  }
+
+  function refreshButtons() {
+    const hasVideo = !!S.file, hasT = S.segs.length > 0, c = cur();
+    $("b-analizar").disabled = !(sample && hasT) || S.exporting;
+    $("b-manual").disabled = !hasVideo;
+    $("b-play").disabled = !c || !hasVideo || S.exporting;
+    $("scrub").disabled = !c || !hasVideo || S.exporting;
+    $("b-export").disabled = !c || !hasVideo || S.exporting;
+  }
+
+  $("o-res").value = store.get("pulpito:calidad") || "1080";
+  loadBrand(); updateCmd(); refreshButtons();
+  Promise.all(["96px Anton", "900 70px Montserrat", "800 60px Figtree"].map((f) => document.fonts.load(f))).then(drawNow, drawNow);
+  drawNow();
+})();
+</script>
