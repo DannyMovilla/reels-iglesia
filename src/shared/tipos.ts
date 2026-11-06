@@ -44,6 +44,22 @@ export interface Transcripcion {
 /** [t, [[x, y, w, score], ...]] con coordenadas normalizadas 0–1. */
 export type Caras = [number, [number, number, number, number][]][];
 
+export type TipoTarea = "transcribir" | "caras" | "analizar";
+export type EstadoTarea = "pendiente" | "corriendo" | "ok" | "error" | "cancelada" | "interrumpida";
+
+export interface Tarea {
+  id: string;
+  proyectoId: string;
+  tipo: TipoTarea;
+  estado: EstadoTarea;
+  pct: number;
+  texto?: string;
+  error?: string;
+  creada: string;
+  iniciada?: string;
+  terminada?: string;
+}
+
 export const CATEGORIAS = ["Enseñanza", "Reflexión", "Exhortación", "Esperanza", "Testimonio", "Llamado"] as const;
 export type Categoria = (typeof CATEGORIAS)[number];
 export type Formato = "9:16" | "4:5" | "1:1";
