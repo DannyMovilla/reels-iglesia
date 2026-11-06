@@ -296,3 +296,18 @@ La persona pidió todo en un solo plan:
     inglés, guion doble en nombres, versículo fuera del corte, etc.).
 
 Fuera del plan 3: publicar directo en las redes, generación de música con IA.
+
+## 15. Con IA — reel de un versículo (decidido 2026-11-06)
+
+- **Entrada:** un versículo ("Juan 3:16") o un tema ("esperanza en la prueba").
+- **Claude (una consulta, suscripción):** referencia y texto **RVR1960** (queda sin confirmar hasta que la
+  persona lo revisa; sin confirmar no se exporta), gancho (≤ 8 palabras), **una o dos frases de
+  reflexión**, palabras clave, ánimo de la música y textos por red (mismos límites que la sección 14).
+- **Reel (15–25 s):** gancho (~2,5 s) → versículo palabra por palabra al ritmo de lectura → referencia
+  con "RVR1960" → reflexión → cierre de la marca. Música (pad o pista propia según el ánimo) con la misma
+  curva y normalización (−14 LUFS). Formatos 9:16, 4:5, 1:1; portada y textos al exportar.
+- **Fondo:** degradado animado con el color de la marca (luz y grano), o una **foto o video propio**
+  oscurecido y algo desenfocado para que el texto se lea. Sin generación de imágenes (la persona descartó
+  Gemini de pago y Stable Diffusion local).
+- **Dónde vive:** sección "Con IA" del riel (deja de ser "Pronto"); cada reel en `<datos>/ia/<id>/`
+  (`creacion.json`, fondo copiado, `exportados/`); los MP4 aparecen también en "Exportados".
