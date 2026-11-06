@@ -1,10 +1,11 @@
 import { createReadStream } from "node:fs";
 import { mkdir, stat } from "node:fs/promises";
-import { extname, join } from "node:path";
+import { basename, extname, join } from "node:path";
 import { Readable } from "node:stream";
 import { dialog, ipcMain, protocol, shell, type BrowserWindow } from "electron";
 import type { DatosNuevoProyecto, EstadoSistema } from "@shared/api";
-import type { Caras, ClipSpec, Formato, Marca, TipoTarea, Transcripcion } from "@shared/tipos";
+import { agregarPista, cambiarAnimo, carpetaMusica, listarPistas } from "./musica/banco";
+import type { Animo, Caras, ClipSpec, Formato, Marca, TipoTarea, Transcripcion } from "@shared/tipos";
 import type { Cola } from "./cola/cola";
 import { dimensionesVideo, duracionVideo } from "./procesos/video";
 import { carpetaDatos, carpetaProyecto, raizApp } from "./rutas";
@@ -18,7 +19,7 @@ export interface DepsIpc {
   accionSistema(accion: string): Promise<void>;
 }
 
-const MIME: Record<string, string> = { ".mp4": "video/mp4", ".mov": "video/quicktime", ".m4v": "video/mp4", ".webm": "video/webm", ".mkv": "video/x-matroska" };
+const MIME: Record<string, string> = { ".mp3": "audio/mpeg", ".wav": "audio/wav", ".m4a": "audio/mp4", ".ogg": "audio/ogg", ".flac": "audio/flac", ".mp4": "video/mp4", ".mov": "video/quicktime", ".m4v": "video/mp4", ".webm": "video/webm", ".mkv": "video/x-matroska" };
 
 /** Debe llamarse antes de app.ready. */
 export function registrarEsquemaVideo(): void {
@@ -43,6 +44,10 @@ function servirVideo(): void {
     if (url.hostname === "archivo") {
       if (!elegidos.has(valor)) return new Response("No permitido", { status: 403 });
       ruta = valor;
+    } else if (url.hostname === "musica") {
+      // Solo un nombre de archivo de la carpeta de música (sin carpetas ni "..").
+      if (!valor || valor !== basename(valor) || valor.startsWith(".")) return new Response("No permitido", { status: 403 });
+      ruta = join(carpetaMusica(), valor);
     } else {
       ruta = (await leerProyecto(valor)).video.ruta;
     }
@@ -96,6 +101,14 @@ export function registrarIpc(deps: DepsIpc): void {
   ipcMain.handle("proyectos:caras", (_e, id: string) => leerJson<Caras>(id, "caras.json"));
   ipcMain.handle("proyectos:guardarClip", (_e, id: string, clip: ClipSpec) => guardarClip(id, clip));
   ipcMain.handle("marca:leer", () => leerMarca());
+  ipcMain.handle("musica:listar", () => listarPistas());
+  ipcMain.handle("musica:agregar", async () => {
+    const r = await dialog.showOpenDialog({ title: "Agrega música de fondo", properties: ["openFile", "multiSelections"], filters: [{ name: "Audio", extensions: ["mp3", "wav", "m4a", "ogg", "flac"] }] });
+    const agregadas = [];
+    for (const f of r.canceled ? [] : r.filePaths) agregadas.push(await agregarPista(f));
+    return agregadas;
+  });
+  ipcMain.handle("musica:animo", (_e, id: string, animo: Animo) => cambiarAnimo(id, animo));
   ipcMain.handle("marca:guardar", (_e, m: Marca) => guardarMarca(m));
   ipcMain.handle("marca:elegirLogo", async () => {
     const r = await dialog.showOpenDialog({ title: "Elige el logo de la iglesia", properties: ["openFile"], filters: [{ name: "Imágenes", extensions: ["png", "jpg", "jpeg", "svg", "webp"] }] });

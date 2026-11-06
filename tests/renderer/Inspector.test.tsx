@@ -64,3 +64,18 @@ test("en Estilo se guarda el estilo de la iglesia o se aplica a todos los clips"
   await userEvent.click(screen.getByRole("button", { name: "Aplicar a todos los clips" }));
   expect(alAplicarEstilo).toHaveBeenCalled();
 });
+
+test("en Estilo se elige la música: modo, ánimo, tonalidad del pad y volumen", async () => {
+  const alCambiar = vi.fn();
+  render(<Prueba alCambiar={alCambiar} />);
+  await userEvent.click(screen.getByRole("tab", { name: "Estilo" }));
+  await userEvent.click(screen.getByRole("button", { name: "Pad" }));
+  expect(alCambiar.mock.calls.at(-1)![0].musica.modo).toBe("pad");
+  await userEvent.selectOptions(screen.getByLabelText("Ánimo de la música"), "victoria");
+  expect(alCambiar.mock.calls.at(-1)![0].musica.animo).toBe("victoria");
+  await userEvent.selectOptions(screen.getByLabelText("Tonalidad"), "Sol");
+  expect(alCambiar.mock.calls.at(-1)![0].musica.tonalidad).toBe("Sol");
+  await userEvent.click(screen.getByRole("button", { name: "Sin música" }));
+  expect(alCambiar.mock.calls.at(-1)![0].musica.modo).toBe("ninguna");
+  expect(screen.queryByLabelText("Volumen de la música")).toBeNull();
+});

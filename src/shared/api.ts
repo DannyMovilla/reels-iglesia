@@ -1,4 +1,5 @@
-import type { Caras, ClipSpec, Formato, Marca, Proyecto, Tarea, TipoTarea, Transcripcion, VideoOrigen } from "./tipos";
+import type { Pista } from "./reel/pistas";
+import type { Animo, Caras, ClipSpec, Formato, Marca, Proyecto, Tarea, TipoTarea, Transcripcion, VideoOrigen } from "./tipos";
 
 export interface Chequeo {
   ok: boolean;
@@ -31,6 +32,12 @@ export interface ApiReels {
   /** Guarda un clip editado (reemplaza el de mismo id en clips.json). */
   guardarClip(proyectoId: string, clip: ClipSpec): Promise<void>;
   leerMarca(): Promise<Marca>;
+  listarPistas(): Promise<Pista[]>;
+  /** Abre el diálogo para agregar pistas propias; devuelve las agregadas. */
+  agregarPistas(): Promise<Pista[]>;
+  cambiarAnimo(id: string, animo: Animo): Promise<void>;
+  /** URL para escuchar una pista de la carpeta de música. */
+  urlPista(id: string): string;
   guardarMarca(m: Marca): Promise<void>;
   /** Abre el diálogo para elegir el logo, lo copia a la carpeta de la marca y devuelve su ruta (null si se cancela). */
   elegirLogo(): Promise<string | null>;

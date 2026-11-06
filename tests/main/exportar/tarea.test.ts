@@ -29,6 +29,7 @@ describe("ejecutor exportar", () => {
   const deps = (extra: Partial<DepsExportar> = {}): DepsExportar => ({
     gpu: async () => true,
     normalizar: async (mp4) => { normalizados.push(mp4); },
+    musica: async () => null,
     crearVoz: async (_p, destino) => { vocesCreadas.push(destino); writeFileSync(destino, "m4a"); },
     dimensiones: async () => ({ ancho: 1280, alto: 720 }),
     renderizar: async (dir, salida, op) => {

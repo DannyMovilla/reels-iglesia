@@ -9,6 +9,7 @@ import { argsVozLimpia } from "../procesos/audio";
 import { ejecutarConProgreso } from "../procesos/lineas";
 import { dimensionesVideo, hayNvenc } from "../procesos/video";
 import { normalizarAudio } from "./mezcla";
+import { musicaParaClip } from "../musica/banco";
 import { guardarJson, leerClips, leerJson, leerMarca, leerProyecto } from "../proyectos/almacen";
 import { carpetaProyecto } from "../rutas";
 import { prepararCarpeta } from "./preparar";
@@ -68,7 +69,7 @@ export function crearEjecutorExportar(deps: DepsExportar = {}): Ejecutor {
   const renderizar = deps.renderizar ?? renderizarReal;
   const normalizar = deps.normalizar ?? ((mp4: string, senal: AbortSignal) => normalizarAudio(mp4, senal));
   const crearVoz = deps.crearVoz ?? crearVozReal;
-  const elegirMusica = deps.musica ?? (async () => null);
+  const elegirMusica = deps.musica ?? ((c: ClipSpec, p: Proyecto, d: number) => musicaParaClip(c, p, d));
   const borrar = deps.borrar ?? ((d: string) => rm(d, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 }));
 
   return async (t, ctx) => {
@@ -127,6 +128,7 @@ export function crearEjecutorExportar(deps: DepsExportar = {}): Ejecutor {
       ctx.alProgreso(100, nombre);
     } finally {
       await borrarTemporal(tmp, borrar);
+      if (pista && pista.startsWith(join(carpeta, "tmp"))) await rm(pista, { force: true }); // pad generado para este reel
     }
   };
 }

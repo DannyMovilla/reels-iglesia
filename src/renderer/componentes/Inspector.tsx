@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { BookOpen, Check, Contrast, Copy, FileText, Flag, Send, Sparkles, TrendingUp, TriangleAlert, Type } from "lucide-react";
-import type { ClipSpec, Formato } from "@shared/tipos";
+import { ANIMOS, type Animo, type ClipSpec, type Formato } from "@shared/tipos";
+import type { Pista } from "@shared/reel/pistas";
+import { NOMBRE_ANIMO } from "../pantallas/Musica";
 
 interface Props {
   clip: ClipSpec;
@@ -10,7 +12,11 @@ interface Props {
   alGuardarEstilo?(c: ClipSpec): void;
   /** "Aplicar a todos los clips" el estilo de la iglesia. */
   alAplicarEstilo?(): void;
+  /** Pistas propias de la iglesia (para "Mi pista"). */
+  pistas?: Pista[];
 }
+
+const TONALIDADES = ["Do", "Re", "Mi", "Fa", "Sol", "La", "Si", "Mib", "Lab", "Sib"];
 
 type Pestana = "clip" | "estilo" | "publicar";
 
@@ -28,7 +34,7 @@ function Segmentos<T extends string>({ opciones, valor, etiqueta, alCambiar }: {
 
 const FORMATOS: [Formato, string, string][] = [["9:16", "Reels · TikTok", "12px 21px"], ["4:5", "Feed IG · FB", "15px 19px"], ["1:1", "Cuadrado", "17px 17px"]];
 
-export function Inspector({ clip: c, avisos, alCambiar, alGuardarEstilo, alAplicarEstilo }: Props) {
+export function Inspector({ clip: c, avisos, alCambiar, alGuardarEstilo, alAplicarEstilo, pistas }: Props) {
   const [pestana, setPestana] = useState<Pestana>("clip");
   const cambiar = (parcial: Partial<ClipSpec>) => alCambiar({ ...c, ...parcial });
   const cambiarVersiculo = (i: number, parcial: Partial<ClipSpec["versiculos"][number]>) =>
@@ -126,6 +132,39 @@ export function Inspector({ clip: c, avisos, alCambiar, alGuardarEstilo, alAplic
               <label className="campo">Altura (9:16)
                 <input type="range" min={0.55} max={0.86} step={0.01} value={c.subtitulos.altura} onChange={(e) => cambiar({ subtitulos: { ...c.subtitulos, altura: Number(e.target.value) } })} />
               </label>
+            </div>
+            <div className="grupo"><h3>Música</h3>
+              <Segmentos etiqueta="Música" valor={c.musica.modo} opciones={[["auto", "Automática"], ["pista", "Mi pista"], ["pad", "Pad"], ["ninguna", "Sin música"]]}
+                alCambiar={(modo) => cambiar({ musica: { ...c.musica, modo } })} />
+              {c.musica.modo !== "ninguna" && (
+                <>
+                  {c.musica.modo === "pista" ? (
+                    <label className="campo">Pista
+                      <select className="entrada" value={c.musica.pista ?? ""} onChange={(e) => cambiar({ musica: { ...c.musica, pista: e.target.value || null } })}>
+                        <option value="">Elegir según el ánimo</option>
+                        {(pistas ?? []).map((p) => <option key={p.id} value={p.id}>{p.titulo}</option>)}
+                      </select>
+                    </label>
+                  ) : (
+                    <label className="campo">Ánimo de la música
+                      <select className="entrada" value={c.musica.animo} onChange={(e) => cambiar({ musica: { ...c.musica, animo: e.target.value as Animo } })}>
+                        {ANIMOS.map((a) => <option key={a} value={a}>{NOMBRE_ANIMO[a]}</option>)}
+                      </select>
+                    </label>
+                  )}
+                  {c.musica.modo !== "pista" && (
+                    <label className="campo">Tonalidad
+                      <select className="entrada" value={c.musica.tonalidad} onChange={(e) => cambiar({ musica: { ...c.musica, tonalidad: e.target.value } })}>
+                        {TONALIDADES.map((t) => <option key={t} value={t}>{t}</option>)}
+                      </select>
+                    </label>
+                  )}
+                  <label className="campo">Volumen bajo la voz
+                    <input type="range" aria-label="Volumen de la música" min={0.04} max={0.3} step={0.01} value={c.musica.volumen}
+                      onChange={(e) => cambiar({ musica: { ...c.musica, volumen: Number(e.target.value) } })} />
+                  </label>
+                </>
+              )}
             </div>
             <div className="grupo"><h3>Encuadre</h3>
               <Segmentos etiqueta="Seguimiento" valor={c.encuadre.modo} opciones={[["auto", "Seguir la cara"], ["fijo", "Fijo"]]}
