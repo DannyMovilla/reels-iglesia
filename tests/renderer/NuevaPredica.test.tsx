@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { vi } from "vitest";
 import { NuevaPredica } from "../../src/renderer/pantallas/NuevaPredica";
 import type { ApiReels } from "../../src/shared/api";
 
@@ -38,4 +39,16 @@ test("si no se puede leer el video elegido, se explica en pantalla", async () =>
   render(<NuevaPredica alCrear={() => {}} alCancelar={() => {}} />);
   await userEvent.click(screen.getByRole("button", { name: /Elige el video del culto/ }));
   expect(await screen.findByRole("alert")).toHaveTextContent("No pude leer la duración del video. ¿Está instalado FFmpeg?");
+});
+
+test("el predicador (opcional) se guarda con la prédica", async () => {
+  const crearProyecto = vi.fn(async (d: unknown) => ({ id: "p", ...(d as object) }));
+  window.reels = { urlArchivo: () => "", crearProyecto, procesar: async () => {}, leerMarca: async () => ({ predicador: "Pastor Juan" }) } as unknown as ApiReels;
+  render(<NuevaPredica videoInicial={video} alCrear={() => {}} alCancelar={() => {}} />);
+  const campo = await screen.findByLabelText("Predicador (opcional)");
+  await vi.waitFor(() => expect(campo).toHaveValue("Pastor Juan")); // viene de la marca
+  await userEvent.clear(campo);
+  await userEvent.type(campo, "Pastora Ana");
+  await userEvent.click(screen.getByRole("button", { name: "Procesar prédica" }));
+  expect(crearProyecto).toHaveBeenCalledWith(expect.objectContaining({ predicador: "Pastora Ana" }));
 });

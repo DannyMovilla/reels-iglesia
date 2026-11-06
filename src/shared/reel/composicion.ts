@@ -25,6 +25,8 @@ export interface EntradaComposicion {
   modo: "vista" | "render";
   /** Voz limpia del proyecto (segundo 0 = inicio del rango de la prédica). Sin ella, el video suena con su audio. */
   voz?: { src: string; inicioRango: number };
+  /** Nombre del predicador para el rótulo (del proyecto o de la marca). */
+  predicador?: string;
   /** Pista o pad de música (se mezcla bajo la voz con un carril de volumen). */
   musica?: { src: string };
 }
@@ -91,17 +93,21 @@ export function construirComposicion(e: EntradaComposicion): { html: string; dur
   const finVideo = r2(clip.inicioReel + clip.duracion);
   el.push(`<div id="sombra" class="clip sombra" data-start="0" data-duration="${n(finVideo)}"></div>`);
 
-  if (apertura) {
+  if (apertura && c.efectos.transicion === "destello") {
     el.push(`<div id="flash" class="clip flash" data-start="${n(clip.inicioReel)}" data-duration="0.3"></div>`);
     js.push(`tl.fromTo("#flash", { opacity: 0.85 }, { opacity: 0, duration: 0.3, ease: "power2.out" }, ${n(clip.inicioReel)});`);
   }
+  if (apertura && c.efectos.transicion === "luz") agregarLuz(el, js, Math.max(0, clip.inicioReel - 0.35));
+  if (c.efectos.grano) agregarGrano(el, js, finVideo);
 
   // Gancho: durante la apertura (o los primeros 4,5 s), centrado debajo o encima de la cara.
+  const durGancho = c.gancho.trim() ? (apertura ? apertura.duracion : Math.min(4.5, clip.duracion)) : 0;
+  // La cara en el cuadro de salida (con zoom y desplazamiento de cámara); su alto ≈ 1,2 × su ancho.
+  const cara = { centro: (pos(0.5, caraY).y + caraY * vh) / H, alto: ((pista?.caraAncho ?? 0.06) * vw * 1.2) / H };
+  const franjaLibre = Math.round(posicionGancho(cara, formato) * H * 10) / 10;
   if (c.gancho.trim()) {
-    const dur = apertura ? apertura.duracion : Math.min(4.5, clip.duracion);
-    // La cara en el cuadro de salida (con zoom y desplazamiento de cámara); su alto ≈ 1,2 × su ancho.
-    const cara = { centro: (pos(0.5, caraY).y + caraY * vh) / H, alto: ((pista?.caraAncho ?? 0.06) * vw * 1.2) / H };
-    const top = Math.round(posicionGancho(cara, formato) * H * 10) / 10;
+    const dur = durGancho;
+    const top = franjaLibre;
     el.push(`<div id="gancho" class="clip gancho" data-start="0" data-duration="${n(dur)}" style="top:${top}px">${esc(c.gancho)}<i></i></div>`);
     js.push(`tl.from("#gancho", { opacity: 0, scale: 0.92, duration: 0.35, ease: "back.out(1.7)" }, 0);`);
     js.push(`tl.to("#gancho", { opacity: 0, duration: 0.3, ease: "power2.in" }, ${n(Math.max(0, dur - 0.3))});`);
@@ -131,6 +137,16 @@ export function construirComposicion(e: EntradaComposicion): { html: string; dur
     js.push(`tl.to("#${id}", { x: -${W}, duration: 0.4, ease: "power2.in" }, ${n(Math.max(ventana.desde + 0.6, ventana.hasta - 0.4))});`);
   });
 
+  // Rótulo del predicador: al empezar el clip (o al irse el gancho), en la franja libre, nunca con el versículo.
+  const nombrePredicador = e.predicador?.trim();
+  if (c.efectos.rotulo && nombrePredicador) {
+    const ventanas = c.versiculos.map((v) => ventanaVersiculo(v, clip)).filter((v): v is NonNullable<typeof v> => v !== null);
+    const desde = r2(Math.max(clip.inicioReel + 0.4, durGancho + 0.2));
+    let hasta = r2(Math.min(desde + 3, finVideo - 0.2));
+    for (const v of ventanas) if (v.hasta > desde && v.desde < hasta) hasta = r2(Math.min(hasta, v.desde - 0.1));
+    if (hasta - desde >= 1.2) agregarRotulo(el, js, nombrePredicador, desde, hasta - desde, franjaLibre);
+  }
+
   if (marca.nombre.trim()) el.push(`<div id="marca" class="clip marca" data-start="0" data-duration="${n(finVideo)}">${esc(marca.nombre)}</div>`);
   el.push(`<div id="prog" class="clip prog" data-start="0" data-duration="${n(finVideo)}"></div>`);
   js.push(`tl.fromTo("#prog", { scaleX: 0 }, { scaleX: 1, duration: ${n(finVideo)}, ease: "none" }, 0);`);
@@ -154,7 +170,10 @@ function agregarCierre(el: string[], js: string[], marca: Marca, recursos: Entra
   const logo = recursos.logo
     ? `<div class="logo con-imagen" style="width:${lado}px;height:${lado}px"><img src="${esc(recursos.logo)}" alt=""></div>`
     : `<div class="logo">${esc((marca.nombre.trim()[0] ?? "").toUpperCase())}</div>`;
-  el.push(`<div id="cierre" class="clip cierre" data-start="${n(inicio)}" data-duration="${n(dur)}">${logo}<h2>${esc(marca.nombre)}</h2><p>${esc(marca.invitacion)}</p></div>`);
+  const usuario = marca.redes?.instagram ?? marca.redes?.tiktok ?? marca.redes?.facebook ?? marca.redes?.youtube;
+  const seguir = usuario ? `<div class="seguir"><span class="mas">+</span>Síguenos en <b>@${esc(usuario)}</b></div>` : "";
+  el.push(`<div id="cierre" class="clip cierre" data-start="${n(inicio)}" data-duration="${n(dur)}">${logo}<h2>${esc(marca.nombre)}</h2><p>${esc(marca.invitacion)}</p>${seguir}</div>`);
+  if (seguir) js.push(`tl.from("#cierre .seguir", { scale: 0.6, opacity: 0, duration: 0.45, ease: "back.out(2.2)" }, ${n(inicio + 0.75)});`);
   js.push(`tl.from("#cierre", { opacity: 0, duration: 0.3 }, ${n(inicio)});`);
   js.push(`tl.from("#cierre .logo", { scale: 0.4, opacity: 0, duration: 0.5, ease: "back.out(2)" }, ${n(inicio + 0.1)});`);
   js.push(`tl.from("#cierre h2, #cierre p", { y: 40, opacity: 0, duration: 0.45, stagger: 0.12, ease: "power3.out" }, ${n(inicio + 0.3)});`);
@@ -194,4 +213,27 @@ tl.seek(0);
 </body>
 </html>
 `;
+}
+
+/** Luz cálida que cruza la pantalla (adaptado de organic-light-leak-overlay del catálogo de HyperFrames, Apache 2.0). */
+function agregarLuz(el: string[], js: string[], inicio: number): void {
+  el.push(`<div id="luz" class="clip luz" data-start="${n(inicio)}" data-duration="1.1"><i class="ambar"></i><i class="rojo"></i><i class="oro"></i></div>`);
+  js.push(`tl.fromTo("#luz", { opacity: 0 }, { opacity: 0.9, duration: 0.35, ease: "sine.out" }, ${n(inicio)});`);
+  js.push(`tl.fromTo("#luz .ambar", { x: -260 }, { x: 160, duration: 1.1, ease: "sine.inOut" }, ${n(inicio)});`);
+  js.push(`tl.fromTo("#luz .oro", { x: 200, rotation: -8 }, { x: -120, rotation: 4, duration: 1.1, ease: "sine.inOut" }, ${n(inicio)});`);
+  js.push(`tl.to("#luz", { opacity: 0, duration: 0.55, ease: "sine.in" }, ${n(inicio + 0.55)});`);
+}
+
+/** Grano de película suave (adaptado de grain-overlay, con GSAP en vez de animación CSS para que el render sea exacto). */
+function agregarGrano(el: string[], js: string[], dur: number): void {
+  el.push(`<div id="grano" class="clip grano" data-start="0" data-duration="${n(dur)}"></div>`);
+  js.push(`tl.to("#grano", { x: -18, y: 12, duration: 0.08, ease: "steps(1)", yoyo: true, repeat: ${Math.max(1, Math.floor(dur / 0.08))} }, 0);`);
+}
+
+/** Rótulo con el nombre del predicador (adaptado de lt-soft-pill del catálogo de HyperFrames, Apache 2.0). */
+function agregarRotulo(el: string[], js: string[], nombre: string, inicio: number, dur: number, top: number): void {
+  el.push(`<div id="rotulo" class="clip rotulo" data-start="${n(inicio)}" data-duration="${n(dur)}" style="top:${top}px"><i class="punto"></i><b>${esc(nombre)}</b></div>`);
+  js.push(`tl.fromTo("#rotulo", { scale: 0.86, y: 24, opacity: 0 }, { scale: 1, y: 0, opacity: 1, duration: 0.55, ease: "back.out(1.7)", immediateRender: false }, ${n(inicio)});`);
+  js.push(`tl.from("#rotulo .punto", { scale: 0, duration: 0.4, ease: "back.out(3)" }, ${n(inicio + 0.3)});`);
+  js.push(`tl.to("#rotulo", { scale: 0.94, y: 14, opacity: 0, duration: 0.35, ease: "power2.in" }, ${n(inicio + dur - 0.35)});`);
 }

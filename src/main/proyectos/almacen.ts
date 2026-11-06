@@ -41,7 +41,7 @@ export async function escribirAtomico(ruta: string, datos: unknown, ops: { renom
 }
 
 export async function crearProyecto(
-  datos: { nombre: string; video: VideoOrigen; rango: { inicio: number; fin: number } },
+  datos: { nombre: string; video: VideoOrigen; rango: { inicio: number; fin: number }; predicador?: string },
   ahora: Date = new Date(),
 ): Promise<Proyecto> {
   const error = validarRango(datos.rango.inicio, datos.rango.fin, datos.video.duracion);
@@ -55,6 +55,7 @@ export async function crearProyecto(
     creado: ahora.toISOString(),
     video: datos.video,
     rango: datos.rango,
+    ...(datos.predicador ? { predicador: datos.predicador } : {}),
     estado: "nuevo",
     pasos: { transcripcion: { estado: "pendiente" }, audio: { estado: "pendiente" }, caras: { estado: "pendiente" }, analisis: { estado: "pendiente" } },
   };

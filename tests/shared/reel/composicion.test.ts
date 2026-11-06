@@ -202,3 +202,45 @@ describe("estilos de subtítulos", () => {
     expect(conEstilo("neon").html).toMatch(/\.sub\.neon[^{]*\{[^}]*text-shadow/);
   });
 });
+
+describe("efectos", () => {
+  const conEfectos = (efectos: Partial<ClipSpec["efectos"]>, extra: Partial<EntradaComposicion> = {}, c: Partial<ClipSpec> = {}) =>
+    dom(construirComposicion({ ...entrada("9:16", clip({ efectos: { transicion: "destello", grano: false, rotulo: true, ...efectos }, ...c })), predicador: "Pastor Juan Pérez", ...extra }).html);
+
+  test("transición: destello, luz o ninguna al pasar del B/N al color", () => {
+    expect(conEfectos({ transicion: "destello" }).querySelector("#flash")).not.toBeNull();
+    const luz = conEfectos({ transicion: "luz" });
+    expect(luz.querySelector("#flash")).toBeNull();
+    expect(luz.querySelector("#luz")).not.toBeNull();
+    const nada = conEfectos({ transicion: "ninguna" });
+    expect(nada.querySelector("#flash, #luz")).toBeNull();
+  });
+
+  test("grano: aparece solo si está activo y dura todo el video", () => {
+    expect(conEfectos({ grano: false }).querySelector("#grano")).toBeNull();
+    const g = conEfectos({ grano: true }).querySelector("#grano")!;
+    expect(g.getAttribute("data-start")).toBe("0");
+  });
+
+  test("rótulo del predicador al empezar el clip; sin nombre o apagado, no aparece", () => {
+    const d = conEfectos({ rotulo: true });
+    const r = d.querySelector("#rotulo")!;
+    expect(r.textContent).toContain("Pastor Juan Pérez");
+    expect(Number(r.getAttribute("data-start"))).toBeGreaterThanOrEqual(5.78); // después de la apertura (5,78 s)
+    expect(conEfectos({ rotulo: false }).querySelector("#rotulo")).toBeNull();
+    expect(conEfectos({ rotulo: true }, { predicador: "  " }).querySelector("#rotulo")).toBeNull();
+  });
+
+  test("el rótulo termina antes de que entre la tarjeta del versículo", () => {
+    const d = conEfectos({ rotulo: true }, {}, { versiculos: [{ ref: "Juan 3:16", texto: TEXTO, en: 1, activo: true, confirmado: true }] });
+    const r = d.querySelector("#rotulo");
+    const v = d.querySelector(".vers")!;
+    if (r) expect(Number(r.getAttribute("data-start")) + Number(r.getAttribute("data-duration"))).toBeLessThanOrEqual(Number(v.getAttribute("data-start")) + 0.001);
+  });
+
+  test("el cierre invita a seguir a la iglesia en sus redes", () => {
+    const d = dom(construirComposicion({ ...entrada(), marca: { ...entrada().marca, redes: { instagram: "iglesiafamilia" } } }).html);
+    expect(d.querySelector("#cierre .seguir")!.textContent).toContain("@iglesiafamilia");
+    expect(dom(construirComposicion(entrada()).html).querySelector("#cierre .seguir")).toBeNull();
+  });
+});

@@ -103,6 +103,7 @@ export function crearEjecutorExportar(deps: DepsExportar = {}): Ejecutor {
       recursos: { gsap: "recursos/gsap.min.js", fuentes: "recursos/fuentes", logo },
       modo: "render",
       voz: { src: "voz.m4a", inicioRango: proyecto.rango.inicio },
+      predicador: proyecto.predicador ?? marca.predicador,
       musica: musica ? { src: musica } : undefined,
     });
     const tmp = join(carpeta, "tmp", t.id);

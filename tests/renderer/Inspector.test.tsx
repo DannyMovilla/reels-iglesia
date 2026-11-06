@@ -98,3 +98,15 @@ test("en Estilo hay 7 estilos de subtítulos con nombre en español", async () =
   await userEvent.click(within(grupo).getByRole("button", { name: "Karaoke" }));
   expect(alCambiar.mock.calls.at(-1)![0].subtitulos.estilo).toBe("karaoke");
 });
+
+test("en Estilo se eligen los efectos: transición, grano y rótulo del predicador", async () => {
+  const alCambiar = vi.fn();
+  render(<Prueba alCambiar={alCambiar} />);
+  await userEvent.click(screen.getByRole("tab", { name: "Estilo" }));
+  await userEvent.click(within(screen.getByRole("group", { name: "Transición" })).getByRole("button", { name: "Luz" }));
+  expect(alCambiar.mock.calls.at(-1)![0].efectos.transicion).toBe("luz");
+  await userEvent.click(screen.getByRole("switch", { name: "Grano de película" }));
+  expect(alCambiar.mock.calls.at(-1)![0].efectos.grano).toBe(!base.efectos.grano);
+  await userEvent.click(screen.getByRole("switch", { name: "Nombre del predicador" }));
+  expect(alCambiar.mock.calls.at(-1)![0].efectos.rotulo).toBe(!base.efectos.rotulo);
+});

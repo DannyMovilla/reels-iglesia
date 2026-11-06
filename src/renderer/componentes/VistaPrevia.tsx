@@ -19,6 +19,7 @@ interface Props {
   caras: Caras | null;
   marca: Marca;
   dimensiones: { ancho: number; alto: number };
+  predicador?: string;
   alTiempo?(t: number): void;
   alAvisos?(avisos: string[]): void;
 }
@@ -58,12 +59,13 @@ export const VistaPrevia = forwardRef<ControlVistaPrevia, Props>(function VistaP
         fuenteVideo: window.reels!.urlVideo(p.proyectoId),
         recursos: { gsap: "recursos/gsap.min.js", fuentes: "recursos/fuentes", runtime: "recursos/hyperframe.runtime.iife.js", logo: urlLogoVista(p.marca.logo) },
         modo: "vista",
+        predicador: p.predicador,
       });
       p.alAvisos?.(comp.avisos);
       setSrc(await window.reels!.registrarVista(`vista-${++version}`, comp.html));
     }, 300);
     return () => clearTimeout(espera);
-  }, [p.clip, p.transcripcion, p.caras, p.marca, p.dimensiones, p.proyectoId, formato]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [p.clip, p.transcripcion, p.caras, p.marca, p.dimensiones, p.proyectoId, p.predicador, formato]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Al recargar la composición, vuelve al mismo segundo.
   useEffect(() => {

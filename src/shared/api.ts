@@ -18,6 +18,7 @@ export interface DatosNuevoProyecto {
   nombre: string;
   video: VideoOrigen;
   rango: { inicio: number; fin: number };
+  predicador?: string;
 }
 
 /** API que el preload expone al renderer como `window.reels`. */

@@ -134,6 +134,12 @@ export function Inspector({ clip: c, avisos, alCambiar, alGuardarEstilo, alAplic
                 <input type="range" min={0.55} max={0.86} step={0.01} value={c.subtitulos.altura} onChange={(e) => cambiar({ subtitulos: { ...c.subtitulos, altura: Number(e.target.value) } })} />
               </label>
             </div>
+            <div className="grupo"><h3>Efectos</h3>
+              <Segmentos etiqueta="Transición" valor={c.efectos.transicion} opciones={[["destello", "Destello"], ["luz", "Luz"], ["ninguna", "Ninguna"]]}
+                alCambiar={(transicion) => cambiar({ efectos: { ...c.efectos, transicion } })} />
+              <div className="fila"><Interruptor activo={c.efectos.grano} etiqueta="Grano de película" alCambiar={(grano) => cambiar({ efectos: { ...c.efectos, grano } })} /> Grano de película</div>
+              <div className="fila"><Interruptor activo={c.efectos.rotulo} etiqueta="Nombre del predicador" alCambiar={(rotulo) => cambiar({ efectos: { ...c.efectos, rotulo } })} /> Nombre del predicador al inicio</div>
+            </div>
             <div className="grupo"><h3>Ritmo</h3>
               <div className="fila"><Interruptor activo={c.cortes.pausas} etiqueta="Acortar pausas largas" alCambiar={(pausas) => cambiar({ cortes: { ...c.cortes, pausas } })} /> Acortar pausas largas</div>
               <div className="fila"><Interruptor activo={c.cortes.muletillas} etiqueta="Quitar muletillas" alCambiar={(muletillas) => cambiar({ cortes: { ...c.cortes, muletillas } })} /> Quitar muletillas («eh», «em»)</div>

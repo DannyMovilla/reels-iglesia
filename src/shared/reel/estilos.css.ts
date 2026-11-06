@@ -43,6 +43,20 @@ html, body { width: ${p.ancho}px; height: ${p.alto}px; overflow: hidden; backgro
 .muestra-fondo { position: absolute; inset: 0; background: radial-gradient(circle at 50% 35%, #2a3352, #0a0c16 70%); }
 .cierre h2 { font: 900 76px/1.1 Montserrat, sans-serif; padding: 0 40px; }
 .cierre p { font: 700 44px Figtree, sans-serif; color: var(--marca); padding: 0 40px; }
+.luz { position: absolute; inset: -16%; overflow: hidden; pointer-events: none; mix-blend-mode: screen; }
+.luz i { position: absolute; inset: -20%; }
+.luz .ambar { background: radial-gradient(ellipse 52% 110% at 10% 58%, rgb(255 241 197 / 92%), transparent 45%), radial-gradient(ellipse 72% 120% at 24% 54%, rgb(255 126 57 / 78%), transparent 66%); filter: blur(28px); }
+.luz .rojo { background: radial-gradient(ellipse 58% 105% at 78% 34%, rgb(255 79 61 / 60%), rgb(255 44 92 / 22%) 48%, transparent 76%); filter: blur(40px); }
+.luz .oro { background: linear-gradient(104deg, transparent 24%, rgb(255 144 62 / 30%) 40%, rgb(255 247 205 / 72%) 51%, rgb(255 144 62 / 30%) 62%, transparent 78%); filter: blur(18px); }
+.grano { position: absolute; inset: -40px; pointer-events: none; opacity: 0.06; mix-blend-mode: overlay;
+  background: repeating-radial-gradient(circle at 17% 32%, rgba(255,255,255,.9) 0 1px, transparent 1px 3px), repeating-radial-gradient(circle at 73% 61%, rgba(0,0,0,.9) 0 1px, transparent 1px 4px), repeating-radial-gradient(circle at 41% 87%, rgba(255,255,255,.7) 0 1px, transparent 1px 5px);
+  background-size: 7px 7px, 11px 11px, 13px 13px; }
+.rotulo { position: absolute; left: 70px; transform: translateY(-50%); display: flex; align-items: center; gap: 18px; background: #fff; border-radius: 999px; padding: 18px 36px 18px 24px; box-shadow: 0 16px 46px rgba(15,17,21,.28); transform-origin: 0% 50%; }
+.rotulo .punto { width: 18px; height: 18px; border-radius: 50%; background: var(--marca); flex-shrink: 0; }
+.rotulo b { font: 800 42px/1.05 Figtree, sans-serif; color: #0f1115; white-space: nowrap; }
+.cierre .seguir { display: flex; align-items: center; gap: 14px; margin-top: 18px; padding: 16px 34px 16px 18px; border-radius: 999px; background: #fff; color: #111; font: 600 38px Figtree, sans-serif; }
+.cierre .seguir b { font-weight: 800; }
+.cierre .seguir .mas { width: 52px; height: 52px; border-radius: 50%; background: var(--marca); color: #111; display: grid; place-items: center; font: 800 40px/1 Figtree, sans-serif; }
 ${cssEstilosSub(p.tamanoSub)}
 `;
 }
