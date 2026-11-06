@@ -4,6 +4,7 @@ import { dialog, ipcMain, protocol, shell, type BrowserWindow } from "electron";
 import type { DatosNuevoProyecto, EstadoSistema } from "@shared/api";
 import { descargarVideo } from "./descargas/ytdlp";
 import { agregarPista, cambiarAnimo, carpetaMusica, listarPistas, musicaParaVista } from "./musica/banco";
+import { escribirCreacion } from "./ia/claude";
 import { borrarCreacion, copiarFondo, crearCreacion, guardarCreacion, leerCreacion, listarCreaciones } from "./ia/almacen";
 import type { Animo, Caras, ClipSpec, Creacion, Formato, Marca, TipoTarea, Transcripcion } from "@shared/tipos";
 import type { Cola } from "./cola/cola";
@@ -98,6 +99,7 @@ export function registrarIpc(deps: DepsIpc): void {
   ipcMain.handle("marca:leer", () => leerMarca());
   ipcMain.handle("ia:listar", () => listarCreaciones());
   ipcMain.handle("ia:crear", (_e, entrada: Creacion["entrada"]) => crearCreacion(entrada));
+  ipcMain.handle("ia:escribir", (_e, id: string) => escribirCreacion(id, { comando: process.env.REELS_CLAUDE_COMANDO }));
   ipcMain.handle("ia:leer", (_e, id: string) => leerCreacion(id));
   ipcMain.handle("ia:guardar", (_e, c: Creacion) => guardarCreacion(c));
   ipcMain.handle("ia:borrar", (_e, id: string) => borrarCreacion(id));

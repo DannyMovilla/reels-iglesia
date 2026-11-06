@@ -16,6 +16,12 @@ let entrada = "";
 process.stdin.setEncoding("utf8");
 process.stdin.on("data", (d) => (entrada += d));
 process.stdin.on("end", () => {
+  if (entrada.includes("REEL DE VERSÍCULO")) {
+    const r = JSON.parse(readFileSync(join(aqui, "respuesta-versiculo.json"), "utf8"));
+    if (modo === "versiculo-vacio") r.ref = "";
+    console.log(JSON.stringify({ type: "result", is_error: false, result: "Aquí está:\n```json\n" + JSON.stringify(r) + "\n```" }));
+    return;
+  }
   if (!entrada.includes("Transcripción:")) {
     console.log(JSON.stringify({ type: "result", is_error: true, result: "Prompt vacío" }));
     process.exit(1);

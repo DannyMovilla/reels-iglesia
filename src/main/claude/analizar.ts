@@ -33,12 +33,12 @@ export function extraerJson(texto: string): unknown {
   throw new Error(ERROR_JSON);
 }
 
-function partirComando(c: string): [string, string[]] {
+export function partirComando(c: string): [string, string[]] {
   const partes = c.match(/"[^"]*"|\S+/g)?.map((p) => p.replace(/^"|"$/g, "")) ?? ["claude"];
   return [partes[0], partes.slice(1)];
 }
 
-async function preguntar(comando: [string, string[]], prompt: string, senal: AbortSignal, tiempo: AbortSignal): Promise<string> {
+export async function preguntar(comando: [string, string[]], prompt: string, senal: AbortSignal, tiempo: AbortSignal): Promise<string> {
   const [exe, args] = comando;
   let r;
   try {

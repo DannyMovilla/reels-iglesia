@@ -40,6 +40,8 @@ export interface ApiReels {
   /** «Con IA»: reels de un versículo. */
   listarCreaciones(): Promise<Creacion[]>;
   crearCreacion(entrada: Creacion["entrada"]): Promise<Creacion>;
+  /** Claude escribe el versículo RVR1960, el gancho, la reflexión, la escena y los textos (una consulta). */
+  escribirCreacion(id: string): Promise<Creacion>;
   leerCreacion(id: string): Promise<Creacion>;
   guardarCreacion(c: Creacion): Promise<void>;
   borrarCreacion(id: string): Promise<void>;

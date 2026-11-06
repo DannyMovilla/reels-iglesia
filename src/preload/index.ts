@@ -24,6 +24,7 @@ const api: ApiReels = {
   leerMarca: () => ipcRenderer.invoke("marca:leer"),
   listarCreaciones: () => ipcRenderer.invoke("ia:listar"),
   crearCreacion: (entrada) => ipcRenderer.invoke("ia:crear", entrada),
+  escribirCreacion: (id) => ipcRenderer.invoke("ia:escribir", id),
   leerCreacion: (id) => ipcRenderer.invoke("ia:leer", id),
   guardarCreacion: (c) => ipcRenderer.invoke("ia:guardar", c),
   borrarCreacion: (id) => ipcRenderer.invoke("ia:borrar", id),
