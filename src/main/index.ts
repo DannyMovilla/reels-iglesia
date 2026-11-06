@@ -1,6 +1,7 @@
 import { join } from "node:path";
 import { app, BrowserWindow, ipcMain } from "electron";
 import type { EstadoSistema } from "@shared/api";
+import { analizarProyecto } from "./claude/analizar";
 import { Cola } from "./cola/cola";
 import { registrarEsquemaVideo, registrarIpc } from "./ipc";
 import { crearEjecutores } from "./pipeline/tareas";
@@ -36,9 +37,7 @@ app.whenReady().then(async () => {
     python: rutaPython(),
     script: rutaTranscriptor(),
     encolar: (id, tipo) => cola.agregar(id, tipo),
-    analizar: async () => {
-      throw new Error("Análisis no disponible todavía");
-    },
+    analizar: (id, ctx) => analizarProyecto(id, ctx),
   });
   cola = new Cola(join(carpetaDatos(), "cola.json"), ejecutores);
   await cola.cargar();

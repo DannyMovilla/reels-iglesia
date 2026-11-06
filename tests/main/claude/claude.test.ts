@@ -1,0 +1,87 @@
+import { mkdtempSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
+import { beforeEach, expect, test } from "vitest";
+import { analizarProyecto } from "../../../src/main/claude/analizar";
+import { extraerJson } from "../../../src/main/claude/analizar";
+import { RespuestaClaude } from "../../../src/main/claude/esquema";
+import { normalizarClips } from "../../../src/main/claude/normalizar";
+import { construirPrompt } from "../../../src/main/claude/prompt";
+import { crearProyecto, guardarJson, leerJson } from "../../../src/main/proyectos/almacen";
+import type { ClipSpec, Transcripcion } from "../../../src/shared/tipos";
+
+const FIX = resolve(__dirname, "../../fixtures");
+const muestra = (): Transcripcion => JSON.parse(readFileSync(join(FIX, "transcripcion-muestra.json"), "utf8"));
+const respuesta = () => RespuestaClaude.parse(JSON.parse(readFileSync(join(FIX, "claude/respuesta-ok.json"), "utf8")));
+const ctx = { alProgreso: () => {}, senal: new AbortController().signal };
+
+test("construirPrompt incluye marcas H:MM:SS y pide ganchos alternativos y versículos", () => {
+  const t: Transcripcion = { formato: "pulpito-transcripcion/1", inicio: 6284, fin: 9155, modelo: "x", dispositivo: "cpu",
+    segmentos: [{ s: 6284, e: 6291, t: "Hermanos", w: [] }] };
+  const p = construirPrompt(t, 6);
+  expect(p).toContain("[1:44:44 - 1:44:51] Hermanos");
+  expect(p).toContain("ganchos_alternativos");
+  expect(p).toContain("versiculos");
+});
+
+test("extraerJson saca el JSON de un bloque de código rodeado de texto", () => {
+  expect(extraerJson('Aquí van:\n```json\n[{"a":1}]\n```\nBendiciones')).toEqual([{ a: 1 }]);
+  expect(extraerJson('[{"a":2}]')).toEqual([{ a: 2 }]);
+  expect(() => extraerJson("sin json")).toThrow("Claude no devolvió una lista de clips válida");
+});
+
+test("el esquema acepta categorías sin tilde y las corrige", () => {
+  expect(respuesta()[1].categoria).toBe("Reflexión");
+});
+
+test("normalizarClips ajusta a los segmentos, ubica la apertura y aplica los valores por defecto", () => {
+  const clips: ClipSpec[] = normalizarClips(respuesta(), muestra());
+  expect(clips).toHaveLength(1); // el de 1 s se descarta
+  const c = clips[0];
+  expect(c.inicio).toBe(30.93);
+  expect(c.fin).toBe(63.46);
+  expect(c.apertura?.frase.toLowerCase().startsWith("ese quebrantamiento terrenal")).toBe(true);
+  expect(c.apertura?.activa).toBe(true);
+  expect(c.ganchosAlternativos).toEqual(["Cuando te humillas, Dios responde", "¿Oras o solo hablas?"]);
+  expect(c.formatos).toEqual(["9:16", "4:5"]);
+  expect(c.encuadre).toEqual({ modo: "auto", x: 0.5, zoom: 1.25 });
+  expect(c.versiculos[0]).toMatchObject({ ref: "Salmo 51:17", texto: "", activo: true });
+  expect(c.versiculos[0].en).toBe(16.29); // "cuando" se dice en 47.22; el clip empieza en 30.93
+  expect(c.estado).toBe("sugerido");
+});
+
+describe("analizarProyecto con un claude falso", () => {
+  let id: string;
+  let contador: string;
+  const comando = `node ${join(FIX, "claude/falso-claude.mjs")}`;
+  beforeEach(async () => {
+    process.env.REELS_IGLESIA_DATOS = mkdtempSync(join(tmpdir(), "reels-claude-"));
+    const v = join(mkdtempSync(join(tmpdir(), "reels-v-")), "v.mp4");
+    writeFileSync(v, "x");
+    id = (await crearProyecto({ nombre: "Culto", video: { ruta: v, tamano: statSync(v).size, modificado: 0, duracion: 100 }, rango: { inicio: 0, fin: 75 } })).id;
+    await guardarJson(id, "transcripcion.json", muestra());
+    contador = join(mkdtempSync(join(tmpdir(), "reels-cont-")), "n.txt");
+    process.env.FALSO_CLAUDE_CONTADOR = contador;
+  });
+
+  test("ok: guarda clips.json", async () => {
+    process.env.FALSO_CLAUDE_MODO = "ok";
+    await analizarProyecto(id, ctx, { comando });
+    const clips = await leerJson<ClipSpec[]>(id, "clips.json");
+    expect(clips?.[0].titulo).toBe("El quebrantamiento activa la gloria");
+  });
+
+  test("respuesta inválida: reintenta una vez y termina bien", async () => {
+    process.env.FALSO_CLAUDE_MODO = "invalido-luego-ok";
+    await analizarProyecto(id, ctx, { comando });
+    expect(readFileSync(contador, "utf8")).toBe("2");
+    expect((await leerJson<ClipSpec[]>(id, "clips.json"))?.length).toBe(1);
+  });
+
+  test("sin sesión: error que explica cómo iniciar sesión", async () => {
+    process.env.FALSO_CLAUDE_MODO = "sin-sesion";
+    await expect(analizarProyecto(id, ctx, { comando })).rejects.toThrow(
+      "Claude no tiene sesión iniciada. Abre Ajustes → Iniciar sesión en Claude.",
+    );
+  });
+});
