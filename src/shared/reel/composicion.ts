@@ -6,6 +6,7 @@ import { cssComposicion } from "./estilos.css";
 import { bloquesSubtitulos } from "./subtitulos";
 import { palabrasDe, partesDelReel, r2 } from "./tiempo";
 import { ventanaVersiculo } from "./versiculo";
+import { curvaMusica, tramosDeVoz } from "./musica";
 
 
 export interface EntradaComposicion {
@@ -21,6 +22,10 @@ export interface EntradaComposicion {
   /** Rutas relativas a la carpeta del reel (o a reels-comp:// en la vista previa). `logo` solo si la marca tiene logo. */
   recursos: { gsap: string; fuentes: string; runtime?: string; logo?: string };
   modo: "vista" | "render";
+  /** Voz limpia del proyecto (segundo 0 = inicio del rango de la prédica). Sin ella, el video suena con su audio. */
+  voz?: { src: string; inicioRango: number };
+  /** Pista o pad de música (se mezcla bajo la voz con un carril de volumen). */
+  musica?: { src: string };
 }
 
 export const ALTOS: Record<Formato, number> = { "9:16": 1920, "4:5": 1350, "1:1": 1080 };
@@ -58,7 +63,9 @@ export function construirComposicion(e: EntradaComposicion): { html: string; dur
     if (p.tipo === "cierre") return;
     const id = `v${i}`;
     const bn = p.tipo === "apertura" ? "filter: grayscale(1) contrast(1.15) brightness(0.95);" : "";
-    el.push(`<video id="${id}" class="clip video" src="${esc(e.fuenteVideo)}" data-start="${n(p.inicioReel)}" data-duration="${n(p.duracion)}" data-media-start="${n(p.inicioVideo)}" data-has-audio="true" playsinline style="width:${r2(vw)}px;height:${r2(vh)}px;${bn}"></video>`);
+    const sonido = e.voz ? `data-has-audio="false" muted` : `data-has-audio="true"`;
+    el.push(`<video id="${id}" class="clip video" src="${esc(e.fuenteVideo)}" data-start="${n(p.inicioReel)}" data-duration="${n(p.duracion)}" data-media-start="${n(p.inicioVideo)}" ${sonido} playsinline style="width:${r2(vw)}px;height:${r2(vh)}px;${bn}"></video>`);
+    if (e.voz) el.push(`<audio id="voz${i}" class="clip voz" src="${esc(e.voz.src)}" data-start="${n(p.inicioReel)}" data-duration="${n(p.duracion)}" data-media-start="${n(p.inicioVideo - e.voz.inicioRango)}" data-volume="1"></audio>`);
     const claves: ClaveCamara[] = pista ? pista.keys.filter((k) => k.t >= p.inicioVideo && k.t <= p.finVideo) : [];
     const ini = pos(pista ? (claves[0]?.x ?? pista.keys[0].x) : c.encuadre.x, caraY);
     js.push(`tl.set("#${id}", { x: ${ini.x}, y: ${ini.y} }, ${n(p.inicioReel)});`);
@@ -133,6 +140,12 @@ export function construirComposicion(e: EntradaComposicion): { html: string; dur
   if (marca.nombre.trim()) el.push(`<div id="marca" class="clip marca" data-start="0" data-duration="${n(finVideo)}">${esc(marca.nombre)}</div>`);
   el.push(`<div id="prog" class="clip prog" data-start="0" data-duration="${n(finVideo)}"></div>`);
   js.push(`tl.fromTo("#prog", { scaleX: 0 }, { scaleX: 1, duration: ${n(finVideo)}, ease: "none" }, 0);`);
+
+  if (e.musica) {
+    const puntos = curvaMusica(tramosDeVoz(partes, palabras), duracion, c.musica.volumen);
+    const carril = JSON.stringify({ version: 1, lanes: [{ target: "volume", points: puntos }] });
+    el.push(`<audio id="musica" class="clip" src="${esc(e.musica.src)}" data-start="0" data-duration="${n(duracion)}" data-volume="1" data-automation='${carril}'></audio>`);
+  }
 
   const cierre = partes.find((p) => p.tipo === "cierre");
   if (cierre) agregarCierre(el, js, marca, e.recursos, cierre.inicioReel, cierre.duracion);

@@ -136,3 +136,32 @@ test("muestra de la marca: el cierre con nombre e invitación", async () => {
   expect(d.querySelector("#cierre p")!.textContent).toBe("Síguenos · Domingos 10:00 AM");
   expect(r.duracion).toBeGreaterThan(2);
 });
+
+test("con voz limpia: los videos van mudos y la voz sale de voz.m4a con el mismo desfase", () => {
+  const r = construirComposicion({ ...entrada(), voz: { src: "voz.m4a", inicioRango: 20 } });
+  const d = dom(r.html);
+  for (const v of d.querySelectorAll("video")) {
+    expect(v.hasAttribute("muted")).toBe(true);
+    expect(v.getAttribute("data-has-audio")).toBe("false");
+  }
+  const voces = [...d.querySelectorAll("audio.voz")];
+  expect(voces.map((a) => a.getAttribute("data-media-start"))).toEqual(["19.02", "10.93"]); // 39,02 − 20 y 30,93 − 20
+  expect(voces.map((a) => a.getAttribute("data-start"))).toEqual([...d.querySelectorAll("video")].map((v) => v.getAttribute("data-start")));
+});
+
+test("sin voz limpia (vista previa) el video conserva su audio", () => {
+  const d = dom(construirComposicion(entrada()).html);
+  expect(d.querySelector("audio.voz")).toBeNull();
+  expect(d.querySelector("video")!.getAttribute("data-has-audio")).toBe("true");
+});
+
+test("la música lleva el carril de volumen de curvaMusica durante todo el reel", () => {
+  const r = construirComposicion({ ...entrada(), musica: { src: "musica.mp3" } });
+  const a = dom(r.html).querySelector("audio#musica")!;
+  expect(a.getAttribute("src")).toBe("musica.mp3");
+  expect(a.getAttribute("data-duration")).toBe(String(r.duracion));
+  const carril = JSON.parse(a.getAttribute("data-automation")!);
+  expect(carril.lanes[0].target).toBe("volume");
+  expect(carril.lanes[0].points[0]).toEqual({ t: 0, v: 0.5 });
+  expect(carril.lanes[0].points.at(-1)).toEqual({ t: r.duracion, v: 0 });
+});

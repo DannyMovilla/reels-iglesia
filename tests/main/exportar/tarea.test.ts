@@ -24,8 +24,12 @@ describe("ejecutor exportar", () => {
   let clip: ClipSpec;
   let llamadas: { gpu: boolean; html: string; salida: string }[];
 
+  let normalizados: string[];
+  let vocesCreadas: string[];
   const deps = (extra: Partial<DepsExportar> = {}): DepsExportar => ({
     gpu: async () => true,
+    normalizar: async (mp4) => { normalizados.push(mp4); },
+    crearVoz: async (_p, destino) => { vocesCreadas.push(destino); writeFileSync(destino, "m4a"); },
     dimensiones: async () => ({ ancho: 1280, alto: 720 }),
     renderizar: async (dir, salida, op) => {
       llamadas.push({ gpu: op.gpu, html: readFileSync(join(dir, "index.html"), "utf8"), salida });
@@ -50,6 +54,8 @@ describe("ejecutor exportar", () => {
     };
     await guardarJson(id, "clips.json", [clip]);
     llamadas = [];
+    normalizados = [];
+    vocesCreadas = [];
   });
 
   test("usa la versión del clip guardada al encolar, no los cambios posteriores", async () => {
@@ -110,6 +116,40 @@ describe("ejecutor exportar", () => {
     }))(tarea(clip), ctx());
     expect(html).toContain('<img src="recursos/logo.png"');
     expect(hayLogo).toBe(true);
+  });
+
+  test("la voz limpia del proyecto va a la carpeta del reel (se crea si el proyecto es de antes) y el MP4 se normaliza", async () => {
+    let html = "", hayVoz = false;
+    await crearEjecutorExportar(deps({
+      renderizar: async (dir, salida) => {
+        html = readFileSync(join(dir, "index.html"), "utf8");
+        hayVoz = existsSync(join(dir, "voz.m4a"));
+        writeFileSync(salida, "mp4");
+      },
+    }))(tarea(clip), ctx());
+    expect(vocesCreadas).toEqual([join(carpetaProyecto(id), "voz.m4a")]);
+    expect(hayVoz).toBe(true);
+    expect(html).toContain('class="clip voz" src="voz.m4a"');
+    expect(normalizados).toEqual([join(carpetaProyecto(id), "exportados", "el-quebrantamiento-9x16.mp4")]);
+    // Segunda exportación: la voz ya existe, no se vuelve a crear.
+    await crearEjecutorExportar(deps())({ ...tarea(clip), id: "t2" }, ctx());
+    expect(vocesCreadas).toHaveLength(1);
+  });
+
+  test("la música elegida se copia a la carpeta del reel y se mezcla", async () => {
+    const pista = join(mkdtempSync(join(tmpdir(), "pista-")), "Alabanza #1.mp3");
+    writeFileSync(pista, "mp3");
+    let html = "", hayMusica = false;
+    await crearEjecutorExportar(deps({
+      musica: async () => pista,
+      renderizar: async (dir, salida) => {
+        html = readFileSync(join(dir, "index.html"), "utf8");
+        hayMusica = existsSync(join(dir, "musica.mp3"));
+        writeFileSync(salida, "mp4");
+      },
+    }))(tarea(clip), ctx());
+    expect(hayMusica).toBe(true);
+    expect(html).toContain('<audio id="musica" class="clip" src="musica.mp3"');
   });
 
   test("sin GPU NVIDIA exporta sin --gpu", async () => {

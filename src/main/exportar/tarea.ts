@@ -2,9 +2,13 @@ import { existsSync } from "node:fs";
 import { copyFile, link, readdir, rm } from "node:fs/promises";
 import { extname, join } from "node:path";
 import { construirComposicion } from "@shared/reel/composicion";
-import type { Caras, ClipSpec, Formato, Transcripcion } from "@shared/tipos";
+import { duracionReel } from "@shared/reel/tiempo";
+import type { Caras, ClipSpec, Formato, Proyecto, Transcripcion } from "@shared/tipos";
 import type { Ejecutor } from "../cola/cola";
+import { argsVozLimpia } from "../procesos/audio";
+import { ejecutarConProgreso } from "../procesos/lineas";
 import { dimensionesVideo, hayNvenc } from "../procesos/video";
+import { normalizarAudio } from "./mezcla";
 import { guardarJson, leerClips, leerJson, leerMarca, leerProyecto } from "../proyectos/almacen";
 import { carpetaProyecto } from "../rutas";
 import { prepararCarpeta } from "./preparar";
@@ -25,7 +29,22 @@ export interface DepsExportar {
   dimensiones?: (ruta: string) => Promise<{ ancho: number; alto: number }>;
   renderizar?: (dir: string, salida: string, op: OpcionesRender) => Promise<void>;
   borrar?: (dir: string) => Promise<void>;
+  /** Deja el MP4 en −14 LUFS / −1 dBTP. */
+  normalizar?: (mp4: string, senal: AbortSignal) => Promise<void>;
+  /** Crea voz.m4a para un proyecto que no la tiene (proyectos de antes del plan 3). */
+  crearVoz?: (p: Proyecto, destino: string, senal: AbortSignal) => Promise<void>;
+  /** Archivo de música para el clip (pista o pad), o null para un reel sin música. */
+  musica?: (clip: ClipSpec, proyecto: Proyecto, duracion: number) => Promise<string | null>;
 }
+
+/** voz.m4a con FFmpeg (mismo filtro que el paso "audio" de la cola). */
+async function crearVozReal(p: Proyecto, destino: string, senal: AbortSignal): Promise<void> {
+  const r = await ejecutarConProgreso("ffmpeg", argsVozLimpia(p.video.ruta, p.rango.inicio, p.rango.fin, destino), { senal });
+  if (r.codigo !== 0) throw new Error("No se pudo limpiar el audio de la prédica.");
+}
+
+/** Enlace duro (instantáneo, sin ocupar disco) o copia si está en otro disco. */
+const enlazarOCopiar = (origen: string, destino: string) => link(origen, destino).catch(() => copyFile(origen, destino));
 
 /**
  * Borra la carpeta temporal. En Windows el navegador del render puede tenerla ocupada (EBUSY) un rato
@@ -47,6 +66,9 @@ export function crearEjecutorExportar(deps: DepsExportar = {}): Ejecutor {
   const gpu = deps.gpu ?? (() => hayNvenc());
   const dimensiones = deps.dimensiones ?? ((r: string) => dimensionesVideo(r));
   const renderizar = deps.renderizar ?? renderizarReal;
+  const normalizar = deps.normalizar ?? ((mp4: string, senal: AbortSignal) => normalizarAudio(mp4, senal));
+  const crearVoz = deps.crearVoz ?? crearVozReal;
+  const elegirMusica = deps.musica ?? (async () => null);
   const borrar = deps.borrar ?? ((d: string) => rm(d, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 }));
 
   return async (t, ctx) => {
@@ -64,6 +86,11 @@ export function crearEjecutorExportar(deps: DepsExportar = {}): Ejecutor {
     // HyperFrames corta el src en "#" o "?": esas rutas van como un enlace dentro de la carpeta temporal.
     const enlazar = /[#?%]/.test(proyecto.video.ruta);
     const fuenteVideo = enlazar ? `video${extname(proyecto.video.ruta).toLowerCase()}` : proyecto.video.ruta.replace(/\\/g, "/");
+    const carpeta = carpetaProyecto(t.proyectoId);
+    const voz = join(carpeta, "voz.m4a");
+    if (!existsSync(voz)) await crearVoz(proyecto, voz, ctx.senal);
+    const pista = await elegirMusica(clip, proyecto, duracionReel(clip));
+    const musica = pista ? `musica${extname(pista).toLowerCase()}` : undefined;
     const marca = await leerMarca();
     const logo = marca.logo && existsSync(marca.logo) ? `recursos/logo${extname(marca.logo).toLowerCase()}` : undefined;
     const comp = construirComposicion({
@@ -74,21 +101,27 @@ export function crearEjecutorExportar(deps: DepsExportar = {}): Ejecutor {
       fuenteVideo,
       recursos: { gsap: "recursos/gsap.min.js", fuentes: "recursos/fuentes", logo },
       modo: "render",
+      voz: { src: "voz.m4a", inicioRango: proyecto.rango.inicio },
+      musica: musica ? { src: musica } : undefined,
     });
-    const carpeta = carpetaProyecto(t.proyectoId);
     const tmp = join(carpeta, "tmp", t.id);
     const exportados = join(carpeta, "exportados");
     try {
       await prepararCarpeta(tmp, comp.html);
       if (logo && marca.logo) await copyFile(marca.logo, join(tmp, logo));
-      if (enlazar) await link(proyecto.video.ruta, join(tmp, fuenteVideo)).catch(() => copyFile(proyecto.video.ruta, join(tmp, fuenteVideo)));
+      await enlazarOCopiar(voz, join(tmp, "voz.m4a"));
+      if (pista && musica) await copyFile(pista, join(tmp, musica));
+      if (enlazar) await enlazarOCopiar(proyecto.video.ruta, join(tmp, fuenteVideo));
       const existentes = new Set(existsSync(exportados) ? await readdir(exportados) : []);
       const nombre = nombreSalida(clip.titulo, formato, existentes);
-      await renderizar(tmp, join(exportados, nombre), {
+      const salida = join(exportados, nombre);
+      await renderizar(tmp, salida, {
         gpu: await gpu(),
         senal: ctx.senal,
-        alProgreso: (pct) => ctx.alProgreso(Math.max(2, Math.min(99, pct)), nombre),
+        alProgreso: (pct) => ctx.alProgreso(Math.max(2, Math.min(96, pct)), nombre),
       });
+      ctx.alProgreso(97, "Ajustando el volumen…");
+      await normalizar(salida, ctx.senal);
       const clips = await leerClips(t.proyectoId);
       await guardarJson(t.proyectoId, "clips.json", clips.map((c) => (c.id === clip.id ? { ...c, estado: "exportado" } : c)));
       ctx.alProgreso(100, nombre);
