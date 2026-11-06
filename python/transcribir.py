@@ -150,8 +150,20 @@ def ruta_modelo_caras() -> str:
     return ruta
 
 
-def detectar_caras(video: str, inicio: float, fin: float, fps: float = 2.0, ancho: int = 640):
-    """Busca caras 2 veces por segundo. Devuelve [[t, [[x, y, w, score], ...]], ...] normalizado 0-1."""
+def args_ffmpeg_caras(video: str, inicio: float, fin: float, fps: float, ancho: int, alto: int, gpu: bool) -> list[str]:
+    """Argumentos de FFmpeg para sacar cuadros pequeños; con gpu decodifica en la NVIDIA (NVDEC)."""
+    args = ["ffmpeg", "-v", "error"]
+    if gpu:
+        args += ["-hwaccel", "cuda"]
+    return args + ["-ss", f"{inicio:.3f}", "-i", video, "-t", f"{fin - inicio:.3f}",
+                   "-an", "-vf", f"fps={fps},scale={ancho}:{alto}", "-f", "rawvideo", "-pix_fmt", "bgr24", "-"]
+
+
+def detectar_caras(video: str, inicio: float, fin: float, fps: float = 2.0, ancho: int = 640, gpu: bool | None = None):
+    """Busca caras 2 veces por segundo. Devuelve [[t, [[x, y, w, score], ...]], ...] normalizado 0-1.
+
+    gpu=None prueba primero decodificar con la GPU y, si FFmpeg no entrega el primer cuadro, repite sin GPU.
+    """
     import cv2
     import numpy as np
 
@@ -162,18 +174,20 @@ def detectar_caras(video: str, inicio: float, fin: float, fps: float = 2.0, anch
     vw, vh = dimensiones_video(video)
     alto = int(round(ancho * vh / vw / 2)) * 2
     det = cv2.FaceDetectorYN.create(ruta_modelo_caras(), "", (ancho, alto), 0.6, 0.3, 50)
-    proc = subprocess.Popen(
-        ["ffmpeg", "-v", "error", "-ss", f"{inicio:.3f}", "-i", video, "-t", f"{fin - inicio:.3f}",
-         "-an", "-vf", f"fps={fps},scale={ancho}:{alto}", "-f", "rawvideo", "-pix_fmt", "bgr24", "-"],
-        stdout=subprocess.PIPE,
-    )
     tam = ancho * alto * 3
+    usar_gpu = gpu if gpu is not None else os.environ.get("REELS_CARAS_GPU", "1") != "0"
+    proc = subprocess.Popen(args_ffmpeg_caras(video, inicio, fin, fps, ancho, alto, usar_gpu), stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+    primero = proc.stdout.read(tam)
+    if len(primero) < tam and usar_gpu and gpu is None:
+        proc.wait()
+        proc = subprocess.Popen(args_ffmpeg_caras(video, inicio, fin, fps, ancho, alto, False), stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+        primero = proc.stdout.read(tam)
     total = int((fin - inicio) * fps)
     salida = []
     i = 0
     t0 = time.time()
+    buf = primero
     while True:
-        buf = proc.stdout.read(tam)
         if len(buf) < tam:
             break
         img = np.frombuffer(buf, np.uint8).reshape(alto, ancho, 3)

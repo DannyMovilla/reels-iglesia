@@ -30,3 +30,13 @@ def test_parser_acepta_las_opciones_nuevas():
     assert args.progreso_json is True
     assert args.solo_transcripcion is True
     assert t.crear_parser().parse_args(["v.mp4", "--solo-caras"]).solo_caras is True
+
+
+def test_args_ffmpeg_caras_con_y_sin_gpu():
+    con = t.args_ffmpeg_caras("v (1).mp4", 10.0, 70.0, 2.0, 640, 360, gpu=True)
+    assert con[con.index("-hwaccel") + 1] == "cuda"
+    assert con.index("-hwaccel") < con.index("-i")
+    assert con[con.index("-i") + 1] == "v (1).mp4"
+    assert "fps=2.0,scale=640:360" in con
+    sin = t.args_ffmpeg_caras("v.mp4", 10.0, 70.0, 2.0, 640, 360, gpu=False)
+    assert "-hwaccel" not in sin
