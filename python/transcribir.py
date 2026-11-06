@@ -200,6 +200,7 @@ def detectar_caras(video: str, inicio: float, fin: float, fps: float = 2.0, anch
                               round(w / ancho, 3), round(float(c[-1]), 2)])
         salida.append([round(inicio + i / fps, 2), lista])
         i += 1
+        buf = proc.stdout.read(tam)
         if i % 20 == 0:
             pct = min(100, i / max(total, 1) * 100)
             if PROGRESO_JSON:

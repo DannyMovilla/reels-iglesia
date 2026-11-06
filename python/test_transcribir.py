@@ -40,3 +40,18 @@ def test_args_ffmpeg_caras_con_y_sin_gpu():
     assert "fps=2.0,scale=640:360" in con
     sin = t.args_ffmpeg_caras("v.mp4", 10.0, 70.0, 2.0, 640, 360, gpu=False)
     assert "-hwaccel" not in sin
+
+
+def test_detectar_caras_recorre_todo_el_tramo_y_termina(tmp_path):
+    """3 s de video a 2 fps → 6 cuadros; antes se quedaba leyendo el primer cuadro para siempre."""
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    video = tmp_path / "prueba #1.mp4"
+    subprocess.run(["ffmpeg", "-v", "error", "-f", "lavfi", "-i", "testsrc=size=320x180:rate=10", "-t", "4",
+                    "-pix_fmt", "yuv420p", str(video)], check=True)
+    codigo = (f"import sys; sys.path.insert(0, {str(Path(__file__).parent)!r}); import transcribir as t; "
+              f"r = t.detectar_caras({str(video)!r}, 0.5, 3.5, gpu=False); print(len(r))")
+    r = subprocess.run([sys.executable, "-c", codigo], capture_output=True, text=True, timeout=60)
+    assert r.stdout.strip().splitlines()[-1] == "6"
