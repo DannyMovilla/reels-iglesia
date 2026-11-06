@@ -214,3 +214,7 @@
 .contador { font-family: var(--font-mono); font-size: 11px; color: var(--text-3); }
 .contador.pasado { color: var(--bad); font-weight: 600; }
 .ok-texto { color: var(--ok); font-size: 12px; font-weight: 600; }
+
+/* Exportados: portada */
+.grupo-exportados li { display: flex; align-items: center; gap: 12px; }
+.grupo-exportados .portada { width: 36px; height: 64px; object-fit: cover; border-radius: 6px; background: var(--bg-3); flex-shrink: 0; }

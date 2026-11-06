@@ -16,6 +16,10 @@ test("nombres de archivo válidos en Windows y sin pisarse", () => {
   expect(nombreSalida("¿Oras o solo hablas?", "9:16", new Set(["oras-o-solo-hablas-9x16.mp4"]))).toBe("oras-o-solo-hablas-2-9x16.mp4");
   expect(nombreSalida("", "4:5", new Set())).toBe("reel-4x5.mp4");
   expect(nombreSalida("Fe: \"Sí\" / No", "1:1", new Set())).toBe("fe-si-no-1x1.mp4");
+  // Un título largo que se corta justo en un espacio no deja guion doble.
+  const largo = nombreSalida(`${"a".repeat(59)} fin`, "9:16", new Set()); // el corte a 60 cae justo en el guion
+  expect(largo).not.toMatch(/--/);
+  expect(largo.length).toBeLessThanOrEqual(60 + "-9x16.mp4".length);
 });
 
 describe("ejecutor exportar", () => {
@@ -25,11 +29,13 @@ describe("ejecutor exportar", () => {
   let llamadas: { gpu: boolean; html: string; salida: string }[];
 
   let normalizados: string[];
+  let portadas: number[];
   let vocesCreadas: string[];
   const deps = (extra: Partial<DepsExportar> = {}): DepsExportar => ({
     gpu: async () => true,
     normalizar: async (mp4) => { normalizados.push(mp4); },
     musica: async () => null,
+    portada: async (_mp4, t, salida) => { portadas.push(t); writeFileSync(salida, "jpg"); },
     crearVoz: async (_p, destino) => { vocesCreadas.push(destino); writeFileSync(destino, "m4a"); },
     dimensiones: async () => ({ ancho: 1280, alto: 720 }),
     renderizar: async (dir, salida, op) => {
@@ -56,6 +62,7 @@ describe("ejecutor exportar", () => {
     await guardarJson(id, "clips.json", [clip]);
     llamadas = [];
     normalizados = [];
+    portadas = [];
     vocesCreadas = [];
   });
 
@@ -69,7 +76,7 @@ describe("ejecutor exportar", () => {
 
   test("deja el MP4 en exportados, marca el clip como exportado y borra la carpeta temporal", async () => {
     await crearEjecutorExportar(deps())(tarea(clip), ctx());
-    expect(readdirSync(join(carpetaProyecto(id), "exportados"))).toEqual(["el-quebrantamiento-9x16.mp4"]);
+    expect(readdirSync(join(carpetaProyecto(id), "exportados"))).toContain("el-quebrantamiento-9x16.mp4");
     expect((await leerJson<ClipSpec[]>(id, "clips.json"))?.[0].estado).toBe("exportado");
     expect(existsSync(join(carpetaProyecto(id), "tmp", "t1"))).toBe(false);
   });
@@ -97,7 +104,7 @@ describe("ejecutor exportar", () => {
     let intentos = 0;
     const ocupado = async () => { intentos++; throw Object.assign(new Error("EBUSY: resource busy or locked, rmdir"), { code: "EBUSY" }); };
     await crearEjecutorExportar(deps({ borrar: ocupado }))(tarea(clip), ctx());
-    expect(readdirSync(join(carpetaProyecto(id), "exportados"))).toEqual(["el-quebrantamiento-9x16.mp4"]);
+    expect(readdirSync(join(carpetaProyecto(id), "exportados"))).toContain("el-quebrantamiento-9x16.mp4");
     expect((await leerJson<ClipSpec[]>(id, "clips.json"))?.[0].estado).toBe("exportado");
     expect(intentos).toBeGreaterThan(1);
   });
@@ -151,6 +158,17 @@ describe("ejecutor exportar", () => {
     }))(tarea(clip), ctx());
     expect(hayMusica).toBe(true);
     expect(html).toContain('<audio id="musica" class="clip" src="musica.mp3"');
+  });
+
+  test("junto al MP4 quedan la portada (con el gancho visible) y los textos para cada red", async () => {
+    const c = { ...clip, redes: { instagram: { texto: "Texto IG", hashtags: ["#fe"] }, tiktok: { texto: "Texto TT", hashtags: [] }, facebook: { texto: "Texto FB" }, youtube: { titulo: "Título YT", texto: "Texto YT" } } };
+    await crearEjecutorExportar(deps())(tarea(c), ctx());
+    const dir = join(carpetaProyecto(id), "exportados");
+    expect(readdirSync(dir).sort()).toEqual(["el-quebrantamiento-9x16-portada.jpg", "el-quebrantamiento-9x16.mp4", "el-quebrantamiento-textos.txt"]);
+    expect(portadas[0]).toBeGreaterThan(0.5);
+    expect(portadas[0]).toBeLessThanOrEqual(1.2);
+    const textos = readFileSync(join(dir, "el-quebrantamiento-textos.txt"), "utf8");
+    for (const t of ["Instagram", "TikTok", "Facebook", "YouTube Shorts", "Texto IG", "#fe", "Título YT"]) expect(textos).toContain(t);
   });
 
   test("sin GPU NVIDIA exporta sin --gpu", async () => {

@@ -16,6 +16,7 @@ const api: ApiReels = {
   agregarPistas: () => ipcRenderer.invoke("musica:agregar"),
   cambiarAnimo: (id, animo) => ipcRenderer.invoke("musica:animo", id, animo),
   urlPista: (id) => `reels-video://musica/${encodeURIComponent(id)}`,
+  urlExportado: (id, archivo) => `reels-video://exportado/${encodeURIComponent(id)}/${encodeURIComponent(archivo)}`,
   guardarMarca: (m) => ipcRenderer.invoke("marca:guardar", m),
   elegirLogo: () => ipcRenderer.invoke("marca:elegirLogo"),
   aplicarEstilo: (id) => ipcRenderer.invoke("proyectos:aplicarEstilo", id),

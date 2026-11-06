@@ -46,7 +46,8 @@ test("exportar un clip deja un MP4 de 1080×1920 en la carpeta de la prédica", 
 
   const proyecto = readdirSync(join(datos, "proyectos"))[0];
   const exportados = join(datos, "proyectos", proyecto, "exportados");
-  expect(readdirSync(exportados)).toEqual(["el-quebrantamiento-activa-la-gloria-9x16.mp4"]);
+  expect(readdirSync(exportados)).toContain("el-quebrantamiento-activa-la-gloria-9x16.mp4");
+  expect(readdirSync(exportados)).toContain("el-quebrantamiento-activa-la-gloria-9x16-portada.jpg");
   const dims = execFileSync("ffprobe", ["-v", "error", "-select_streams", "v:0", "-show_entries", "stream=width,height", "-of", "csv=p=0:s=x",
     join(exportados, "el-quebrantamiento-activa-la-gloria-9x16.mp4")], { encoding: "utf8" }).trim();
   expect(dims).toBe("1080x1920");

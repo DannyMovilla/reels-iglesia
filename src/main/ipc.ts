@@ -19,7 +19,7 @@ export interface DepsIpc {
   accionSistema(accion: string): Promise<void>;
 }
 
-const MIME: Record<string, string> = { ".mp3": "audio/mpeg", ".wav": "audio/wav", ".m4a": "audio/mp4", ".ogg": "audio/ogg", ".flac": "audio/flac", ".mp4": "video/mp4", ".mov": "video/quicktime", ".m4v": "video/mp4", ".webm": "video/webm", ".mkv": "video/x-matroska" };
+const MIME: Record<string, string> = { ".jpg": "image/jpeg", ".mp3": "audio/mpeg", ".wav": "audio/wav", ".m4a": "audio/mp4", ".ogg": "audio/ogg", ".flac": "audio/flac", ".mp4": "video/mp4", ".mov": "video/quicktime", ".m4v": "video/mp4", ".webm": "video/webm", ".mkv": "video/x-matroska" };
 
 /** Debe llamarse antes de app.ready. */
 export function registrarEsquemaVideo(): void {
@@ -44,6 +44,12 @@ function servirVideo(): void {
     if (url.hostname === "archivo") {
       if (!elegidos.has(valor)) return new Response("No permitido", { status: 403 });
       ruta = valor;
+    } else if (url.hostname === "exportado") {
+      // <proyecto>/<archivo>: solo nombres simples dentro de exportados/ de un proyecto existente.
+      const [id, archivo] = url.pathname.replace(/^\//, "").split("/").map(decodeURIComponent);
+      const simple = (x?: string) => !!x && x === basename(x) && !x.startsWith(".");
+      if (!simple(id) || !simple(archivo)) return new Response("No permitido", { status: 403 });
+      ruta = join(carpetaProyecto(id), "exportados", archivo);
     } else if (url.hostname === "musica") {
       // Solo un nombre de archivo de la carpeta de música (sin carpetas ni "..").
       if (!valor || valor !== basename(valor) || valor.startsWith(".")) return new Response("No permitido", { status: 403 });

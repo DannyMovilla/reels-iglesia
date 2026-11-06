@@ -161,7 +161,7 @@ export async function guardarClip(proyectoId: string, clip: ClipSpec): Promise<v
   await guardarJson(proyectoId, "clips.json", clips.map((c) => (c.id === clip.id ? clip : c)));
 }
 
-export interface ExportadosProyecto { proyectoId: string; nombre: string; archivos: { nombre: string; tamano: number }[] }
+export interface ExportadosProyecto { proyectoId: string; nombre: string; archivos: { nombre: string; tamano: number; portada?: string }[] }
 
 /** Los MP4 exportados de cada proyecto (los proyectos sin exportaciones no aparecen). */
 export async function listarExportados(): Promise<ExportadosProyecto[]> {
@@ -169,9 +169,11 @@ export async function listarExportados(): Promise<ExportadosProyecto[]> {
   for (const p of await listarProyectos()) {
     const dir = join(carpetaProyecto(p.id), "exportados");
     if (!existsSync(dir)) continue;
-    const archivos: { nombre: string; tamano: number }[] = [];
-    for (const nombre of (await readdir(dir)).filter((n) => n.toLowerCase().endsWith(".mp4")).sort()) {
-      archivos.push({ nombre, tamano: (await stat(join(dir, nombre))).size });
+    const todos = await readdir(dir);
+    const archivos: ExportadosProyecto["archivos"] = [];
+    for (const nombre of todos.filter((n) => n.toLowerCase().endsWith(".mp4")).sort()) {
+      const portada = nombre.replace(/\.mp4$/i, "-portada.jpg");
+      archivos.push({ nombre, tamano: (await stat(join(dir, nombre))).size, ...(todos.includes(portada) ? { portada } : {}) });
     }
     if (archivos.length) salida.push({ proyectoId: p.id, nombre: p.nombre, archivos });
   }

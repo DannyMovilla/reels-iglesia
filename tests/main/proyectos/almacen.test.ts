@@ -100,3 +100,16 @@ test("escribirAtomico reintenta si Windows tiene el archivo ocupado (EPERM) y us
   expect(temporales).toHaveLength(3);
   expect(temporales[0]).not.toBe(destino + ".tmp");
 });
+
+test("listarExportados junta cada MP4 con su portada", async () => {
+  const { listarExportados } = await import("../../../src/main/proyectos/almacen");
+  const { carpetaProyecto } = await import("../../../src/main/rutas");
+  const p = await crearProyecto({ nombre: "Culto", video, rango: { inicio: 0, fin: 60 } }, DOS_NOV);
+  const dir = join(carpetaProyecto(p.id), "exportados");
+  writeFileSync(join(dir, "fe-9x16.mp4"), "x");
+  writeFileSync(join(dir, "fe-9x16-portada.jpg"), "x");
+  writeFileSync(join(dir, "fe-4x5.mp4"), "x");
+  writeFileSync(join(dir, "fe-textos.txt"), "x");
+  const [e] = await listarExportados();
+  expect(e.archivos.map((a) => [a.nombre, a.portada])).toEqual([["fe-4x5.mp4", undefined], ["fe-9x16.mp4", "fe-9x16-portada.jpg"]]);
+});

@@ -1,9 +1,10 @@
 import { existsSync } from "node:fs";
-import { copyFile, link, readdir, rm } from "node:fs/promises";
+import { copyFile, link, readdir, rm, writeFile } from "node:fs/promises";
 import { extname, join } from "node:path";
 import { construirComposicion } from "@shared/reel/composicion";
 import { duracionReel, palabrasDe } from "@shared/reel/tiempo";
-import type { Caras, ClipSpec, Formato, Proyecto, Transcripcion } from "@shared/tipos";
+import type { Caras, ClipSpec, Formato, Proyecto, Redes, Transcripcion } from "@shared/tipos";
+import { NOMBRE_RED, textoParaPublicar } from "@shared/redes";
 import type { Ejecutor } from "../cola/cola";
 import { argsVozLimpia } from "../procesos/audio";
 import { ejecutarConProgreso } from "../procesos/lineas";
@@ -19,10 +20,26 @@ const SUFIJO: Record<Formato, string> = { "9:16": "9x16", "4:5": "4x5", "1:1": "
 
 /** "¿Oras o solo hablas? 🙏" + 9:16 → "oras-o-solo-hablas-9x16.mp4"; si ya existe, "-2", "-3"… */
 export function nombreSalida(titulo: string, formato: Formato, existentes: Set<string>): string {
-  const base = titulo.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60) || "reel";
+  const base = slugTitulo(titulo);
   let nombre = `${base}-${SUFIJO[formato]}.mp4`;
   for (let i = 2; existentes.has(nombre); i++) nombre = `${base}-${i}-${SUFIJO[formato]}.mp4`;
   return nombre;
+}
+
+/** "¿Oras o solo hablas? 🙏" → "oras-o-solo-hablas" (máx. 60 caracteres, sin guiones en los bordes). */
+export function slugTitulo(titulo: string): string {
+  return titulo.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 60).replace(/^-+|-+$/g, "") || "reel";
+}
+
+/** FFmpeg: un cuadro del reel en JPG de alta calidad (la portada). */
+export const argsPortada = (mp4: string, t: number, salida: string): string[] =>
+  ["-v", "error", "-y", "-ss", t.toFixed(2), "-i", mp4, "-frames:v", "1", "-q:v", "2", salida];
+
+/** Texto para pegar en cada red, en un solo archivo junto a los MP4. */
+export function textosDelClip(c: ClipSpec): string {
+  return (Object.keys(NOMBRE_RED) as (keyof Redes)[])
+    .map((red) => `=== ${NOMBRE_RED[red]} ===\n${textoParaPublicar(c.redes, red)}\n`)
+    .join("\n");
 }
 
 export interface DepsExportar {
@@ -36,6 +53,13 @@ export interface DepsExportar {
   crearVoz?: (p: Proyecto, destino: string, senal: AbortSignal) => Promise<void>;
   /** Archivo de música para el clip (pista o pad), o null para un reel sin música. */
   musica?: (clip: ClipSpec, proyecto: Proyecto, duracion: number) => Promise<string | null>;
+  /** Saca la portada (un cuadro del MP4) en el segundo t. */
+  portada?: (mp4: string, t: number, salida: string) => Promise<void>;
+}
+
+async function portadaReal(mp4: string, t: number, salida: string): Promise<void> {
+  const r = await ejecutarConProgreso("ffmpeg", argsPortada(mp4, t, salida));
+  if (r.codigo !== 0) throw new Error("No se pudo sacar la portada del reel.");
 }
 
 /** voz.m4a con FFmpeg (mismo filtro que el paso "audio" de la cola). */
@@ -69,6 +93,7 @@ export function crearEjecutorExportar(deps: DepsExportar = {}): Ejecutor {
   const renderizar = deps.renderizar ?? renderizarReal;
   const normalizar = deps.normalizar ?? ((mp4: string, senal: AbortSignal) => normalizarAudio(mp4, senal));
   const crearVoz = deps.crearVoz ?? crearVozReal;
+  const portada = deps.portada ?? portadaReal;
   const elegirMusica = deps.musica ?? ((c: ClipSpec, p: Proyecto, d: number) => musicaParaClip(c, p, d));
   const borrar = deps.borrar ?? ((d: string) => rm(d, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 }));
 
@@ -124,6 +149,11 @@ export function crearEjecutorExportar(deps: DepsExportar = {}): Ejecutor {
       });
       ctx.alProgreso(97, "Ajustando el volumen…");
       await normalizar(salida, ctx.senal);
+      ctx.alProgreso(99, "Portada…");
+      // Portada: con el gancho a la vista (mitad de su entrada, como mucho 1,2 s).
+      const durGancho = clip.apertura?.activa ? clip.apertura.fin - clip.apertura.inicio : Math.min(4.5, clip.fin - clip.inicio);
+      await portada(salida, clip.gancho.trim() ? Math.min(1.2, durGancho / 2) : 1.2, salida.replace(/\.mp4$/i, "-portada.jpg"));
+      await writeFile(join(exportados, `${slugTitulo(clip.titulo)}-textos.txt`), textosDelClip(clip), "utf8");
       const clips = await leerClips(t.proyectoId);
       await guardarJson(t.proyectoId, "clips.json", clips.map((c) => (c.id === clip.id ? { ...c, estado: "exportado" } : c)));
       ctx.alProgreso(100, nombre);
