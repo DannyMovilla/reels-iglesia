@@ -1,6 +1,6 @@
 import type { Correccion } from "./correcciones";
 import type { Pista } from "./reel/pistas";
-import type { Animo, Caras, ClipSpec, Creacion, Formato, Marca, Proyecto, Tarea, TipoTarea, Transcripcion, VideoOrigen } from "./tipos";
+import type { Analisis, Animo, Caras, ClipSpec, Creacion, Formato, Marca, Proyecto, Tarea, TipoTarea, Transcripcion, VideoOrigen } from "./tipos";
 
 export interface Chequeo {
   ok: boolean;
@@ -20,6 +20,7 @@ export interface DatosNuevoProyecto {
   video: VideoOrigen;
   rango: { inicio: number; fin: number };
   predicador?: string;
+  analisis?: Analisis;
 }
 
 /** API que el preload expone al renderer como `window.reels`. */
@@ -82,6 +83,8 @@ export interface ApiReels {
   ubicarVideo(id: string): Promise<Proyecto | null>;
   /** Encola el procesamiento desde un paso (por defecto, desde la transcripción). */
   procesar(id: string, desde?: TipoTarea): Promise<void>;
+  /** Guarda la instrucción y la duración y vuelve a pedir los clips a Claude (conserva favoritos, a mano y editados). */
+  reanalizar(id: string, analisis: Analisis): Promise<void>;
   /** Encola una exportación por clip y formato (por defecto, los formatos marcados en cada clip). */
   exportar(proyectoId: string, clipIds: string[], formatos?: Formato[]): Promise<void>;
   abrirCarpetaExportados(proyectoId: string): Promise<void>;

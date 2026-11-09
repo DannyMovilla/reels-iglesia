@@ -55,6 +55,7 @@ const api: ApiReels = {
   infoVideo: (id) => ipcRenderer.invoke("proyectos:infoVideo", id),
   ubicarVideo: (id) => ipcRenderer.invoke("proyectos:ubicarVideo", id),
   procesar: (id, desde) => ipcRenderer.invoke("proyectos:procesar", id, desde),
+  reanalizar: (id, analisis) => ipcRenderer.invoke("proyectos:reanalizar", id, analisis),
   exportar: (id, clipIds, formatos) => ipcRenderer.invoke("exportar:encolar", id, clipIds, formatos),
   abrirCarpetaExportados: (id) => ipcRenderer.invoke("exportar:abrir", id),
   listarExportados: () => ipcRenderer.invoke("exportar:listar"),

@@ -1,5 +1,7 @@
-import { Check, CircleAlert, Circle, LoaderCircle, RotateCcw } from "lucide-react";
-import type { NombrePaso, Proyecto, Tarea, TipoTarea } from "@shared/tipos";
+import { useState } from "react";
+import { Check, CircleAlert, Circle, LoaderCircle, RotateCcw, Sparkles } from "lucide-react";
+import type { Analisis, NombrePaso, Proyecto, Tarea, TipoTarea } from "@shared/tipos";
+import { limpiarAnalisis, OpcionesAnalisis } from "./OpcionesAnalisis";
 
 const PASOS: { paso: NombrePaso; tipo: TipoTarea; titulo: string }[] = [
   { paso: "transcripcion", tipo: "transcribir", titulo: "Transcripción" },
@@ -14,10 +16,16 @@ interface Props {
   alReintentar(idTarea: string): void;
   /** Volver a procesar desde un paso que falló y ya no tiene tarea en la cola. */
   alProcesar(desde: TipoTarea): void;
+  /** "Analizar de nuevo" con otra instrucción o duración. */
+  alReanalizar?(a: Analisis): void;
 }
 
-export function PanelProceso({ proyecto, tareas, alReintentar, alProcesar }: Props) {
+export function PanelProceso({ proyecto, tareas, alReintentar, alProcesar, alReanalizar }: Props) {
+  const [reanalizando, setReanalizando] = useState<Analisis | null>(null);
+  const analizando = tareas.some((t) => t.proyectoId === proyecto.id && t.tipo === "analizar" && (t.estado === "pendiente" || t.estado === "corriendo"));
+  const puedeReanalizar = alReanalizar && proyecto.pasos.analisis?.estado === "ok" && !analizando;
   return (
+    <>
     <ol className="pasos" aria-label="Proceso">
       {PASOS.map(({ paso, tipo, titulo }) => {
         const p = proyecto.pasos[paso] ?? { estado: "pendiente" as const };
@@ -49,5 +57,21 @@ export function PanelProceso({ proyecto, tareas, alReintentar, alProcesar }: Pro
         );
       })}
     </ol>
+    {puedeReanalizar && !reanalizando && (
+      <button type="button" className="btn pequeno fantasma" onClick={() => setReanalizando(proyecto.analisis ?? { duracion: "normal" })}>
+        <Sparkles size={13} aria-hidden="true" />Analizar de nuevo
+      </button>
+    )}
+    {puedeReanalizar && reanalizando && (
+      <div className="reanalizar">
+        <OpcionesAnalisis valor={reanalizando} alCambiar={setReanalizando} />
+        <p className="ayuda">Se conservan tus favoritos, los clips a mano y los que ya editaste.</p>
+        <div className="fila">
+          <button type="button" className="btn pequeno primario" onClick={() => { alReanalizar!(limpiarAnalisis(reanalizando)); setReanalizando(null); }}>Analizar</button>
+          <button type="button" className="btn pequeno fantasma" onClick={() => setReanalizando(null)}>Cancelar</button>
+        </div>
+      </div>
+    )}
+    </>
   );
 }

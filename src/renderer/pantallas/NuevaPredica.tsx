@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Download, Film, Flag, FlagTriangleRight, Link2, LoaderCircle } from "lucide-react";
-import type { Proyecto, VideoOrigen } from "@shared/tipos";
+import type { Analisis, Proyecto, VideoOrigen } from "@shared/tipos";
+import { limpiarAnalisis, OpcionesAnalisis } from "../componentes/OpcionesAnalisis";
 import { formatoTiempo, leerTiempo, tiempoConHoras, validarRango } from "@shared/validar";
 
 interface Props {
@@ -22,6 +23,7 @@ export function NuevaPredica({ videoInicial, alCrear, alCancelar }: Props) {
   const [inicio, setInicio] = useState("0:00:00");
   const [fin, setFin] = useState(videoInicial ? tiempoConHoras(videoInicial.duracion) : "");
   const [creando, setCreando] = useState(false);
+  const [analisis, setAnalisis] = useState<Analisis>({ duracion: "normal" });
   const [errorCrear, setErrorCrear] = useState<string | null>(null);
   const [errorVideo, setErrorVideo] = useState<string | null>(null);
   const reproductor = useRef<HTMLVideoElement>(null);
@@ -77,7 +79,7 @@ export function NuevaPredica({ videoInicial, alCrear, alCancelar }: Props) {
     setCreando(true);
     setErrorCrear(null);
     try {
-      const p = await window.reels!.crearProyecto({ nombre: nombre.trim() || nombrePorDefecto(), video, rango: { inicio: leerTiempo(inicio), fin: leerTiempo(fin) }, predicador: predicador.trim() || undefined });
+      const p = await window.reels!.crearProyecto({ nombre: nombre.trim() || nombrePorDefecto(), video, rango: { inicio: leerTiempo(inicio), fin: leerTiempo(fin) }, predicador: predicador.trim() || undefined, analisis: limpiarAnalisis(analisis) });
       await window.reels!.procesar(p.id);
       alCrear(p);
     } catch (e) {
@@ -171,6 +173,7 @@ export function NuevaPredica({ videoInicial, alCrear, alCancelar }: Props) {
             <span>Predicador (opcional)</span>
             <input className="entrada" value={predicador} placeholder="Aparece en un rótulo al inicio del reel" onChange={(e) => setPredicador(e.target.value)} />
           </label>
+          <OpcionesAnalisis valor={analisis} alCambiar={setAnalisis} />
           {errorCrear && <p className="error" role="alert">{errorCrear}</p>}
           <div className="fila">
             <button type="button" className="btn primario" disabled={!!error || creando} onClick={() => void procesar()}>

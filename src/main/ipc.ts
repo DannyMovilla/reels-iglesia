@@ -6,7 +6,7 @@ import { descargarVideo } from "./descargas/ytdlp";
 import { agregarPista, cambiarAnimo, carpetaMusica, listarPistas, musicaParaVista, musicaVistaEn } from "./musica/banco";
 import { escribirCreacion } from "./ia/claude";
 import { carpetaCreacion, listarExportadosIa, borrarCreacion, copiarFondo, crearCreacion, guardarCreacion, leerCreacion, listarCreaciones } from "./ia/almacen";
-import type { Animo, Caras, ClipSpec, Creacion, Formato, Marca, TipoTarea, Transcripcion } from "@shared/tipos";
+import type { Analisis, Animo, Caras, ClipSpec, Creacion, Formato, Marca, TipoTarea, Transcripcion } from "@shared/tipos";
 import type { Correccion } from "@shared/correcciones";
 import { clipManual } from "@shared/clip";
 import { palabrasDe } from "@shared/reel/tiempo";
@@ -15,7 +15,7 @@ import { dimensionesVideo, duracionVideo } from "./procesos/video";
 import { carpetaDatos, carpetaProyecto, raizApp, rutaEscenas } from "./rutas";
 import { esquemaVista, registrarComposicion, servirVista } from "./vista";
 import { cacheSinErrores } from "./util/cache";
-import { aplicarEstilo, copiarLogo, reubicarVideo, crearProyecto, guardarClip, guardarMarca, leerClips, leerJson, leerMarca, leerProyecto, listarExportados, listarProyectos, leerTranscripcion, leerCorrecciones, corregir, quitarCorreccion, agregarClip } from "./proyectos/almacen";
+import { aplicarEstilo, copiarLogo, reubicarVideo, crearProyecto, guardarClip, guardarMarca, leerClips, leerJson, leerMarca, leerProyecto, listarExportados, listarProyectos, leerTranscripcion, leerCorrecciones, corregir, quitarCorreccion, agregarClip, guardarProyecto } from "./proyectos/almacen";
 
 export interface DepsIpc {
   cola: Cola;
@@ -150,6 +150,11 @@ export function registrarIpc(deps: DepsIpc): void {
     return r.canceled || !r.filePaths[0] ? null : reubicarVideo(id, r.filePaths[0]);
   });
   ipcMain.handle("proyectos:procesar", (_e, id: string, desde?: TipoTarea) => void cola.agregar(id, desde ?? "transcribir"));
+  ipcMain.handle("proyectos:reanalizar", async (_e, id: string, analisis: Analisis) => {
+    const p = await leerProyecto(id);
+    await guardarProyecto({ ...p, analisis });
+    void cola.agregar(id, "analizar");
+  });
   ipcMain.handle("exportar:encolar", async (_e, id: string, clipIds: string[], formatos?: Formato[]) => {
     const clips = await leerClips(id);
     for (const c of clips.filter((x) => clipIds.includes(x.id))) {

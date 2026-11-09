@@ -308,3 +308,8 @@
 .clip-acciones { position: absolute; top: 6px; right: 6px; display: flex; gap: 2px; opacity: 0; transition: opacity 0.15s; }
 .clips li:hover .clip-acciones, .clips li:focus-within .clip-acciones, .clip-acciones .activo { opacity: 1; }
 .clip-acciones .activo { color: var(--luz); }
+
+/* Plan 5: instrucción y duración del análisis. */
+.opciones-analisis { display: flex; flex-direction: column; gap: 10px; }
+.opciones-analisis textarea { resize: vertical; min-height: 52px; }
+.reanalizar { display: flex; flex-direction: column; gap: 8px; padding: 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg-1); }

@@ -151,7 +151,8 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
       <aside className="editor-izq" aria-label="Proceso y clips">
         <div className="titulo-seccion">Proceso</div>
         <PanelProceso proyecto={proyecto} tareas={tareas} alReintentar={(id) => void window.reels!.reintentar(id)}
-          alProcesar={(desde) => void window.reels!.procesar(proyecto.id, desde)} />
+          alProcesar={(desde) => void window.reels!.procesar(proyecto.id, desde)}
+          alReanalizar={(a) => void window.reels!.reanalizar(proyecto.id, a).then(recargar)} />
         <div className="titulo-seccion">Clips <span>{clips.length === 1 ? "1 sugerido" : clips.length ? `${clips.length} sugeridos` : ""}</span></div>
         {clips.length > 1 && (
           <button type="button" className="btn pequeno exportar-todos" onClick={() => void exportar(proyecto.id, clips.map((c) => c.id))}>

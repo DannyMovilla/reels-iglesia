@@ -22,3 +22,18 @@ test("muestra el paso de audio limpio", () => {
   render(<PanelProceso proyecto={proyecto} tareas={[]} alReintentar={() => {}} alProcesar={() => {}} />);
   expect(screen.getByText("Audio limpio")).toBeInTheDocument();
 });
+
+test("plan 5: con el análisis listo, «Analizar de nuevo» pide instrucción y duración con lo guardado", async () => {
+  const listo: Proyecto = { ...proyecto, estado: "listo", analisis: { duracion: "larga", instruccion: "la fe" },
+    pasos: { ...proyecto.pasos, caras: { estado: "ok" }, analisis: { estado: "ok", segundos: 40 } } };
+  const alReanalizar = vi.fn();
+  render(<PanelProceso proyecto={listo} tareas={[]} alReintentar={() => {}} alProcesar={() => {}} alReanalizar={alReanalizar} />);
+  await userEvent.click(screen.getByRole("button", { name: "Analizar de nuevo" }));
+  const campo = screen.getByLabelText("Instrucción para Claude (opcional)");
+  expect(campo).toHaveValue("la fe");
+  expect(screen.getByRole("button", { name: /Largos/ })).toHaveAttribute("aria-pressed", "true");
+  await userEvent.clear(campo);
+  await userEvent.type(campo, "la esperanza");
+  await userEvent.click(screen.getByRole("button", { name: "Analizar" }));
+  expect(alReanalizar).toHaveBeenCalledWith({ duracion: "larga", instruccion: "la esperanza" });
+});

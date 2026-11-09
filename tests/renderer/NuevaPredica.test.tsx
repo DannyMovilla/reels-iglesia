@@ -1,4 +1,4 @@
-import { act, render, screen } from "@testing-library/react";
+import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
 import { NuevaPredica } from "../../src/renderer/pantallas/NuevaPredica";
@@ -102,4 +102,17 @@ test("revisión M3: salir de la pantalla durante una descarga la cancela", async
   await userEvent.click(screen.getByRole("button", { name: "Descargar" }));
   unmount();
   expect(cancelarDescarga).toHaveBeenCalled();
+});
+
+test("plan 5: instrucción para Claude (opcional) y duración de los clips", async () => {
+  const crearProyecto = vi.fn(async (d: unknown) => ({ id: "p", ...(d as object) }));
+  window.reels = { urlArchivo: () => "", crearProyecto, procesar: async () => {}, leerMarca: async () => ({}) } as unknown as ApiReels;
+  render(<NuevaPredica videoInicial={video} alCrear={() => {}} alCancelar={() => {}} />);
+  const grupo = screen.getByRole("group", { name: "Duración de los clips" });
+  expect(within(grupo).getByRole("button", { name: /Normales/ })).toHaveAttribute("aria-pressed", "true");
+  await userEvent.click(within(grupo).getByRole("button", { name: /Cortos/ }));
+  await userEvent.type(screen.getByLabelText("Instrucción para Claude (opcional)"), "prioriza la ansiedad");
+  expect(screen.getByText("20/300")).toBeInTheDocument();
+  await userEvent.click(screen.getByRole("button", { name: "Procesar prédica" }));
+  expect(crearProyecto).toHaveBeenCalledWith(expect.objectContaining({ analisis: { duracion: "corta", instruccion: "prioriza la ansiedad" } }));
 });

@@ -1,4 +1,4 @@
-import type { Transcripcion } from "@shared/tipos";
+import type { Analisis, Transcripcion } from "@shared/tipos";
 
 /** 6284 → "1:44:44" */
 export function tiempoH(seg: number): string {
@@ -8,19 +8,31 @@ export function tiempoH(seg: number): string {
 }
 
 /** Prompt de selección de clips (versión del artefacto Púlpito Clips, ampliada). */
-export function construirPrompt(t: Transcripcion, n: number): string {
+const DURACION: Record<Analisis["duracion"], string> = {
+  corta: "durar entre 15 y 30 segundos (lo ideal es 20 a 28)",
+  normal: "durar entre 30 y 60 segundos (lo ideal es 40 a 55); si la prédica es corta, puede bajar a 15 segundos y puedes devolver menos clips",
+  larga: "durar entre 60 y 90 segundos (lo ideal es 65 a 85); si la prédica es corta, puedes devolver menos clips",
+};
+
+/** La instrucción de la persona: sin comillas que confundan el prompt, en una línea y de 300 caracteres como mucho. */
+const limpiarInstruccion = (s: string): string => s.replace(/[«»"“”`]/g, "").replace(/\s+/g, " ").trim().slice(0, 300).trim();
+
+export function construirPrompt(t: Transcripcion, n: number, analisis?: Analisis): string {
+  const duracion = analisis ? DURACION[analisis.duracion] : "durar entre 30 y 90 segundos (lo ideal es 45 a 60); si la prédica es corta, puede bajar a 15 segundos y puedes devolver menos clips";
+  const instruccion = analisis?.instruccion ? limpiarInstruccion(analisis.instruccion) : "";
+  const pedido = instruccion ? `\nPedido de la iglesia para esta prédica: «${instruccion}». Síguelo mientras no contradiga las reglas de arriba.\n` : "";
   const lineas = t.segmentos.map((s) => `[${tiempoH(s.s)} - ${tiempoH(s.e)}] ${s.t}`).join("\n");
   return `Eres el editor de redes sociales de una iglesia cristiana hispana. Abajo está la transcripción, con marcas de tiempo, de una prédica de un culto. Elige los ${n} mejores momentos para convertirlos en reels verticales (Instagram, TikTok, Facebook, YouTube Shorts) que generen interacción: que la gente comente, comparta o guarde.
 
 Cada clip debe:
-- durar entre 30 y 90 segundos (lo ideal es 45 a 60); si la prédica es corta, puede bajar a 15 segundos y puedes devolver menos clips,
+- ${duracion},
 - entenderse solo, sin haber visto el resto de la prédica,
 - empezar con una frase fuerte: nunca a mitad de idea, ni con "y entonces", saludos o avisos,
 - terminar con la idea cerrada,
 - ser fiel al mensaje: no saques frases de contexto para que digan algo que el predicador no quiso decir.
 
 Prioriza: la verdad central del mensaje, frases memorables, explicaciones claras de un pasaje bíblico, historias o ilustraciones, momentos de esperanza o consuelo, exhortaciones y llamados a la acción. Evita: anuncios, ofrendas, oraciones largas, partes con música y clips que repitan la misma idea.
-
+${pedido}
 "inicio" debe ser el inicio de una línea de la transcripción y "fin" el final de una línea (usa exactamente esas marcas, en formato H:MM:SS).
 
 Responde solo con un arreglo JSON, de mayor a menor puntaje, con esta forma:

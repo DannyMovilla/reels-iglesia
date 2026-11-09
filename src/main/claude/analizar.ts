@@ -3,7 +3,7 @@ import type { ContextoTarea } from "../cola/cola";
 import { ejecutarConProgreso } from "../procesos/lineas";
 import { conservarAlReanalizar } from "@shared/clip";
 import type { ClipSpec } from "@shared/tipos";
-import { guardarJson, leerJson, leerMarca, leerTranscripcion } from "../proyectos/almacen";
+import { guardarJson, leerJson, leerMarca, leerProyecto, leerTranscripcion } from "../proyectos/almacen";
 import { resolverComandoClaude } from "../sistema/claude-cmd";
 import { RespuestaClaude } from "./esquema";
 import { normalizarClips } from "./normalizar";
@@ -74,7 +74,7 @@ export async function analizarProyecto(
   if (!t?.segmentos?.length) throw new Error("No hay transcripción para analizar. Vuelve a procesar la prédica.");
   const comando = opciones.comando ? partirComando(opciones.comando) : resolverComandoClaude();
   const tiempo = AbortSignal.timeout(opciones.tiempoMaximoMs ?? DIEZ_MINUTOS);
-  const prompt = construirPrompt(t, opciones.n ?? 6);
+  const prompt = construirPrompt(t, opciones.n ?? 6, (await leerProyecto(id)).analisis);
   ctx.alProgreso(10, "Claude está leyendo la prédica…");
   let texto = await preguntar(comando, prompt, ctx.senal, tiempo);
   let clips;

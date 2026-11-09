@@ -14,6 +14,13 @@ export interface Paso {
   detalle?: string;
 }
 
+/** Pedido de la persona para el análisis de Claude: instrucción opcional (≤ 300 caracteres) y duración de los clips. */
+export interface Analisis {
+  instruccion?: string;
+  /** corta: 15–30 s; normal: 30–60 s; larga: 60–90 s. */
+  duracion: "corta" | "normal" | "larga";
+}
+
 export interface Proyecto {
   id: string;
   nombre: string;
@@ -21,6 +28,8 @@ export interface Proyecto {
   video: VideoOrigen;
   rango: { inicio: number; fin: number };
   predicador?: string;
+  /** Sin el campo (proyectos de antes del plan 5): clips de 30 a 90 s, sin instrucción. */
+  analisis?: Analisis;
   estado: EstadoProyecto;
   pasos: Record<NombrePaso, Paso>;
   videoDisponible?: boolean;

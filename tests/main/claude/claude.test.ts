@@ -190,3 +190,25 @@ test("plan 5: volver a analizar conserva un favorito y reemplaza las sugerencias
   expect(despues.some((x) => x.id === "sin-tocar")).toBe(false);
   expect(despues).toHaveLength(2);
 });
+
+describe("plan 5: instrucción y duración en el prompt", () => {
+  const t: Transcripcion = { formato: "pulpito-transcripcion/1", inicio: 0, fin: 60, modelo: "x", dispositivo: "cpu", segmentos: [{ s: 0, e: 5, t: "Hola", w: [] }] };
+  test("sin análisis: el prompt de siempre (30 a 90 s)", () => {
+    expect(construirPrompt(t, 6)).toContain("durar entre 30 y 90 segundos");
+    expect(construirPrompt(t, 6)).not.toContain("Pedido de la iglesia");
+  });
+  test("cada duración pide su rango", () => {
+    expect(construirPrompt(t, 6, { duracion: "corta" })).toContain("durar entre 15 y 30 segundos");
+    expect(construirPrompt(t, 6, { duracion: "normal" })).toContain("durar entre 30 y 60 segundos");
+    expect(construirPrompt(t, 6, { duracion: "larga" })).toContain("durar entre 60 y 90 segundos");
+  });
+  test("la instrucción va entre comillas, recortada a 300 caracteres y sin comillas raras", () => {
+    const p = construirPrompt(t, 6, { duracion: "normal", instruccion: `prioriza «la ansiedad» """ ${"x".repeat(400)}` });
+    const m = /Pedido de la iglesia para esta prédica: «([^»]*)»/.exec(p);
+    expect(m).not.toBeNull();
+    expect(m![1].length).toBeLessThanOrEqual(300);
+    expect(m![1]).toContain("prioriza");
+    expect(m![1]).not.toMatch(/[«»"]/);
+    expect(p).toContain("Síguelo mientras no contradiga las reglas de arriba.");
+  });
+});
