@@ -11,7 +11,7 @@ import { ejecutarConProgreso } from "../procesos/lineas";
 import { dimensionesVideo, hayNvenc } from "../procesos/video";
 import { normalizarAudio } from "./mezcla";
 import { musicaParaClip } from "../musica/banco";
-import { guardarJson, leerClips, leerJson, leerMarca, leerProyecto } from "../proyectos/almacen";
+import { guardarJson, leerClips, leerJson, leerMarca, leerProyecto, leerTranscripcion } from "../proyectos/almacen";
 import { carpetaProyecto } from "../rutas";
 import { prepararCarpeta } from "./preparar";
 import { renderizar as renderizarReal, type OpcionesRender } from "./render";
@@ -125,7 +125,7 @@ export function crearEjecutorExportar(deps: DepsExportar = {}): Ejecutor {
     if (!proyecto.videoDisponible) throw new Error("No encuentro el video original. Vuelve a ponerlo en su lugar y reintenta.");
     const sinConfirmar = clip.versiculos.find((v) => v.activo && (!v.confirmado || !v.texto.trim()));
     if (sinConfirmar) throw new Error(`Confirma el texto de ${sinConfirmar.ref} antes de exportar.`);
-    const transcripcion = await leerJson<Transcripcion>(t.proyectoId, "transcripcion.json");
+    const transcripcion = await leerTranscripcion(t.proyectoId);
     if (!transcripcion) throw new Error("No hay transcripción para este proyecto. Vuelve a procesar la prédica.");
 
     ctx.alProgreso(1, "Preparando…");

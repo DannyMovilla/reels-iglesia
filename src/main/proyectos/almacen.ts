@@ -2,11 +2,12 @@ import { existsSync } from "node:fs";
 import { copyFile, mkdir, readdir, readFile, rename, rm, stat, writeFile } from "node:fs/promises";
 import { extname, join } from "node:path";
 import { aplicarEstiloAClip, completarClip, ESTILO_POR_DEFECTO } from "@shared/clip";
-import type { ClipSpec, Marca, Proyecto, VideoOrigen } from "@shared/tipos";
+import { aplicarCorrecciones, type Correccion } from "@shared/correcciones";
+import type { ClipSpec, Marca, Proyecto, Transcripcion, VideoOrigen } from "@shared/tipos";
 import { validarRango } from "@shared/validar";
 import { carpetaDatos, carpetaProyecto, carpetaProyectos } from "../rutas";
 
-export type ArchivoProyecto = "transcripcion.json" | "caras.json" | "clips.json";
+export type ArchivoProyecto = "transcripcion.json" | "caras.json" | "clips.json" | "correcciones.json" | "capitulos.json";
 
 function slug(texto: string): string {
   return (
@@ -113,6 +114,32 @@ export async function leerJson<T>(id: string, archivo: ArchivoProyecto): Promise
 
 export async function guardarJson(id: string, archivo: ArchivoProyecto, datos: unknown): Promise<void> {
   await escribirAtomico(join(carpetaProyecto(id), archivo), datos);
+}
+
+/** Correcciones de palabras que hizo la persona (se guardan aparte para no perderlas al volver a transcribir). */
+export async function leerCorrecciones(id: string): Promise<Correccion[]> {
+  const cs = await leerJson<Correccion[]>(id, "correcciones.json");
+  return Array.isArray(cs) ? cs : [];
+}
+
+/** La transcripción con las correcciones de la persona: lo que usan subtítulos, clips, análisis y capítulos. */
+export async function leerTranscripcion(id: string): Promise<Transcripcion | null> {
+  const t = await leerJson<Transcripcion>(id, "transcripcion.json");
+  return t ? aplicarCorrecciones(t, await leerCorrecciones(id)) : null;
+}
+
+export async function corregir(id: string, c: Correccion): Promise<Transcripcion> {
+  await guardarJson(id, "correcciones.json", [...(await leerCorrecciones(id)), c]);
+  const t = await leerTranscripcion(id);
+  if (!t) throw new Error("No hay transcripción para corregir.");
+  return t;
+}
+
+export async function quitarCorreccion(id: string, indice: number): Promise<Transcripcion> {
+  await guardarJson(id, "correcciones.json", (await leerCorrecciones(id)).filter((_, i) => i !== indice));
+  const t = await leerTranscripcion(id);
+  if (!t) throw new Error("No hay transcripción.");
+  return t;
 }
 
 export const MARCA_POR_DEFECTO: Marca = {

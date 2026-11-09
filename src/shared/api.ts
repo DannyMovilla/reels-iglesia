@@ -1,3 +1,4 @@
+import type { Correccion } from "./correcciones";
 import type { Pista } from "./reel/pistas";
 import type { Animo, Caras, ClipSpec, Creacion, Formato, Marca, Proyecto, Tarea, TipoTarea, Transcripcion, VideoOrigen } from "./tipos";
 
@@ -32,7 +33,12 @@ export interface ApiReels {
   listarProyectos(): Promise<Proyecto[]>;
   leerProyecto(id: string): Promise<Proyecto>;
   leerClips(id: string): Promise<ClipSpec[]>;
+  /** La transcripción con las correcciones de la persona aplicadas. */
   leerTranscripcion(id: string): Promise<Transcripcion | null>;
+  leerCorrecciones(id: string): Promise<Correccion[]>;
+  /** Guarda una corrección de palabra y devuelve la transcripción corregida. */
+  corregir(id: string, c: Correccion): Promise<Transcripcion>;
+  quitarCorreccion(id: string, indice: number): Promise<Transcripcion>;
   leerCaras(id: string): Promise<Caras | null>;
   /** Guarda un clip editado (reemplaza el de mismo id en clips.json). */
   guardarClip(proyectoId: string, clip: ClipSpec): Promise<void>;

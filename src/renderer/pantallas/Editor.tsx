@@ -2,15 +2,17 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { TriangleAlert } from "lucide-react";
 import type { Caras, ClipSpec, Marca, Proyecto, Tarea, Transcripcion } from "@shared/tipos";
 import { formatoTiempo } from "@shared/validar";
-import { duracionReel, palabrasDe } from "@shared/reel/tiempo";
+import { duracionReel, palabrasDe, partesDelReel, reelAVideo, videoAReel } from "@shared/reel/tiempo";
+import type { Correccion } from "@shared/correcciones";
 import { estiloDesdeClip, moverVersiculos } from "@shared/clip";
 import type { Pista } from "@shared/reel/pistas";
-import { Download } from "lucide-react";
+import { Download, FileText, Play, Scissors } from "lucide-react";
 import { ColaExportacion } from "../componentes/ColaExportacion";
 import { Inspector } from "../componentes/Inspector";
 import { LineaTiempo } from "../componentes/LineaTiempo";
 import { ListaClips } from "../componentes/ListaClips";
 import { PanelProceso } from "../componentes/PanelProceso";
+import { Transcripcion as VistaTranscripcion } from "../componentes/Transcripcion";
 import { VistaPrevia, type ControlVistaPrevia } from "../componentes/VistaPrevia";
 
 interface Datos {
@@ -33,6 +35,8 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
   const guardando = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendiente = useRef<ClipSpec | null>(null);
   const [pistas, setPistas] = useState<Pista[]>([]);
+  const [centro, setCentro] = useState<"vista" | "transcripcion">("vista");
+  const [rango, setRango] = useState<{ inicio: number; fin: number } | null>(null);
   useEffect(() => { void window.reels!.listarPistas?.().then(setPistas); }, []);
 
   const recargar = useCallback(async () => {
@@ -111,9 +115,24 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
     cambiarClip({ ...c, inicio, fin, versiculos: moverVersiculos(c.versiculos, c.inicio, c.fin, inicio, fin) });
   };
 
+  const corregirPalabra = async (c: Correccion) => {
+    const transcripcion = await window.reels!.corregir(proyectoId, c);
+    setDatos((d) => ({ ...d, transcripcion }));
+  };
+
   if (!proyecto) return <div className="cargando">Cargando…</div>;
   const clip = clips.find((c) => c.id === sel);
   const listo = clip && datos.transcripcion && datos.marca && datos.dimensiones;
+  // La transcripción trabaja en segundos del video original; la vista previa, en segundos del reel.
+  const parteClip = clip && datos.transcripcion ? partesDelReel(clip, palabrasDe(datos.transcripcion)).find((p) => p.tipo === "clip") : undefined;
+  const tiempoVideo = parteClip && tiempo >= parteClip.inicioReel && tiempo <= parteClip.inicioReel + parteClip.duracion ? reelAVideo(parteClip, tiempo) : undefined;
+  const irAVideo = (t: number) => {
+    const r = parteClip ? videoAReel(parteClip, t) : null;
+    if (r === null) return;
+    setTiempo(r);
+    vista.current?.seek(r);
+  };
+  const rangoEnClip = clip && rango && rango.inicio >= clip.inicio && rango.fin <= clip.fin ? rango : null;
 
   return (
     <div className="editor">
@@ -145,10 +164,34 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
         )}
         {errorUbicar && <p className="error" role="alert">{errorUbicar}</p>}
         {clip && <div className="centro-cabeza"><h2>{clip.titulo}</h2><span>{clip.categoria} · {formatoTiempo(datos.transcripcion ? duracionReel(clip, palabrasDe(datos.transcripcion)) : clip.fin - clip.inicio)}</span></div>}
+        {datos.transcripcion && (
+          <div className="pestanas centro-pestanas" role="tablist" aria-label="Vista del centro">
+            <button type="button" role="tab" aria-selected={centro === "vista"} onClick={() => setCentro("vista")}><Play size={14} aria-hidden="true" />Vista previa</button>
+            <button type="button" role="tab" aria-selected={centro === "transcripcion"} onClick={() => setCentro("transcripcion")}><FileText size={14} aria-hidden="true" />Transcripción</button>
+          </div>
+        )}
+        {centro === "transcripcion" && datos.transcripcion && (
+          <>
+            <VistaTranscripcion transcripcion={datos.transcripcion} clip={clip} tiempoVideo={tiempoVideo ?? undefined}
+              alBuscar={irAVideo} alCorregir={(c) => void corregirPalabra(c)} alSeleccionar={setRango} />
+            {rango && (
+              <div className="barra-rango" role="toolbar" aria-label="Tramo elegido">
+                <span className="mono">{formatoTiempo(rango.inicio)} – {formatoTiempo(rango.fin)}</span>
+                {rangoEnClip && clip && (
+                  <button type="button" className="btn pequeno" onClick={() => cambiarClip({ ...clip, cortes: { ...clip.cortes, quitados: [...(clip.cortes.quitados ?? []), rangoEnClip] } })}>
+                    <Scissors size={13} aria-hidden="true" />Quitar del clip
+                  </button>
+                )}
+              </div>
+            )}
+          </>
+        )}
         {listo && (
+          <div className="centro-vista" hidden={centro !== "vista"}>
           <VistaPrevia ref={vista} proyectoId={proyecto.id} clip={clip} transcripcion={datos.transcripcion!} caras={datos.caras}
             marca={datos.marca!} dimensiones={datos.dimensiones!} predicador={proyecto.predicador ?? datos.marca?.predicador}
             inicioRango={proyecto.pasos.audio?.estado === "ok" ? proyecto.rango.inicio : undefined} alAvisos={setAvisos} alTiempo={setTiempo} />
+          </div>
         )}
       </main>
 

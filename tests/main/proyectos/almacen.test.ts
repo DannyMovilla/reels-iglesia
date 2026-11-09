@@ -113,3 +113,20 @@ test("listarExportados junta cada MP4 con su portada", async () => {
   const [e] = await listarExportados();
   expect(e.archivos.map((a) => [a.nombre, a.portada])).toEqual([["fe-4x5.mp4", undefined], ["fe-9x16.mp4", "fe-9x16-portada.jpg"]]);
 });
+
+test("plan 5: las correcciones se guardan aparte y se aplican siempre al leer la transcripción", async () => {
+  const { corregir, leerCorrecciones, leerTranscripcion, quitarCorreccion } = await import("../../../src/main/proyectos/almacen");
+  const p = await crearProyecto({ nombre: "Culto", video, rango: { inicio: 0, fin: 60 } }, DOS_NOV);
+  const trans = (texto: string) => ({ formato: "pulpito-transcripcion/1", inicio: 0, fin: 60, modelo: "m", dispositivo: "cpu",
+    segmentos: [{ s: 0, e: 2, t: texto, w: [[0, 1, texto.split(" ")[0]], [1, 2, texto.split(" ")[1]]] }] });
+  await guardarJson(p.id, "transcripcion.json", trans("Pablo escribio"));
+  expect(await leerTranscripcion(p.id)).toEqual(trans("Pablo escribio"));
+  const r = await corregir(p.id, { de: "escribio", a: "escribió" });
+  expect(r.segmentos[0].t).toBe("Pablo escribió");
+  expect(await leerCorrecciones(p.id)).toEqual([{ de: "escribio", a: "escribió" }]);
+  // Volver a transcribir no pierde la corrección.
+  await guardarJson(p.id, "transcripcion.json", trans("Pablo escribio"));
+  expect((await leerTranscripcion(p.id))!.segmentos[0].t).toBe("Pablo escribió");
+  expect((await quitarCorreccion(p.id, 0)).segmentos[0].t).toBe("Pablo escribio");
+  expect(await leerCorrecciones(p.id)).toEqual([]);
+});

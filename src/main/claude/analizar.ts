@@ -1,7 +1,7 @@
 import type { Transcripcion } from "@shared/tipos";
 import type { ContextoTarea } from "../cola/cola";
 import { ejecutarConProgreso } from "../procesos/lineas";
-import { guardarJson, leerJson, leerMarca } from "../proyectos/almacen";
+import { guardarJson, leerMarca, leerTranscripcion } from "../proyectos/almacen";
 import { resolverComandoClaude } from "../sistema/claude-cmd";
 import { RespuestaClaude } from "./esquema";
 import { normalizarClips } from "./normalizar";
@@ -68,7 +68,7 @@ export async function analizarProyecto(
   ctx: ContextoTarea,
   opciones: { comando?: string; n?: number; tiempoMaximoMs?: number } = {},
 ): Promise<void> {
-  const t = await leerJson<Transcripcion>(id, "transcripcion.json");
+  const t = await leerTranscripcion(id);
   if (!t?.segmentos?.length) throw new Error("No hay transcripción para analizar. Vuelve a procesar la prédica.");
   const comando = opciones.comando ? partirComando(opciones.comando) : resolverComandoClaude();
   const tiempo = AbortSignal.timeout(opciones.tiempoMaximoMs ?? DIEZ_MINUTOS);

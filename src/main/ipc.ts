@@ -7,12 +7,13 @@ import { agregarPista, cambiarAnimo, carpetaMusica, listarPistas, musicaParaVist
 import { escribirCreacion } from "./ia/claude";
 import { carpetaCreacion, listarExportadosIa, borrarCreacion, copiarFondo, crearCreacion, guardarCreacion, leerCreacion, listarCreaciones } from "./ia/almacen";
 import type { Animo, Caras, ClipSpec, Creacion, Formato, Marca, TipoTarea, Transcripcion } from "@shared/tipos";
+import type { Correccion } from "@shared/correcciones";
 import type { Cola } from "./cola/cola";
 import { dimensionesVideo, duracionVideo } from "./procesos/video";
 import { carpetaDatos, carpetaProyecto, raizApp, rutaEscenas } from "./rutas";
 import { esquemaVista, registrarComposicion, servirVista } from "./vista";
 import { cacheSinErrores } from "./util/cache";
-import { aplicarEstilo, copiarLogo, reubicarVideo, crearProyecto, guardarClip, guardarMarca, leerClips, leerJson, leerMarca, leerProyecto, listarExportados, listarProyectos } from "./proyectos/almacen";
+import { aplicarEstilo, copiarLogo, reubicarVideo, crearProyecto, guardarClip, guardarMarca, leerClips, leerJson, leerMarca, leerProyecto, listarExportados, listarProyectos, leerTranscripcion, leerCorrecciones, corregir, quitarCorreccion } from "./proyectos/almacen";
 
 export interface DepsIpc {
   cola: Cola;
@@ -99,7 +100,10 @@ export function registrarIpc(deps: DepsIpc): void {
   ipcMain.handle("proyectos:listar", () => listarProyectos());
   ipcMain.handle("proyectos:leer", (_e, id: string) => leerProyecto(id));
   ipcMain.handle("proyectos:clips", (_e, id: string) => leerClips(id));
-  ipcMain.handle("proyectos:transcripcion", (_e, id: string) => leerJson<Transcripcion>(id, "transcripcion.json"));
+  ipcMain.handle("proyectos:transcripcion", (_e, id: string) => leerTranscripcion(id));
+  ipcMain.handle("proyectos:correcciones", (_e, id: string) => leerCorrecciones(id));
+  ipcMain.handle("proyectos:corregir", (_e, id: string, c: Correccion) => corregir(id, c));
+  ipcMain.handle("proyectos:quitarCorreccion", (_e, id: string, i: number) => quitarCorreccion(id, i));
   ipcMain.handle("proyectos:caras", (_e, id: string) => leerJson<Caras>(id, "caras.json"));
   ipcMain.handle("proyectos:guardarClip", (_e, id: string, clip: ClipSpec) => guardarClip(id, clip));
   ipcMain.handle("marca:leer", () => leerMarca());

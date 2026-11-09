@@ -215,3 +215,28 @@ test("menor: dos clips con el mismo título no se pisan el archivo de textos", a
   expect(textosNombre("fe-4x5.mp4")).toBe("fe-textos.txt");
   expect(textosNombre("fe-2-9x16.mp4")).toBe("fe-2-textos.txt");
 });
+
+test("plan 5: el reel exportado usa la transcripción corregida", async () => {
+  process.env.REELS_IGLESIA_DATOS = mkdtempSync(join(tmpdir(), "reels-exp-"));
+  const video = join(mkdtempSync(join(tmpdir(), "reels-v-")), "culto.mp4");
+  writeFileSync(video, "x");
+  const id = (await crearProyecto({ nombre: "Culto", video: { ruta: video, tamano: 1, modificado: 0, duracion: 100 }, rango: { inicio: 0, fin: 75 } })).id;
+  await guardarJson(id, "transcripcion.json", JSON.parse(readFileSync(join(FIX, "transcripcion-muestra.json"), "utf8")));
+  const { corregir } = await import("../../../src/main/proyectos/almacen");
+  await corregir(id, { de: "quebrantamiento", a: "QUEBRANTO" });
+  const clip: ClipSpec = {
+    id: "c1", titulo: "T", gancho: "", ganchosAlternativos: [], categoria: "Exhortación", inicio: 30.93, fin: 63.46,
+    apertura: null, palabrasClave: [], versiculos: [], puntaje: 90, razon: "", descripcion: "", hashtags: [],
+    encuadre: { modo: "fijo", x: 0.5, zoom: 1.25 }, subtitulos: { activos: true, estilo: "pop", tamano: "m", altura: 0.74 },
+    ...PLAN3, musica: SIN_MUSICA, cierre: false, formatos: ["9:16"], estado: "sugerido",
+  };
+  await guardarJson(id, "clips.json", [clip]);
+  let html = "";
+  await crearEjecutorExportar({
+    gpu: async () => false, normalizar: async () => {}, musica: async () => null, portada: async (_m, _t, s) => writeFileSync(s, "j"),
+    crearVoz: async (_p, d) => writeFileSync(d, "m"), dimensiones: async () => ({ ancho: 1280, alto: 720 }),
+    renderizar: async (dir, salida) => { html = readFileSync(join(dir, "index.html"), "utf8"); writeFileSync(salida, "mp4"); },
+  })({ id: "t1", proyectoId: id, tipo: "exportar", estado: "corriendo", pct: 0, creada: "", clipId: "c1", formato: "9:16", instantanea: clip }, ctx());
+  expect(html).toContain("QUEBRANTO");
+  expect(html).not.toMatch(/>quebrantamiento</i);
+});
