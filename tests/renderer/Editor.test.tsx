@@ -77,3 +77,25 @@ describe("plan 5: vista Transcripción", () => {
     expect((a.guardarClip.mock.calls.at(-1) as unknown as [string, ClipSpec])[1].cortes.quitados).toEqual([{ inicio: 32.1, fin: 34 }]);
   });
 });
+
+test("plan 5: un tramo elegido en la transcripción se convierte en un clip a mano", async () => {
+  const t = {
+    formato: "pulpito-transcripcion/1", inicio: 0, fin: 100, modelo: "m", dispositivo: "cpu",
+    segmentos: [{ s: 70, e: 73, t: "Dios es fiel", w: [[70, 71, "Dios"], [71.1, 72, "es"], [72.1, 73, "fiel"]] }],
+  };
+  const nuevo = { ...clip, id: "m", titulo: "Dios es fiel", inicio: 70, fin: 75, origen: "manual" as const, puntaje: 0 };
+  const a = {
+    leerProyecto: async () => ({ ...proyecto, pasos: { ...proyecto.pasos, transcripcion: { estado: "ok" } } }), leerClips: vi.fn(async () => [clip]),
+    tareas: async () => [], alCambiarTareas: () => () => {}, leerTranscripcion: async () => t, leerCaras: async () => null,
+    leerMarca: async () => null, infoVideo: async () => null, urlVideo: () => "", guardarClip: vi.fn(async () => {}),
+    crearClip: vi.fn(async () => nuevo),
+  };
+  (window as unknown as { reels: unknown }).reels = a;
+  render(<Editor proyectoId="p" />);
+  await userEvent.click(await screen.findByRole("tab", { name: /Transcripción/ }));
+  await userEvent.click(await screen.findByRole("button", { name: "Dios" }));
+  fireEvent.click(screen.getByRole("button", { name: "fiel" }), { shiftKey: true });
+  await userEvent.click(screen.getByRole("button", { name: "Crear clip con esto" }));
+  expect(a.crearClip).toHaveBeenCalledWith("p", 70, 73);
+  expect(await screen.findByRole("heading", { name: "Dios es fiel", level: 2 })).toBeInTheDocument();
+});

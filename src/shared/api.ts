@@ -42,6 +42,8 @@ export interface ApiReels {
   leerCaras(id: string): Promise<Caras | null>;
   /** Guarda un clip editado (reemplaza el de mismo id en clips.json). */
   guardarClip(proyectoId: string, clip: ClipSpec): Promise<void>;
+  /** Crea un clip a mano con ese tramo del video (ajustado a palabras) y lo agrega a clips.json. */
+  crearClip(proyectoId: string, inicio: number, fin: number): Promise<ClipSpec>;
   leerMarca(): Promise<Marca>;
   /** «Con IA»: reels de un versículo. */
   listarCreaciones(): Promise<Creacion[]>;

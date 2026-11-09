@@ -171,3 +171,22 @@ test("el prompt pide ánimo y textos por red con sus límites, sin sonar a IA", 
   expect(p).toContain("100 caracteres");
   expect(p).toMatch(/no es X, es Y/);
 });
+
+test("plan 5: volver a analizar conserva un favorito y reemplaza las sugerencias sin tocar", async () => {
+  process.env.REELS_IGLESIA_DATOS = mkdtempSync(join(tmpdir(), "reels-claude-"));
+  const v = join(mkdtempSync(join(tmpdir(), "reels-v-")), "v.mp4");
+  writeFileSync(v, "x");
+  const id = (await crearProyecto({ nombre: "Culto", video: { ruta: v, tamano: 1, modificado: 0, duracion: 100 }, rango: { inicio: 0, fin: 75 } })).id;
+  await guardarJson(id, "transcripcion.json", muestra());
+  process.env.FALSO_CLAUDE_MODO = "ok";
+  delete process.env.FALSO_CLAUDE_CONTADOR;
+  const comando = `node ${join(FIX, "claude/falso-claude.mjs")}`;
+  await analizarProyecto(id, ctx, { comando });
+  const [primero] = (await leerJson<ClipSpec[]>(id, "clips.json"))!;
+  await guardarJson(id, "clips.json", [{ ...primero, favorito: true }, { ...primero, id: "sin-tocar" }]);
+  await analizarProyecto(id, ctx, { comando });
+  const despues = (await leerJson<ClipSpec[]>(id, "clips.json"))!;
+  expect(despues.find((x) => x.id === primero.id)?.favorito).toBe(true);
+  expect(despues.some((x) => x.id === "sin-tocar")).toBe(false);
+  expect(despues).toHaveLength(2);
+});

@@ -1,4 +1,6 @@
 import type { Animo, Categoria, ClipSpec, EstiloIglesia, Redes } from "./tipos";
+import { ajustarCorte } from "./reel/cortes";
+import type { Palabra } from "./reel/tiempo";
 
 export const ESTILO_POR_DEFECTO: EstiloIglesia = {
   subtitulos: { estilo: "pop", tamano: "m" },
@@ -86,4 +88,27 @@ export function moverVersiculos(vs: ClipSpec["versiculos"], ini0: number, _fin0:
     if (momento < ini1 || momento > fin1) return { ...v, en: Math.max(0, Math.min(en, fin1 - ini1)), activo: false, fuera: true };
     return { ...v, en, fuera: false };
   });
+}
+
+const nuevoId = (): string => globalThis.crypto?.randomUUID?.() ?? `c-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+
+/** Clip creado a mano desde la transcripción: ajustado a palabras, de al menos 5 s, con el estilo de la iglesia. */
+export function clipManual(inicio: number, fin: number, palabras: Palabra[], estilo: EstiloIglesia): ClipSpec {
+  const corte = ajustarCorte({ inicio, fin }, palabras);
+  const titulo = palabras.filter((w) => w.s >= corte.inicio && w.e <= corte.fin && w.t.trim()).slice(0, 6)
+    .map((w) => w.t.trim()).join(" ").replace(/[.,;:]+$/, "") || "Clip a mano";
+  return completarClip({
+    id: nuevoId(), titulo, gancho: "", ganchosAlternativos: [], categoria: "Enseñanza", inicio: corte.inicio, fin: corte.fin,
+    apertura: null, palabrasClave: [], versiculos: [], puntaje: 0, razon: "Clip creado a mano.", descripcion: "", hashtags: [],
+    encuadre: { modo: "auto", x: 0.5, zoom: 1.25 },
+    subtitulos: { activos: true, estilo: estilo.subtitulos.estilo, tamano: estilo.subtitulos.tamano, altura: 0.74 },
+    musica: { modo: estilo.musica.modo, pista: null, volumen: estilo.musica.volumen },
+    cortes: structuredClone(estilo.cortes), efectos: structuredClone(estilo.efectos), cierre: estilo.cierre, formatos: [...estilo.formatos],
+    estado: "editado", origen: "manual",
+  }, estilo);
+}
+
+/** Al volver a analizar: se quedan los favoritos, los clips a mano, los editados y los exportados; las sugerencias sin tocar se reemplazan. */
+export function conservarAlReanalizar(viejos: ClipSpec[], nuevos: ClipSpec[]): ClipSpec[] {
+  return [...viejos.filter((c) => c.favorito || c.origen === "manual" || c.estado !== "sugerido"), ...nuevos];
 }

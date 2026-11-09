@@ -134,6 +134,11 @@ export interface ClipSpec {
   cierre: boolean;
   formatos: Formato[];
   estado: "sugerido" | "editado" | "exportado";
+  favorito?: boolean;
+  /** Oculto de la lista (se ve con "Ver ocultos"). */
+  oculto?: boolean;
+  /** "manual": la persona lo creó desde la transcripción. Sin el campo: lo sugirió Claude. */
+  origen?: "claude" | "manual";
 }
 
 /** Escenas animadas para los reels de «Con IA» (fondos del catálogo de HyperFrames). */

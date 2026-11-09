@@ -295,3 +295,16 @@
 .palabra.sonando { box-shadow: inset 0 -2px 0 var(--luz); }
 .corregir { display: flex; flex-direction: column; gap: 8px; padding: 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg-2); }
 .barra-rango { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 10px; background: var(--bg-2); border: 1px solid var(--line); }
+
+/* Plan 5: lista de clips con buscador, filtros, favoritos y ocultos. */
+.lista-clips .buscador { margin-bottom: 8px; }
+.lista-cabeza { justify-content: space-between; margin: 6px 0; }
+.orden select { height: 26px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg-1); color: var(--text-2); font: 500 12px var(--font-ui); padding: 0 6px; }
+.panel-filtros { display: flex; flex-direction: column; gap: 10px; padding: 10px; margin: 6px 0; border: 1px solid var(--line); border-radius: 10px; background: var(--bg-1); }
+.panel-filtros fieldset { border: 0; padding: 0; margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 4px; font-size: 12px; }
+.panel-filtros legend { font: 600 12px var(--font-ui); color: var(--text-2); margin-bottom: 4px; }
+.clips li { position: relative; }
+.clips li.oculto { opacity: 0.55; }
+.clip-acciones { position: absolute; top: 6px; right: 6px; display: flex; gap: 2px; opacity: 0; transition: opacity 0.15s; }
+.clips li:hover .clip-acciones, .clips li:focus-within .clip-acciones, .clip-acciones .activo { opacity: 1; }
+.clip-acciones .activo { color: var(--luz); }

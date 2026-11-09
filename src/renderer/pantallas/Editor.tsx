@@ -6,7 +6,7 @@ import { duracionReel, palabrasDe, partesDelReel, reelAVideo, videoAReel } from 
 import type { Correccion } from "@shared/correcciones";
 import { estiloDesdeClip, moverVersiculos } from "@shared/clip";
 import type { Pista } from "@shared/reel/pistas";
-import { Download, FileText, Play, Scissors } from "lucide-react";
+import { Download, FileText, Play, Plus, Scissors } from "lucide-react";
 import { ColaExportacion } from "../componentes/ColaExportacion";
 import { Inspector } from "../componentes/Inspector";
 import { LineaTiempo } from "../componentes/LineaTiempo";
@@ -21,6 +21,10 @@ interface Datos {
   marca: Marca | null;
   dimensiones: { ancho: number; alto: number } | null;
 }
+
+/** Lo que se dice dentro del clip (para el buscador de la lista). */
+const textoDelClip = (t: Transcripcion, c: ClipSpec): string =>
+  t.segmentos.filter((s) => s.e > c.inicio && s.s < c.fin).map((s) => s.t).join(" ");
 
 export function Editor({ proyectoId }: { proyectoId: string }) {
   const [proyecto, setProyecto] = useState<Proyecto | null>(null);
@@ -65,8 +69,9 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
     });
   }, [proyectoId, recargar]);
 
-  const cambiarClip = (c: ClipSpec) => {
-    const editado: ClipSpec = { ...c, estado: c.estado === "sugerido" ? "editado" : c.estado };
+  /** `editar: false` para favorito u ocultar (no cuentan como edición del clip). */
+  const cambiarClip = (c: ClipSpec, editar = true) => {
+    const editado: ClipSpec = { ...c, estado: editar && c.estado === "sugerido" ? "editado" : c.estado };
     setClips((cs) => cs.map((x) => (x.id === editado.id ? editado : x)));
     if (guardando.current) clearTimeout(guardando.current);
     pendiente.current = editado;
@@ -115,6 +120,13 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
     cambiarClip({ ...c, inicio, fin, versiculos: moverVersiculos(c.versiculos, c.inicio, c.fin, inicio, fin) });
   };
 
+  const crearClip = async (r: { inicio: number; fin: number }) => {
+    await guardarYa();
+    const nuevo = await window.reels!.crearClip(proyectoId, r.inicio, r.fin);
+    setClips((cs) => [...cs, nuevo]);
+    setSel(nuevo.id);
+  };
+
   const corregirPalabra = async (c: Correccion) => {
     const transcripcion = await window.reels!.corregir(proyectoId, c);
     setDatos((d) => ({ ...d, transcripcion }));
@@ -147,7 +159,8 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
           </button>
         )}
         {clips.length > 0 ? (
-          <ListaClips clips={clips} seleccionado={sel} alElegir={setSel} urlVideo={proyecto.videoDisponible ? window.reels!.urlVideo(proyecto.id) : undefined} />
+          <ListaClips clips={clips} seleccionado={sel} alElegir={setSel} alCambiar={(c) => cambiarClip(c, false)}
+            textoDe={datos.transcripcion ? (c) => textoDelClip(datos.transcripcion!, c) : undefined} urlVideo={proyecto.videoDisponible ? window.reels!.urlVideo(proyecto.id) : undefined} />
         ) : (
           <p className="vacio">Los clips aparecerán aquí cuando Claude termine de analizar la prédica.</p>
         )}
@@ -177,6 +190,9 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
             {rango && (
               <div className="barra-rango" role="toolbar" aria-label="Tramo elegido">
                 <span className="mono">{formatoTiempo(rango.inicio)} – {formatoTiempo(rango.fin)}</span>
+                <button type="button" className="btn pequeno primario" onClick={() => void crearClip(rango)}>
+                  <Plus size={13} aria-hidden="true" />Crear clip con esto
+                </button>
                 {rangoEnClip && clip && (
                   <button type="button" className="btn pequeno" onClick={() => cambiarClip({ ...clip, cortes: { ...clip.cortes, quitados: [...(clip.cortes.quitados ?? []), rangoEnClip] } })}>
                     <Scissors size={13} aria-hidden="true" />Quitar del clip

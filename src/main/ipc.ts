@@ -8,12 +8,14 @@ import { escribirCreacion } from "./ia/claude";
 import { carpetaCreacion, listarExportadosIa, borrarCreacion, copiarFondo, crearCreacion, guardarCreacion, leerCreacion, listarCreaciones } from "./ia/almacen";
 import type { Animo, Caras, ClipSpec, Creacion, Formato, Marca, TipoTarea, Transcripcion } from "@shared/tipos";
 import type { Correccion } from "@shared/correcciones";
+import { clipManual } from "@shared/clip";
+import { palabrasDe } from "@shared/reel/tiempo";
 import type { Cola } from "./cola/cola";
 import { dimensionesVideo, duracionVideo } from "./procesos/video";
 import { carpetaDatos, carpetaProyecto, raizApp, rutaEscenas } from "./rutas";
 import { esquemaVista, registrarComposicion, servirVista } from "./vista";
 import { cacheSinErrores } from "./util/cache";
-import { aplicarEstilo, copiarLogo, reubicarVideo, crearProyecto, guardarClip, guardarMarca, leerClips, leerJson, leerMarca, leerProyecto, listarExportados, listarProyectos, leerTranscripcion, leerCorrecciones, corregir, quitarCorreccion } from "./proyectos/almacen";
+import { aplicarEstilo, copiarLogo, reubicarVideo, crearProyecto, guardarClip, guardarMarca, leerClips, leerJson, leerMarca, leerProyecto, listarExportados, listarProyectos, leerTranscripcion, leerCorrecciones, corregir, quitarCorreccion, agregarClip } from "./proyectos/almacen";
 
 export interface DepsIpc {
   cola: Cola;
@@ -106,6 +108,13 @@ export function registrarIpc(deps: DepsIpc): void {
   ipcMain.handle("proyectos:quitarCorreccion", (_e, id: string, i: number) => quitarCorreccion(id, i));
   ipcMain.handle("proyectos:caras", (_e, id: string) => leerJson<Caras>(id, "caras.json"));
   ipcMain.handle("proyectos:guardarClip", (_e, id: string, clip: ClipSpec) => guardarClip(id, clip));
+  ipcMain.handle("proyectos:crearClip", async (_e, id: string, inicio: number, fin: number) => {
+    const t = await leerTranscripcion(id);
+    if (!t) throw new Error("No hay transcripción para crear el clip.");
+    const clip = clipManual(inicio, fin, palabrasDe(t), (await leerMarca()).estilo);
+    await agregarClip(id, clip);
+    return clip;
+  });
   ipcMain.handle("marca:leer", () => leerMarca());
   ipcMain.handle("ia:listar", () => listarCreaciones());
   ipcMain.handle("ia:crear", (_e, entrada: Creacion["entrada"]) => crearCreacion(entrada));

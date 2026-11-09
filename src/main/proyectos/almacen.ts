@@ -192,6 +192,11 @@ export async function leerClips(proyectoId: string): Promise<ClipSpec[]> {
 }
 
 /** Reemplaza un clip por id en clips.json (un clip que no existe se ignora). */
+/** Agrega un clip nuevo (hecho a mano) a clips.json. */
+export async function agregarClip(proyectoId: string, clip: ClipSpec): Promise<void> {
+  await guardarJson(proyectoId, "clips.json", [...(await leerClips(proyectoId)), clip]);
+}
+
 export async function guardarClip(proyectoId: string, clip: ClipSpec): Promise<void> {
   const clips = (await leerJson<ClipSpec[]>(proyectoId, "clips.json")) ?? [];
   if (!clips.some((c) => c.id === clip.id)) return;
