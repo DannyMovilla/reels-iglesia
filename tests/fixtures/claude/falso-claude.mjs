@@ -22,6 +22,15 @@ process.stdin.on("end", () => {
     console.log(JSON.stringify({ type: "result", is_error: false, result: "Aquí está:\n```json\n" + JSON.stringify(r) + "\n```" }));
     return;
   }
+  if (entrada.includes("TRADUCCIÓN DE SUBTÍTULOS")) {
+    // Devuelve cada bloque con el código del idioma delante; "traduccion-corta" se come el último.
+    const idioma = /idioma: (\w+)/.exec(entrada)?.[1] ?? "xx";
+    let bloques = JSON.parse(entrada.slice(entrada.indexOf("Bloques (JSON):") + "Bloques (JSON):".length));
+    bloques = bloques.map((b) => ({ n: b.n, texto: `[${idioma}] ${b.texto}` }));
+    if (modo === "traduccion-corta") bloques = bloques.slice(0, -1);
+    console.log(JSON.stringify({ type: "result", is_error: false, result: "```json" + String.fromCharCode(10) + JSON.stringify(bloques) + String.fromCharCode(10) + "```" }));
+    return;
+  }
   if (entrada.includes("CAPÍTULOS DE UNA PRÉDICA")) {
     const r = readFileSync(join(aqui, "respuesta-capitulos.json"), "utf8").trim();
     console.log(JSON.stringify({ type: "result", is_error: false, result: "```json" + String.fromCharCode(10) + r + String.fromCharCode(10) + "```" }));

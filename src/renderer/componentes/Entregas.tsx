@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Captions, FileText, FolderOpen, LoaderCircle, Music } from "lucide-react";
+import { Captions, FileText, FolderOpen, Languages, LoaderCircle, Music } from "lucide-react";
 import type { NivelVoz } from "@shared/tipos";
 import { Interruptor, Segmentos } from "./Inspector";
 
@@ -34,6 +34,9 @@ export function Resultado({ listo, error }: { listo: string | null; error: strin
   );
 }
 
+/** Idiomas de la traducción (los mismos códigos del proceso principal). */
+const IDIOMAS: Record<string, string> = { en: "Inglés", pt: "Portugués", fr: "Francés", it: "Italiano", de: "Alemán", ko: "Coreano", zh: "Chino" };
+
 /** Lo que la prédica deja para la semana: subtítulos, PDF, MP3 y traducciones (en la carpeta de exportados). */
 export function Entregas({ proyectoId }: { proyectoId: string }) {
   const [completo, setCompleto] = useState(true);
@@ -41,6 +44,18 @@ export function Entregas({ proyectoId }: { proyectoId: string }) {
   const pdf = useAccion();
   const mp3 = useAccion();
   const [nivel, setNivel] = useState<NivelVoz>("limpia");
+  const traduccion = useAccion();
+  const [idiomas, setIdiomas] = useState<string[]>([]);
+  const [progreso, setProgreso] = useState<string | null>(null);
+  const traducir = () => traduccion.correr(async () => {
+    const quitar = window.reels!.alProgresoEntregas(setProgreso);
+    try {
+      return (await window.reels!.traducirSrt(proyectoId, idiomas)).join(", ");
+    } finally {
+      quitar();
+      setProgreso(null);
+    }
+  });
   return (
     <div className="entregas">
       <p className="ayuda">Todo se guarda en la carpeta de exportados de esta prédica.</p>
@@ -79,6 +94,26 @@ export function Entregas({ proyectoId }: { proyectoId: string }) {
           {mp3.trabajando && <span className="ayuda">Puede tardar unos minutos con una prédica larga.</span>}
         </div>
         <Resultado listo={mp3.listo} error={mp3.error} />
+      </section>
+      <section className="entrega">
+        <h3><Languages size={16} aria-hidden="true" />Subtítulos traducidos</h3>
+        <p className="ayuda">Claude traduce los subtítulos con los mismos tiempos (tiempos del video completo). Los versículos van en una versión reconocida de cada idioma.</p>
+        <div className="idiomas" role="group" aria-label="Idiomas">
+          {Object.entries(IDIOMAS).map(([codigo, nombre]) => (
+            <label key={codigo} className="opcion">
+              <input type="checkbox" checked={idiomas.includes(codigo)} disabled={traduccion.trabajando}
+                onChange={(e) => setIdiomas((x) => (e.target.checked ? [...x, codigo] : x.filter((y) => y !== codigo)))} />
+              {nombre}
+            </label>
+          ))}
+        </div>
+        <div className="fila">
+          <button type="button" className="btn" disabled={!idiomas.length || traduccion.trabajando} onClick={() => void traducir()}>
+            {traduccion.trabajando && <LoaderCircle size={15} className="girar" aria-hidden="true" />}Traducir
+          </button>
+          {progreso && <span className="ayuda" role="status">{progreso}</span>}
+        </div>
+        <Resultado listo={traduccion.listo} error={traduccion.error} />
       </section>
       <button type="button" className="btn fantasma" onClick={() => void window.reels!.abrirCarpetaExportados(proyectoId)}>
         <FolderOpen size={15} aria-hidden="true" />Abrir carpeta

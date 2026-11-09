@@ -57,6 +57,10 @@ export interface ApiReels {
   crearPdf(proyectoId: string): Promise<string>;
   /** Guarda la prédica en MP3 (nivel de podcast) en exportados/; devuelve el nombre del archivo. */
   crearMp3(proyectoId: string, nivel: NivelVoz): Promise<string>;
+  /** Traduce los subtítulos a esos idiomas ("en", "pt"…) con Claude; devuelve los nombres de los .srt. */
+  traducirSrt(proyectoId: string, idiomas: string[]): Promise<string[]>;
+  /** Avisos de progreso de las entregas largas (traducción). */
+  alProgresoEntregas(cb: (texto: string) => void): () => void;
   /** Crea un clip a mano con ese tramo del video (ajustado a palabras) y lo agrega a clips.json. */
   crearClip(proyectoId: string, inicio: number, fin: number): Promise<ClipSpec>;
   leerMarca(): Promise<Marca>;

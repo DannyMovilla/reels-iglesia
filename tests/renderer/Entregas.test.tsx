@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test, vi } from "vitest";
 import { Entregas } from "../../src/renderer/componentes/Entregas";
@@ -41,4 +41,24 @@ test("MP3 con el nivel de voz elegido", async () => {
   await userEvent.click(screen.getByRole("button", { name: "Crear MP3" }));
   expect(a.crearMp3).toHaveBeenCalledWith("p", "podcast");
   expect(await screen.findByText("Listo: culto.mp3")).toBeInTheDocument();
+});
+
+test("traducir: casillas de idiomas, progreso y archivos listos", async () => {
+  let avisar: (t: string) => void = () => {};
+  let responder: (v: string[]) => void = () => {};
+  const a = {
+    traducirSrt: vi.fn(() => new Promise<string[]>((r) => { responder = r; })),
+    alProgresoEntregas: vi.fn((cb: (t: string) => void) => { avisar = cb; return () => {}; }),
+  };
+  (window as unknown as { reels: unknown }).reels = a;
+  render(<Entregas proyectoId="p" />);
+  expect(screen.getByRole("button", { name: "Traducir" })).toBeDisabled();
+  await userEvent.click(screen.getByRole("checkbox", { name: "Inglés" }));
+  await userEvent.click(screen.getByRole("checkbox", { name: "Portugués" }));
+  await userEvent.click(screen.getByRole("button", { name: "Traducir" }));
+  expect(a.traducirSrt).toHaveBeenCalledWith("p", ["en", "pt"]);
+  act(() => avisar("Traduciendo al inglés (parte 2 de 4)…"));
+  expect(screen.getByText("Traduciendo al inglés (parte 2 de 4)…")).toBeInTheDocument();
+  await act(async () => responder(["culto.en.srt", "culto.pt.srt"]));
+  expect(await screen.findByText("Listo: culto.en.srt, culto.pt.srt")).toBeInTheDocument();
 });

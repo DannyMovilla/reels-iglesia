@@ -340,3 +340,4 @@
 .entrega h3 { display: flex; align-items: center; gap: 8px; margin: 0; font: 600 14px var(--font-ui); }
 .entrega .listo { color: var(--cielo); }
 .entregas > .btn { align-self: flex-start; }
+.idiomas { display: flex; flex-wrap: wrap; gap: 6px 14px; }
