@@ -133,10 +133,13 @@
 .pantalla-reel hyperframes-player { display: block; width: 100%; height: 100%; }
 .zona-segura { position: absolute; inset: 0; pointer-events: none; }
 .zona-segura div { position: absolute; background: repeating-linear-gradient(135deg, rgba(79,209,197,.13) 0 6px, transparent 6px 12px); border: 1px dashed rgba(79,209,197,.5); }
-.zs-arriba { left: 0; right: 0; top: 0; height: 9%; border-width: 0 0 1px !important; }
-.zs-abajo { left: 0; right: 0; bottom: 0; height: 18%; border-width: 1px 0 0 !important; }
-.zs-derecha { right: 0; top: 40%; bottom: 18%; width: 14%; border-width: 0 0 0 1px !important; }
-.zona-segura span { position: absolute; left: 8px; bottom: calc(18% + 6px); font: 500 10px var(--font-mono); color: var(--cielo); background: rgba(10,12,22,.75); padding: 1px 6px; border-radius: 4px; }
+.zs-arriba { left: 0; right: 0; top: 0; border-width: 0 0 1px !important; }
+.zs-abajo { left: 0; right: 0; bottom: 0; border-width: 1px 0 0 !important; }
+.zs-izquierda { left: 0; border-width: 0 1px 0 0 !important; }
+.zs-derecha { right: 0; border-width: 0 0 0 1px !important; }
+.selector-zona { display: inline-flex; align-items: center; gap: 6px; color: var(--text-2); }
+.selector-zona select { height: 26px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg-1); color: var(--text-2); font: 500 12px var(--font-ui); padding: 0 6px; }
+.zona-segura span { position: absolute; left: 8px; font: 500 10px var(--font-mono); color: var(--cielo); background: rgba(10,12,22,.75); padding: 1px 6px; border-radius: 4px; }
 
 /* Línea de tiempo */
 .linea-tiempo { height: 100%; display: grid; grid-template-rows: 1fr 40px; outline: none; }

@@ -1,3 +1,4 @@
+import { dentroDeZona } from "./zonas";
 import type { Caras, ClipSpec, EstiloSub, Formato, Marca, Transcripcion } from "../tipos";
 
 export type { Marca };
@@ -41,6 +42,9 @@ const TAMANOS: Record<EstiloSub, { s: number; m: number; l: number }> = {
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const n = (x: number) => String(r2(x));
+
+/** Altos aproximados (px) para mantener los textos dentro de la zona segura común. */
+const ALTO_GANCHO = 200, ALTO_VERSICULO = 380, ALTO_ROTULO = 110;
 
 /** Fundido de cada lado de un corte de voz (s). */
 export const FUNDIDO = 0.01;
@@ -117,7 +121,7 @@ export function construirComposicion(e: EntradaComposicion): { html: string; dur
   const franjaLibre = Math.round(posicionGancho(cara, formato) * H * 10) / 10;
   if (c.gancho.trim()) {
     const dur = durGancho;
-    const top = franjaLibre;
+    const top = dentroDeZona(franjaLibre, ALTO_GANCHO, formato);
     el.push(`<div id="gancho" class="clip gancho" data-start="0" data-duration="${n(dur)}" style="top:${top}px">${esc(c.gancho)}<i></i></div>`);
     js.push(`tl.from("#gancho", { opacity: 0, scale: 0.92, duration: 0.35, ease: "back.out(1.7)" }, 0);`);
     js.push(`tl.to("#gancho", { opacity: 0, duration: 0.3, ease: "power2.in" }, ${n(Math.max(0, dur - 0.3))});`);
@@ -126,7 +130,8 @@ export function construirComposicion(e: EntradaComposicion): { html: string; dur
   // Subtítulos palabra por palabra (la regla del versículo ya viene aplicada).
   if (c.subtitulos.activos) {
     const estilo = c.subtitulos.estilo;
-    const top = r2((formato === "9:16" ? c.subtitulos.altura : 0.8) * H);
+    const altoSub = Math.round(TAMANOS[estilo][c.subtitulos.tamano] * 1.25 * 2 + 20);
+    const top = dentroDeZona(r2((formato === "9:16" ? c.subtitulos.altura : 0.8) * H), altoSub, formato);
     bloquesSubtitulos(c, palabras, partes).forEach((b, i) => {
       el.push(`<div id="b${i}" class="clip sub ${estilo}" data-start="${n(b.desde)}" data-duration="${n(Math.max(0.2, b.hasta - b.desde))}" style="top:${top}px">${htmlBloque(estilo, b, i)}</div>`);
       js.push(...animarBloque(estilo, b, i, marca.color));
@@ -140,7 +145,7 @@ export function construirComposicion(e: EntradaComposicion): { html: string; dur
     else if (!v.confirmado) avisos.push(`Confirma el texto RVR1960 de ${v.ref} antes de exportar.`);
     const ventana = ventanaVersiculo(v, clip);
     if (!ventana) return;
-    const top = r2((formato === "9:16" ? 0.62 : 0.6) * H);
+    const top = dentroDeZona(r2((formato === "9:16" ? 0.62 : 0.6) * H), ALTO_VERSICULO, formato, "arriba");
     const id = `vers${i}`;
     el.push(`<div id="${id}" class="clip vers" data-start="${n(ventana.desde)}" data-duration="${n(ventana.hasta - ventana.desde)}" style="top:${top}px"><b>${esc(v.ref)}<small>RVR1960</small></b>${v.texto.trim() ? `<p>${esc(v.texto)}</p>` : ""}</div>`);
     js.push(`tl.from("#${id}", { x: -${W}, duration: 0.55, ease: "power3.out" }, ${n(ventana.desde)});`);
@@ -154,7 +159,7 @@ export function construirComposicion(e: EntradaComposicion): { html: string; dur
     const desde = r2(Math.max(clip.inicioReel + 0.4, durGancho + 0.2));
     let hasta = r2(Math.min(desde + 3, finVideo - 0.2));
     for (const v of ventanas) if (v.hasta > desde && v.desde < hasta) hasta = r2(Math.min(hasta, v.desde - 0.1));
-    if (hasta - desde >= 1.2) agregarRotulo(el, js, nombrePredicador, desde, hasta - desde, franjaLibre);
+    if (hasta - desde >= 1.2) agregarRotulo(el, js, nombrePredicador, desde, hasta - desde, dentroDeZona(franjaLibre, ALTO_ROTULO, formato));
   }
 
   if (marca.nombre.trim()) el.push(`<div id="marca" class="clip marca" data-start="0" data-duration="${n(finVideo)}">${esc(marca.nombre)}</div>`);

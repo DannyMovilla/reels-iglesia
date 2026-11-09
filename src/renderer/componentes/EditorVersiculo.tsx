@@ -1,3 +1,4 @@
+import { SelectorZona, ZonaSegura, type RedZona } from "./ZonaSegura";
 import { useEffect, useRef, useState } from "react";
 import "@hyperframes/player";
 import { ArrowLeft, Check, Download, ImagePlus, Send, TriangleAlert, Type, FileText } from "lucide-react";
@@ -19,6 +20,7 @@ export function EditorVersiculo({ creacion, error, alVolver }: { creacion: Creac
   const [marca, setMarca] = useState<Marca | null>(null);
   const [pestana, setPestana] = useState<Pestana>("contenido");
   const [formato, setFormato] = useState<Formato>("9:16");
+  const [zona, setZona] = useState<RedZona>("instagram");
   const [src, setSrc] = useState<string | null>(null);
   const [tareas, setTareas] = useState<Awaited<ReturnType<NonNullable<typeof window.reels>["tareas"]>>>([]);
   const [abierto] = useState(() => new Date().toISOString());
@@ -99,7 +101,9 @@ export function EditorVersiculo({ creacion, error, alVolver }: { creacion: Creac
           <div className="seg" role="group" aria-label="Formato de la vista previa">
             {(["9:16", "4:5", "1:1"] as Formato[]).map((f) => <button key={f} type="button" aria-pressed={formato === f} onClick={() => setFormato(f)}>{f}</button>)}
           </div>
+          <SelectorZona valor={zona} alCambiar={setZona} />
           <div className="pantalla-reel" style={{ aspectRatio: `1080 / ${alto}` }}>
+            <ZonaSegura red={zona} formato={formato} />
             {src && <hyperframes-player src={src} width={1080} height={alto} controls />}
           </div>
         </div>

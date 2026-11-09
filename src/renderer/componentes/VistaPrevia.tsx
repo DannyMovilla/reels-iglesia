@@ -1,6 +1,7 @@
+import { SelectorZona, ZonaSegura, type RedZona } from "./ZonaSegura";
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import "@hyperframes/player";
-import { Scan, Smartphone } from "lucide-react";
+import { Smartphone } from "lucide-react";
 import { ALTOS, construirComposicion } from "@shared/reel/composicion";
 import { duracionReel, palabrasDe } from "@shared/reel/tiempo";
 import { urlLogoVista } from "../pantallas/Marca";
@@ -41,7 +42,7 @@ let version = 0;
 /** Vista previa en vivo: la misma composición que se exporta, servida por reels-comp:// (prueba técnica D1). */
 export const VistaPrevia = forwardRef<ControlVistaPrevia, Props>(function VistaPrevia(p, ref) {
   const [formato, setFormato] = useState<Formato>("9:16");
-  const [zonaSegura, setZonaSegura] = useState(true);
+  const [zona, setZona] = useState<RedZona>("instagram");
   const [src, setSrc] = useState<string | null>(null);
   const reproductor = useRef<Reproductor | null>(null);
   const tiempo = useRef(0);
@@ -107,18 +108,11 @@ export const VistaPrevia = forwardRef<ControlVistaPrevia, Props>(function VistaP
             </button>
           ))}
         </div>
-        <button type="button" className="btn pequeno fantasma" aria-pressed={zonaSegura} onClick={() => setZonaSegura(!zonaSegura)}>
-          <Scan size={14} aria-hidden="true" />Zona segura
-        </button>
+        <SelectorZona valor={zona} alCambiar={setZona} />
       </div>
       <div className="pantalla-reel" style={{ aspectRatio: `1080 / ${alto}` }}>
         {src && <hyperframes-player ref={reproductor as never} src={src} width={1080} height={alto} controls />}
-        {zonaSegura && formato === "9:16" && (
-          <div className="zona-segura" aria-hidden="true">
-            <div className="zs-arriba" /><div className="zs-derecha" /><div className="zs-abajo" />
-            <span>Instagram tapa esta zona</span>
-          </div>
-        )}
+        <ZonaSegura red={zona} formato={formato} />
       </div>
     </div>
   );
