@@ -122,3 +122,14 @@ test("las palabras, el gancho y la reflexión empiezan ocultos: nunca se ve el t
   expect(html).toMatch(/tl\.to\("#t0p0", \{ opacity: 1/);
   expect(html).not.toMatch(/tl\.fromTo\("#t0p0"/);
 });
+
+test("plan 5: whoosh suave en cada tarjeta y en la reflexión; se puede apagar", () => {
+  const conEfectos = { ...recursos, efectos: "recursos/efectos" };
+  const c = creacion({ versiculo: { ref: "Salmos 23", texto: SALMO23, confirmado: true } });
+  const r = construirReelVersiculo({ creacion: c, marca, formato: "9:16", recursos: conEfectos, modo: "render" });
+  const t = tiemposReelVersiculo(c);
+  const ts = [...dom(r.html).querySelectorAll("audio.efecto")].map((a) => Number(a.getAttribute("data-start")));
+  expect(ts).toEqual([...t.tarjetas.map((x) => x.desde), t.reflexion.desde].map((x) => Math.round((x - 0.3) * 100) / 100));
+  const apagado = construirReelVersiculo({ creacion: { ...c, sonidos: false }, marca, formato: "9:16", recursos: conEfectos, modo: "render" });
+  expect(dom(apagado.html).querySelectorAll("audio.efecto")).toHaveLength(0);
+});

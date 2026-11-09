@@ -21,7 +21,8 @@ export interface EntradaComposicion {
   /** URL del servidor de medios (http://127.0.0.1…) en la vista previa; ruta absoluta del archivo original en el render. */
   fuenteVideo: string;
   /** Rutas relativas a la carpeta del reel (o a reels-comp:// en la vista previa). `logo` solo si la marca tiene logo. */
-  recursos: { gsap: string; fuentes: string; runtime?: string; logo?: string };
+  /** efectos: carpeta de los WAV de efectos de sonido (sin ella, el reel no lleva efectos). */
+  recursos: { gsap: string; fuentes: string; runtime?: string; logo?: string; efectos?: string };
   modo: "vista" | "render";
   /** Voz limpia del proyecto (segundo 0 = inicio del rango de la prédica). Sin ella, el video suena con su audio. */
   voz?: { src: string; inicioRango: number };
@@ -169,8 +170,24 @@ export function construirComposicion(e: EntradaComposicion): { html: string; dur
   const cierre = partes.find((p) => p.tipo === "cierre");
   if (cierre) agregarCierre(el, js, marca, e.recursos, cierre.inicioReel, cierre.duracion);
 
+  // Efectos de sonido: "pop" cuando entra el gancho y "whoosh" en el paso de la apertura al clip y del clip al cierre.
+  if (e.recursos.efectos && c.efectos.sonidos !== false) {
+    const clipP = partes.find((p) => p.tipo === "clip")!;
+    if (c.gancho.trim()) agregarEfecto(el, e.recursos.efectos, "pop", 0.05, 0.4);
+    if (partes.some((p) => p.tipo === "apertura")) agregarEfecto(el, e.recursos.efectos, "whoosh", clipP.inicioReel - 0.25, 0.5);
+    if (cierre) agregarEfecto(el, e.recursos.efectos, "whoosh", cierre.inicioReel - 0.25, 0.5);
+  }
+
   const css = cssComposicion({ ancho: W, alto: H, color: marca.color, fuentes: e.recursos.fuentes, tamanoSub: TAMANOS[c.subtitulos.estilo][c.subtitulos.tamano], estiloSub: c.subtitulos.estilo });
   return { html: documento(W, H, duracion, css, e.recursos, e.modo, el, js), duracion, ancho: W, alto: H, avisos };
+}
+
+const DURACION_EFECTO: Record<"whoosh" | "whoosh-suave" | "pop", number> = { whoosh: 0.6, "whoosh-suave": 0.8, pop: 0.12 };
+
+/** Un efecto de sonido (WAV propio de resources/efectos) en el segundo t del reel. */
+export function agregarEfecto(el: string[], carpeta: string, nombre: keyof typeof DURACION_EFECTO, t: number, volumen: number): void {
+  const inicio = Math.max(0, Math.round(t * 100) / 100);
+  el.push(`<audio class="clip efecto" src="${esc(`${carpeta}/${nombre}.wav`)}" data-start="${n(inicio)}" data-duration="${n(DURACION_EFECTO[nombre])}" data-volume="${volumen}"></audio>`);
 }
 
 /** Tarjeta de cierre: logo (sin recortar, tamaño según la marca) o inicial, nombre e invitación. */

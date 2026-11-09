@@ -149,6 +149,7 @@ export function Inspector({ clip: c, avisos, alCambiar, alGuardarEstilo, alAplic
                 alCambiar={(transicion) => cambiar({ efectos: { ...c.efectos, transicion } })} />
               <div className="fila"><Interruptor activo={c.efectos.grano} etiqueta="Grano de película" alCambiar={(grano) => cambiar({ efectos: { ...c.efectos, grano } })} /> Grano de película</div>
               <div className="fila"><Interruptor activo={c.efectos.rotulo} etiqueta="Nombre del predicador" alCambiar={(rotulo) => cambiar({ efectos: { ...c.efectos, rotulo } })} /> Nombre del predicador al inicio</div>
+              <div className="fila"><Interruptor activo={c.efectos.sonidos !== false} etiqueta="Efectos de sonido" alCambiar={(sonidos) => cambiar({ efectos: { ...c.efectos, sonidos } })} /> Efectos de sonido (whoosh y pop)</div>
             </div>
             <div className="grupo"><h3>Ritmo</h3>
               <div className="fila"><Interruptor activo={c.cortes.pausas} etiqueta="Acortar pausas largas" alCambiar={(pausas) => cambiar({ cortes: { ...c.cortes, pausas } })} /> Acortar pausas largas</div>

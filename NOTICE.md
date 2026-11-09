@@ -20,3 +20,8 @@ Las escenas animadas de «Con IA» (luz, amanecer, aurora, nubes, atardecer, des
 `shaders` 4.0.0 (© 2026 Shader Effects Inc., MIT), distribuida con los bloques `godrays`, `sun-burst`,
 `aurora`, `fractal-noise`, `mesh-gradient` y `lens-flare` del catálogo de HyperFrames (Apache 2.0).
 Sus licencias de terceros están en `resources/escenas/shaders.THIRD-PARTY-LICENSES.txt`.
+
+## Efectos de sonido
+
+`resources/efectos/` (whoosh, whoosh-suave, pop) son sonidos propios de Reels Iglesia, generados con
+`python/efectos.py` (ruido filtrado y un seno, con numpy). No usan grabaciones ni sonidos de terceros.

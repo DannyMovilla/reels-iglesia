@@ -271,3 +271,33 @@ describe("plan 5: fundidos de 10 ms en los cortes de voz", () => {
     expect(voces[0].hasAttribute("data-automation")).toBe(false);
   });
 });
+
+describe("plan 5: efectos de sonido", () => {
+  const conEfectos = (c: ClipSpec) => ({ ...entrada("9:16", c), recursos: { gsap: "recursos/gsap.min.js", fuentes: "recursos/fuentes", efectos: "recursos/efectos" } });
+  const efectos = (html: string) => [...dom(html).querySelectorAll("audio.efecto")].map((a) => ({
+    src: a.getAttribute("src"), t: Number(a.getAttribute("data-start")), v: Number(a.getAttribute("data-volume")),
+  }));
+
+  test("pop con el gancho, whoosh al pasar de la apertura al clip y del clip al cierre", () => {
+    const c = clip();
+    const r = construirComposicion(conEfectos(c));
+    const partes = partesDelReel(c, muestra.segmentos.flatMap((s) => s.w.map(([a, b, t]) => ({ s: a, e: b, t }))));
+    const clipP = partes.find((p) => p.tipo === "clip")!, cierreP = partes.find((p) => p.tipo === "cierre")!;
+    expect(efectos(r.html)).toEqual([
+      { src: "recursos/efectos/pop.wav", t: 0.05, v: 0.4 },
+      { src: "recursos/efectos/whoosh.wav", t: Math.round((clipP.inicioReel - 0.25) * 100) / 100, v: 0.5 },
+      { src: "recursos/efectos/whoosh.wav", t: Math.round((cierreP.inicioReel - 0.25) * 100) / 100, v: 0.5 },
+    ]);
+    expect(r.html).not.toMatch(/https?:\/\//);
+  });
+
+  test("sin apertura ni cierre ni gancho: ninguno; apagados: ninguno", () => {
+    expect(efectos(construirComposicion(conEfectos(clip({ apertura: null, cierre: false, gancho: "" }))).html)).toEqual([]);
+    const apagados = clip({ efectos: { ...clip().efectos, sonidos: false } });
+    expect(efectos(construirComposicion(conEfectos(apagados)).html)).toEqual([]);
+  });
+
+  test("sin la carpeta de efectos (muestras antiguas) no se agrega ninguno", () => {
+    expect(efectos(construirComposicion(entrada()).html)).toEqual([]);
+  });
+});

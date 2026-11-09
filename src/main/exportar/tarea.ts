@@ -151,7 +151,7 @@ export function crearEjecutorExportar(deps: DepsExportar = {}): Ejecutor {
       marca,
       dimensiones: await dimensiones(proyecto.video.ruta),
       fuenteVideo,
-      recursos: { gsap: "recursos/gsap.min.js", fuentes: "recursos/fuentes", logo },
+      recursos: { gsap: "recursos/gsap.min.js", fuentes: "recursos/fuentes", logo, efectos: "recursos/efectos" },
       modo: "render",
       voz: { src: "voz.m4a", inicioRango: proyecto.rango.inicio },
       predicador: proyecto.predicador ?? marca.predicador,

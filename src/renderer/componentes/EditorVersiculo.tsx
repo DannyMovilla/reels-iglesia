@@ -8,7 +8,7 @@ import { ANIMOS, type Animo, type Creacion, type Escena, type Formato, type Marc
 import { urlLogoVista } from "../pantallas/Marca";
 import { NOMBRE_ANIMO } from "../pantallas/Musica";
 import { ColaExportacion } from "./ColaExportacion";
-import { Publicar, Segmentos } from "./Inspector";
+import { Interruptor, Publicar, Segmentos } from "./Inspector";
 
 type Pestana = "contenido" | "estilo" | "publicar";
 let version = 0;
@@ -52,7 +52,7 @@ export function EditorVersiculo({ creacion, error, alVolver }: { creacion: Creac
     const espera = setTimeout(async () => {
       const archivo = c.fondo.archivo?.split(/[\\/]/).pop();
       const fondoSrc = (c.fondo.tipo === "imagen" || c.fondo.tipo === "video") && archivo ? window.reels!.urlFondo(c.id, archivo) : undefined;
-      const recursos = { gsap: "recursos/gsap.min.js", fuentes: "recursos/fuentes", runtime: "recursos/hyperframe.runtime.iife.js", logo: urlLogoVista(marca.logo), escenas: "recursos/escenas/shaders.iife.js" };
+      const recursos = { gsap: "recursos/gsap.min.js", fuentes: "recursos/fuentes", runtime: "recursos/hyperframe.runtime.iife.js", logo: urlLogoVista(marca.logo), escenas: "recursos/escenas/shaders.iife.js", efectos: "recursos/efectos" };
       const borrador = construirReelVersiculo({ creacion: c, marca, formato, recursos, modo: "vista", fondoSrc });
       const musica = await window.reels!.urlMusicaCreacion(c.id, borrador.duracion).catch(() => null);
       const comp = construirReelVersiculo({ creacion: c, marca, formato, recursos, modo: "vista", fondoSrc, fondoDuracion: 600, musica: musica ? { src: musica } : undefined });
@@ -169,6 +169,7 @@ export function EditorVersiculo({ creacion, error, alVolver }: { creacion: Creac
                     </select>
                   </label>
                 )}
+                <div className="fila"><Interruptor activo={c.sonidos !== false} etiqueta="Efectos de sonido" alCambiar={(sonidos) => cambiar({ sonidos })} /> Efectos de sonido (whoosh suave entre tarjetas)</div>
                 <div className="campo">Formatos a exportar
                   <div className="fila">
                     {(["9:16", "4:5", "1:1"] as Formato[]).map((f) => (

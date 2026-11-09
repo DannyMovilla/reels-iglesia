@@ -66,7 +66,7 @@ export const VistaPrevia = forwardRef<ControlVistaPrevia, Props>(function VistaP
       const comp = construirComposicion({
         clip: p.clip, transcripcion: p.transcripcion, caras: p.caras, marca: p.marca, formato, dimensiones: p.dimensiones,
         fuenteVideo: window.reels!.urlVideo(p.proyectoId),
-        recursos: { gsap: "recursos/gsap.min.js", fuentes: "recursos/fuentes", runtime: "recursos/hyperframe.runtime.iife.js", logo: urlLogoVista(p.marca.logo) },
+        recursos: { gsap: "recursos/gsap.min.js", fuentes: "recursos/fuentes", runtime: "recursos/hyperframe.runtime.iife.js", logo: urlLogoVista(p.marca.logo), efectos: "recursos/efectos" },
         modo: "vista",
         predicador: p.predicador,
         ...(p.inicioRango !== undefined ? { voz: { src: window.reels!.urlVoz(p.proyectoId, p.nivelVoz), inicioRango: p.inicioRango } } : {}),

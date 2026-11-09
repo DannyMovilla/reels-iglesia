@@ -1,9 +1,9 @@
 import { copyFile, mkdir, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
-import { raizApp } from "../rutas";
+import { raizApp, rutaEfectos } from "../rutas";
 
 /** Archivos locales que necesita una composición (sin internet). Ruta relativa dentro de la carpeta → origen. */
-export function archivosRecursos(raiz = raizApp()): Record<string, string> {
+export function archivosRecursos(raiz = raizApp(), efectos = rutaEfectos()): Record<string, string> {
   const nm = join(raiz, "node_modules");
   const fuente = (pkg: string, archivo: string) => [`recursos/fuentes/${pkg}/files/${archivo}`, join(nm, "@fontsource", pkg, "files", archivo)] as const;
   return Object.fromEntries([
@@ -12,6 +12,7 @@ export function archivosRecursos(raiz = raizApp()): Record<string, string> {
     fuente("montserrat", "montserrat-latin-800-normal.woff2"),
     fuente("figtree", "figtree-latin-600-normal.woff2"),
     fuente("figtree", "figtree-latin-800-normal.woff2"),
+    ...["whoosh", "whoosh-suave", "pop"].map((x) => [`recursos/efectos/${x}.wav`, join(efectos, `${x}.wav`)] as const),
   ]);
 }
 

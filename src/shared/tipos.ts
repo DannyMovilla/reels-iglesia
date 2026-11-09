@@ -98,7 +98,8 @@ export interface EstiloIglesia {
   musica: { modo: ModoMusica; volumen: number };
   /** intensidad: sin ella, "normal". lista: muletillas que se quitan (sin ella, las de por defecto). */
   cortes: { pausas: boolean; muletillas: boolean; intensidad?: Intensidad; lista?: string[] };
-  efectos: { transicion: "destello" | "luz" | "ninguna"; grano: boolean; rotulo: boolean };
+  /** sonidos: efectos de sonido (whoosh en transiciones, pop con el gancho); sin el campo, encendidos. */
+  efectos: { transicion: "destello" | "luz" | "ninguna"; grano: boolean; rotulo: boolean; sonidos?: boolean };
   cierre: boolean;
   formatos: Formato[];
   /** Sin el campo: "limpia". */
@@ -174,4 +175,6 @@ export interface Creacion {
   redes: Redes;
   formatos: Formato[];
   estado: "borrador" | "exportado";
+  /** Whoosh suave entre tarjetas; sin el campo, encendido. */
+  sonidos?: boolean;
 }

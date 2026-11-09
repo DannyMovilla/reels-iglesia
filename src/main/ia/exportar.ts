@@ -67,7 +67,7 @@ export function crearEjecutorExportarIa(deps: DepsExportarIa = {}): Ejecutor {
 
     const comp = construirReelVersiculo({
       creacion: c, marca, formato, modo: "render", fondoSrc, fondoDuracion,
-      recursos: { gsap: "recursos/gsap.min.js", fuentes: "recursos/fuentes", logo, escenas: "recursos/escenas/shaders.iife.js" },
+      recursos: { gsap: "recursos/gsap.min.js", fuentes: "recursos/fuentes", logo, escenas: "recursos/escenas/shaders.iife.js", efectos: "recursos/efectos" },
       musica: musica ? { src: musica } : undefined,
     });
     try {

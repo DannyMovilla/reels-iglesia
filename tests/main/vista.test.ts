@@ -37,3 +37,12 @@ test("sirve la librería de escenas animadas y nada más de esa carpeta", () => 
   expect(rutaRecurso("recursos/escenas/shaders.THIRD-PARTY-LICENSES.txt", RAIZ, undefined, ESC)).toBeNull();
   expect(rutaRecurso("recursos/escenas/../../secreto.js", RAIZ, undefined, ESC)).toBeNull();
 });
+
+test("plan 5: entrega los efectos de sonido propios y nada más de esa carpeta", () => {
+  const efectos = join(RAIZ, "resources", "efectos");
+  expect(rutaRecurso("recursos/efectos/whoosh.wav", RAIZ, undefined, undefined, efectos)).toBe(join(efectos, "whoosh.wav"));
+  expect(rutaRecurso("recursos/efectos/pop.wav", RAIZ, undefined, undefined, efectos)).toBe(join(efectos, "pop.wav"));
+  expect(rutaRecurso("recursos/efectos/../../package.json", RAIZ, undefined, undefined, efectos)).toBeNull();
+  expect(rutaRecurso("recursos/efectos/otro.wav", RAIZ, undefined, undefined, efectos)).toBeNull();
+  expect(rutaRecurso("recursos/efectos/whoosh.wav", RAIZ)).toBeNull();
+});

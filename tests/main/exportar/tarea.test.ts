@@ -267,3 +267,12 @@ test("plan 5: un clip con voz Podcast crea voz-podcast.m4a una sola vez; sin niv
   await ejecutor(tarea({ ...base, voz: "podcast" }), ctx());
   expect(creadas).toEqual([["voz.m4a", "limpia"], ["voz-podcast.m4a", "podcast"]]);
 });
+
+test("plan 5: la carpeta del render lleva los efectos de sonido y la composición los usa", async () => {
+  const { archivosRecursos } = await import("../../../src/main/exportar/preparar");
+  const r = archivosRecursos();
+  for (const n of ["whoosh", "whoosh-suave", "pop"]) {
+    expect(r[`recursos/efectos/${n}.wav`]).toBeTruthy();
+    expect(existsSync(r[`recursos/efectos/${n}.wav`])).toBe(true);
+  }
+});

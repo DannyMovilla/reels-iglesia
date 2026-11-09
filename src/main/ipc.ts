@@ -18,7 +18,7 @@ import { crearVozReal } from "./exportar/tarea";
 import { palabrasDe } from "@shared/reel/tiempo";
 import type { Cola } from "./cola/cola";
 import { dimensionesVideo, duracionVideo } from "./procesos/video";
-import { carpetaDatos, carpetaProyecto, raizApp, rutaEscenas } from "./rutas";
+import { carpetaDatos, carpetaProyecto, raizApp, rutaEfectos, rutaEscenas } from "./rutas";
 import { esquemaVista, registrarComposicion, servirVista } from "./vista";
 import { cacheSinErrores } from "./util/cache";
 import { aplicarEstilo, copiarLogo, reubicarVideo, crearProyecto, guardarClip, guardarMarca, leerClips, leerJson, leerMarca, leerProyecto, listarExportados, listarProyectos, leerTranscripcion, leerCorrecciones, corregir, quitarCorreccion, agregarClip, guardarProyecto } from "./proyectos/almacen";
@@ -76,7 +76,7 @@ export async function resolverMedio(tipo: string, valor: string): Promise<string
 }
 
 export function registrarIpc(deps: DepsIpc): void {
-  servirVista(raizApp(), carpetaDatos, rutaEscenas());
+  servirVista(raizApp(), carpetaDatos, rutaEscenas(), rutaEfectos());
   ipcMain.handle("vista:registrar", (_e, id: string, html: string) => registrarComposicion(id, html));
   const { cola } = deps;
   cola.on("cambio", (t) => {

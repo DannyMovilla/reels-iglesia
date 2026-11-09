@@ -1,5 +1,5 @@
 import type { Creacion, Formato, Marca } from "../tipos";
-import { agregarCierre, ALTOS, documento, type EntradaComposicion } from "./composicion";
+import { agregarCierre, agregarEfecto, ALTOS, documento, type EntradaComposicion } from "./composicion";
 import { htmlEscena } from "./escenas";
 import { cssComposicion } from "./estilos.css";
 import { curvaMusica } from "./musica";
@@ -138,6 +138,12 @@ export function construirReelVersiculo(e: EntradaReelVersiculo): { html: string;
   }
 
   // Música (sin voz: entra fuerte y queda pareja; la normalización deja el reel en −14 LUFS)
+  // Whoosh suave al entrar cada tarjeta y la reflexión.
+  if (e.recursos.efectos && c.sonidos !== false) {
+    const momentos = [...t.tarjetas.map((x) => x.desde), ...(t.reflexion.hasta > t.reflexion.desde ? [t.reflexion.desde] : [])];
+    for (const m of momentos) agregarEfecto(el, e.recursos.efectos, "whoosh-suave", m - 0.3, 0.35);
+  }
+
   if (e.musica) {
     const puntos = curvaMusica([], D, Math.max(0.3, c.musica.volumen));
     el.push(`<audio id="musica" class="clip" src="${esc(e.musica.src)}" data-start="0" data-duration="${n(D)}" data-volume="1" data-automation='${JSON.stringify({ version: 1, lanes: [{ target: "volume", points: puntos }] })}'></audio>`);

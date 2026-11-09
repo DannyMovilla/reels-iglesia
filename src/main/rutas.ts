@@ -19,6 +19,8 @@ export const raizApp = (e: Entorno = entornoActual()): string => (e.empaquetada 
 
 /** Librería de escenas animadas (resources/escenas en el repositorio y en la app instalada). */
 export const rutaEscenas = (): string => join(raizRecursos(), "resources", "escenas");
+/** Efectos de sonido propios (python/efectos.py), incluidos en la app. */
+export const rutaEfectos = (): string => join(raizRecursos(), "resources", "efectos");
 
 /** Donde están python/ y modelos/: el repositorio en desarrollo; resources/ instalada (extraResources). */
 export const raizRecursos = (e: Entorno = entornoActual()): string => (e.empaquetada ? e.recursos : raizApp(e));
