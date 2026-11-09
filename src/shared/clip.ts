@@ -47,6 +47,7 @@ export function completarClip(entrada: unknown, estilo: EstiloIglesia): ClipSpec
     },
     cortes: c.cortes ?? { ...estilo.cortes },
     ...((c.voz ?? estilo.voz) ? { voz: c.voz ?? estilo.voz } : {}),
+    ...((c.color ?? estilo.color) ? { color: c.color ?? structuredClone(estilo.color) } : {}),
     efectos: c.efectos ?? { ...estilo.efectos },
     redes,
   };
@@ -62,6 +63,7 @@ export function estiloDesdeClip(c: ClipSpec): EstiloIglesia {
     cierre: c.cierre,
     formatos: c.formatos,
     ...(c.voz ? { voz: c.voz } : {}),
+    ...(c.color ? { color: { look: c.color.look, intensidad: c.color.intensidad } } : {}),
   });
 }
 
@@ -77,6 +79,8 @@ export function aplicarEstiloAClip(c: ClipSpec, e: EstiloIglesia): ClipSpec {
     cierre: e.cierre,
     formatos: e.formatos,
     ...(e.voz ? { voz: e.voz } : {}),
+    // El look viene del estilo; el balance es del video de este clip.
+    ...(e.color ? { color: { ...e.color, ...(c.color?.balance ? { balance: c.color.balance } : {}) } } : {}),
   });
 }
 

@@ -1,3 +1,4 @@
+import { NOMBRE_LOOK, type Look } from "@shared/reel/color";
 import { useState } from "react";
 import { BookOpen, Check, Contrast, Copy, FileText, Flag, LoaderCircle, Send, Sparkles, TrendingUp, TriangleAlert, Type } from "lucide-react";
 import { ANIMOS, type Animo, type ClipSpec, type EstiloSub, type Formato, type Redes } from "@shared/tipos";
@@ -22,6 +23,8 @@ interface Props {
   pistas?: Pista[];
   /** Palabras de la transcripción (para sugerir frases repetidas). */
   palabras?: Palabra[];
+  /** Mide el balance de blancos del video de este clip («Corregir tono amarillo»). */
+  alMedirColor?(): Promise<[number, number, number]>;
   /** El nivel de voz elegido todavía se está preparando. */
   preparandoVoz?: boolean;
   /** Pestaña «Claude»: pedir cambios en palabras (con su historial por clip). */
@@ -46,7 +49,7 @@ export function Segmentos<T extends string>({ opciones, valor, etiqueta, alCambi
 
 const FORMATOS: [Formato, string, string][] = [["9:16", "Reels · TikTok", "12px 21px"], ["4:5", "Feed IG · FB", "15px 19px"], ["1:1", "Cuadrado", "17px 17px"]];
 
-export function Inspector({ clip: c, avisos, alCambiar, alGuardarEstilo, alAplicarEstilo, pistas, palabras, chat, preparandoVoz }: Props) {
+export function Inspector({ clip: c, avisos, alCambiar, alGuardarEstilo, alAplicarEstilo, pistas, palabras, chat, preparandoVoz, alMedirColor }: Props) {
   const [pestana, setPestana] = useState<Pestana>("clip");
   const cambiar = (parcial: Partial<ClipSpec>) => alCambiar({ ...c, ...parcial });
   const cambiarVersiculo = (i: number, parcial: Partial<ClipSpec["versiculos"][number]>) =>
@@ -159,6 +162,7 @@ export function Inspector({ clip: c, avisos, alCambiar, alGuardarEstilo, alAplic
               <div className="fila"><Interruptor activo={c.cortes.muletillas} etiqueta="Quitar muletillas" alCambiar={(muletillas) => cambiar({ cortes: { ...c.cortes, muletillas } })} /> Quitar muletillas («eh», «em»)</div>
               {palabras && <Repeticiones clip={c} palabras={palabras} alCambiar={(quitados) => cambiar({ cortes: { ...c.cortes, quitados } })} />}
             </div>
+            <ColorGrupo clip={c} alCambiar={(color) => cambiar({ color })} alMedir={alMedirColor} />
             <div className="grupo"><h3>Voz</h3>
               <Segmentos etiqueta="Nivel de voz" valor={c.voz ?? "limpia"} opciones={[["ligera", "Ligera"], ["limpia", "Limpia"], ["podcast", "Podcast"]]}
                 alCambiar={(voz) => cambiar({ voz })} />
@@ -324,6 +328,49 @@ function Repeticiones({ clip: c, palabras, alCambiar }: { clip: ClipSpec; palabr
           </ul>
         </>
       )}
+    </div>
+  );
+}
+
+/** Corrección de color del video: look, intensidad y balance de blancos medido del video. */
+function ColorGrupo({ clip: c, alCambiar, alMedir }: { clip: ClipSpec; alCambiar(color: ClipSpec["color"]): void; alMedir?(): Promise<[number, number, number]> }) {
+  const color = c.color ?? { look: "natural" as Look, intensidad: 0.7 };
+  const [midiendo, setMidiendo] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const medir = async () => {
+    if (!alMedir) return;
+    setMidiendo(true);
+    setError(null);
+    try {
+      alCambiar({ ...color, balance: await alMedir() });
+    } catch (e) {
+      setError((e instanceof Error ? e.message : String(e)).replace(/^Error invoking remote method '[^']+': (Error: )?/, ""));
+    } finally {
+      setMidiendo(false);
+    }
+  };
+  return (
+    <div className="grupo"><h3>Color</h3>
+      <Segmentos etiqueta="Look de color" valor={color.look} opciones={(Object.keys(NOMBRE_LOOK) as Look[]).map((l) => [l, NOMBRE_LOOK[l]] as [Look, string])}
+        alCambiar={(look) => alCambiar({ ...color, look })} />
+      {color.look !== "natural" && (
+        <label className="campo">
+          <span className="campo-cabeza">Intensidad <span className="mono">{Math.round(color.intensidad * 100)} %</span></span>
+          <input type="range" aria-label="Intensidad del color" min={0} max={100} step={5} value={Math.round(color.intensidad * 100)}
+            onChange={(e) => alCambiar({ ...color, intensidad: Number(e.target.value) / 100 })} />
+        </label>
+      )}
+      {alMedir && (
+        <div className="fila">
+          {color.balance
+            ? <button type="button" className="btn pequeno fantasma" onClick={() => alCambiar({ look: color.look, intensidad: color.intensidad })}>Quitar corrección de tono</button>
+            : <button type="button" className="btn pequeno" disabled={midiendo} onClick={() => void medir()}>
+                {midiendo && <LoaderCircle size={13} className="girar" aria-hidden="true" />}Corregir tono amarillo
+              </button>}
+        </div>
+      )}
+      {color.balance && <p className="ayuda">Tono corregido con el color promedio del video.</p>}
+      {error && <p className="error" role="alert">{error}</p>}
     </div>
   );
 }

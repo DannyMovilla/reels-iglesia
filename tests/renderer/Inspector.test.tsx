@@ -223,3 +223,24 @@ test("plan 6: cada tramo quitado se lista con su minuto y se puede volver a pone
   await userEvent.click(screen.getByRole("button", { name: "Volver a poner el tramo 0:45–0:47" }));
   expect(alCambiar.mock.calls.at(-1)![0].cortes.quitados).toEqual([{ inicio: 31, fin: 33.5 }]);
 });
+
+test("plan 6: color — look, intensidad y «Corregir tono amarillo» (y quitarla)", async () => {
+  const alCambiar = vi.fn();
+  const alMedirColor = vi.fn(async () => [0.9, 0.95, 1.2] as [number, number, number]);
+  function ConColor() {
+    const [c, setC] = useState(base);
+    return <Inspector clip={c} avisos={[]} alCambiar={(n) => { setC(n); alCambiar(n); }} alMedirColor={alMedirColor} />;
+  }
+  render(<ConColor />);
+  await userEvent.click(screen.getByRole("tab", { name: /Estilo/ }));
+  const grupo = screen.getByRole("group", { name: "Look de color" });
+  expect(within(grupo).getByRole("button", { name: "Natural" })).toHaveAttribute("aria-pressed", "true");
+  await userEvent.click(within(grupo).getByRole("button", { name: "Cálido" }));
+  expect(alCambiar.mock.calls.at(-1)![0].color).toEqual({ look: "calido", intensidad: 0.7 });
+  fireEvent.change(screen.getByLabelText("Intensidad del color"), { target: { value: "40" } });
+  expect(alCambiar.mock.calls.at(-1)![0].color.intensidad).toBe(0.4);
+  await userEvent.click(screen.getByRole("button", { name: "Corregir tono amarillo" }));
+  await vi.waitFor(() => expect(alCambiar.mock.calls.at(-1)![0].color.balance).toEqual([0.9, 0.95, 1.2]));
+  await userEvent.click(screen.getByRole("button", { name: "Quitar corrección de tono" }));
+  expect(alCambiar.mock.calls.at(-1)![0].color.balance).toBeUndefined();
+});

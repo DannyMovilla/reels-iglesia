@@ -81,6 +81,8 @@ export type Animo = "reflexivo" | "esperanza" | "victoria" | "adoracion" | "tens
 export const ANIMOS: readonly Animo[] = ["reflexivo", "esperanza", "victoria", "adoracion", "tension"];
 export type EstiloSub = "pop" | "caja" | "limpio" | "resaltado" | "karaoke" | "impacto" | "neon";
 export type Intensidad = "suave" | "normal" | "fuerte";
+/** Color del video: look, intensidad 0–1 y balance de blancos (ganancias R, G, B) medido del video. */
+export interface ColorClip { look: import("./reel/color").Look; intensidad: number; balance?: [number, number, number] }
 /** Ligera: solo graves y volumen parejo. Limpia: también menos ruido (la de siempre). Podcast: Limpia + presencia y compresión. */
 export type NivelVoz = "ligera" | "limpia" | "podcast";
 export type ModoMusica = "auto" | "pista" | "pad" | "ninguna";
@@ -104,6 +106,8 @@ export interface EstiloIglesia {
   formatos: Formato[];
   /** Sin el campo: "limpia". */
   voz?: NivelVoz;
+  /** Look de color de la iglesia (sin balance: el balance es de cada video). */
+  color?: ColorClip;
 }
 
 export interface Marca {
@@ -150,6 +154,8 @@ export interface ClipSpec {
   estado: "sugerido" | "editado" | "exportado";
   /** Nivel de voz; sin el campo, "limpia". */
   voz?: NivelVoz;
+  /** Corrección de color; sin el campo, el video queda como está. */
+  color?: ColorClip;
   favorito?: boolean;
   /** Oculto de la lista (se ve con "Ver ocultos"). */
   oculto?: boolean;

@@ -61,6 +61,8 @@ export interface ApiReels {
   traducirSrt(proyectoId: string, idiomas: string[]): Promise<string[]>;
   /** Avisos de progreso de las entregas largas (traducción). */
   alProgresoEntregas(cb: (texto: string) => void): () => void;
+  /** Balance de blancos (ganancias R, G, B) del video de la prédica en ese tramo. */
+  medirColor(proyectoId: string, inicio: number, fin: number): Promise<[number, number, number]>;
   /** Crea un clip a mano con ese tramo del video (ajustado a palabras) y lo agrega a clips.json. */
   crearClip(proyectoId: string, inicio: number, fin: number): Promise<ClipSpec>;
   leerMarca(): Promise<Marca>;

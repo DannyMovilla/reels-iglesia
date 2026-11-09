@@ -1,3 +1,4 @@
+import { colorActivo, htmlFiltroColor, matrizColor } from "./color";
 import { dentroDeZona } from "./zonas";
 import type { Caras, ClipSpec, EstiloSub, Formato, Marca, Transcripcion } from "../tipos";
 
@@ -71,6 +72,10 @@ export function construirComposicion(e: EntradaComposicion): { html: string; dur
   const pista = c.encuadre.modo === "auto" && e.caras ? pistaCamara(e.caras, Math.min(...partes.filter((p) => p.tipo !== "cierre").map((p) => p.inicioVideo)), c.fin) : null;
   const caraY = pista?.caraY ?? 0.3;
 
+  // Corrección de color: un filtro SVG para todos los videos (sin color o natural sin balance, nada).
+  const conColor = colorActivo(c.color);
+  if (conColor) el.push(htmlFiltroColor(matrizColor(c.color!.look, c.color!.intensidad, c.color!.balance)));
+
   let nVideo = 0;
   // Con cortes, cada tramo de voz sube y baja en 10 ms: el salto entre tramos no suena como un "clic".
   const cortado = partes.some((p) => (p.tramos?.length ?? 1) > 1);
@@ -79,7 +84,9 @@ export function construirComposicion(e: EntradaComposicion): { html: string; dur
     : "";
   partes.forEach((p) => {
     if (p.tipo === "cierre") return;
-    const bn = p.tipo === "apertura" ? "filter: grayscale(1) contrast(1.15) brightness(0.95);" : "";
+    const bn = p.tipo === "apertura"
+      ? `filter: ${conColor ? "url(#color) " : ""}grayscale(1) contrast(1.15) brightness(0.95);`
+      : conColor ? "filter: url(#color);" : "";
     const tramos = p.tramos ?? [{ inicioVideo: p.inicioVideo, finVideo: p.finVideo, inicioReel: p.inicioReel, duracion: p.duracion }];
     for (const tr of tramos) {
       const i = nVideo++;

@@ -17,6 +17,7 @@ import { guardarSrt } from "./entregas/entregas";
 import { guardarPdf } from "./entregas/pdf";
 import { guardarMp3 } from "./entregas/mp3";
 import { traducirSrt } from "./entregas/traducir";
+import { medirBalance } from "./procesos/color";
 import { archivoVoz } from "./procesos/audio";
 import { asegurarVoz } from "./exportar/tarea";
 import { palabrasDe } from "@shared/reel/tiempo";
@@ -127,6 +128,11 @@ export function registrarIpc(deps: DepsIpc): void {
   ipcMain.handle("proyectos:prepararVoz", async (_e, id: string, nivel: NivelVoz) => {
     if (!["ligera", "limpia", "podcast"].includes(nivel)) throw new Error("Ese nivel de voz no existe.");
     await asegurarVoz(await leerProyecto(id), nivel);
+  });
+  ipcMain.handle("proyectos:medirColor", async (_e, id: string, inicio: number, fin: number) => {
+    const p = await leerProyecto(id);
+    if (!p.videoDisponible) throw new Error("No encuentro el video original. Vuelve a ponerlo en su lugar y reintenta.");
+    return medirBalance(p.video.ruta, Number(inicio) || 0, Number(fin) || 0);
   });
   ipcMain.handle("entregas:pdf", (_e, id: string) => guardarPdf(id));
   ipcMain.handle("entregas:traducir", (e, id: string, idiomas: string[]) =>
