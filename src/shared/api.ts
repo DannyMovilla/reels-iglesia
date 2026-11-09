@@ -51,6 +51,8 @@ export interface ApiReels {
   leerCapitulos(proyectoId: string): Promise<Capitulos | null>;
   /** Claude escribe el resumen y los capítulos (una consulta) y se guardan. */
   crearCapitulos(proyectoId: string): Promise<Capitulos>;
+  /** Guarda el SRT de la prédica en exportados/; devuelve el nombre del archivo. */
+  crearSrt(proyectoId: string, opciones: { completo: boolean }): Promise<string>;
   /** Crea un clip a mano con ese tramo del video (ajustado a palabras) y lo agrega a clips.json. */
   crearClip(proyectoId: string, inicio: number, fin: number): Promise<ClipSpec>;
   leerMarca(): Promise<Marca>;

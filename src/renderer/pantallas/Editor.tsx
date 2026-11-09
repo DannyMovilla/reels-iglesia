@@ -8,11 +8,12 @@ import { DURACION_MINIMA } from "@shared/reel/cortes";
 import { duracionConservada } from "@shared/reel/cortes-voz";
 import { estiloDesdeClip, moverVersiculos } from "@shared/clip";
 import type { Pista } from "@shared/reel/pistas";
-import { Download, FileText, ListOrdered, Play, Plus, Scissors } from "lucide-react";
+import { Download, FileText, ListOrdered, Package, Play, Plus, Scissors } from "lucide-react";
 import { ColaExportacion } from "../componentes/ColaExportacion";
 import { Inspector } from "../componentes/Inspector";
 import type { EntradaChat } from "../componentes/ChatClip";
 import { Capitulos } from "../componentes/Capitulos";
+import { Entregas } from "../componentes/Entregas";
 import { LineaTiempo } from "../componentes/LineaTiempo";
 import { ListaClips } from "../componentes/ListaClips";
 import { PanelProceso } from "../componentes/PanelProceso";
@@ -43,7 +44,7 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
   const guardando = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendiente = useRef<ClipSpec | null>(null);
   const [pistas, setPistas] = useState<Pista[]>([]);
-  const [centro, setCentro] = useState<"vista" | "transcripcion" | "capitulos">("vista");
+  const [centro, setCentro] = useState<"vista" | "transcripcion" | "capitulos" | "entregas">("vista");
   const [rango, setRango] = useState<{ inicio: number; fin: number } | null>(null);
   const [avisoRango, setAvisoRango] = useState<string | null>(null);
   const [errorAccion, setErrorAccion] = useState<string | null>(null);
@@ -225,6 +226,7 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
             <button type="button" role="tab" aria-selected={centro === "vista"} onClick={() => setCentro("vista")}><Play size={14} aria-hidden="true" />Vista previa</button>
             <button type="button" role="tab" aria-selected={centro === "transcripcion"} onClick={() => setCentro("transcripcion")}><FileText size={14} aria-hidden="true" />Transcripción</button>
             <button type="button" role="tab" aria-selected={centro === "capitulos"} onClick={() => setCentro("capitulos")}><ListOrdered size={14} aria-hidden="true" />Capítulos</button>
+            <button type="button" role="tab" aria-selected={centro === "entregas"} onClick={() => setCentro("entregas")}><Package size={14} aria-hidden="true" />Entregas</button>
           </div>
         )}
         {centro === "transcripcion" && datos.transcripcion && (
@@ -259,6 +261,7 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
             )}
           </>
         )}
+        {centro === "entregas" && <Entregas proyectoId={proyecto.id} />}
         {centro === "capitulos" && <Capitulos proyectoId={proyecto.id} inicioRango={proyecto.rango.inicio} />}
         {listo && (
           <div className="centro-vista" hidden={centro !== "vista"}>

@@ -333,3 +333,10 @@
 /* Plan 6: tramos quitados uno por uno. */
 .tramos-quitados { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
 .tramos-quitados li { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12px; }
+
+/* Plan 6: pestaña Entregas. */
+.entregas { display: flex; flex-direction: column; gap: 14px; overflow-y: auto; }
+.entrega { display: flex; flex-direction: column; gap: 8px; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg-1); }
+.entrega h3 { display: flex; align-items: center; gap: 8px; margin: 0; font: 600 14px var(--font-ui); }
+.entrega .listo { color: var(--cielo); }
+.entregas > .btn { align-self: flex-start; }
