@@ -53,6 +53,8 @@ export interface ApiReels {
   crearCapitulos(proyectoId: string): Promise<Capitulos>;
   /** Guarda el SRT de la prédica en exportados/; devuelve el nombre del archivo. */
   crearSrt(proyectoId: string, opciones: { completo: boolean }): Promise<string>;
+  /** Guarda la transcripción en PDF en exportados/; devuelve el nombre del archivo. */
+  crearPdf(proyectoId: string): Promise<string>;
   /** Crea un clip a mano con ese tramo del video (ajustado a palabras) y lo agrega a clips.json. */
   crearClip(proyectoId: string, inicio: number, fin: number): Promise<ClipSpec>;
   leerMarca(): Promise<Marca>;

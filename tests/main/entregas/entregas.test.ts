@@ -39,3 +39,14 @@ test("con tiempos del video completo suma el inicio de la prédica", async () =>
   expect(completo[0].desde).toBeCloseTo(6284, 1);
   expect(predica[0].desde).toBeCloseTo(0, 1);
 });
+
+test("PDF: arma el HTML con la transcripción corregida y guarda lo que imprime Electron", async () => {
+  const { guardarPdf } = await import("../../../src/main/entregas/pdf");
+  await corregir(id, { de: "quebrantamiento", a: "QUEBRANTO" });
+  let html = "";
+  const nombre = await guardarPdf(id, async (h) => { html = h; return Buffer.from("%PDF-1.7 prueba"); });
+  expect(nombre).toBe("culto-dominical-9-nov-transcripcion.pdf");
+  expect(html).toContain("QUEBRANTO");
+  expect(html).toContain("<h1>Culto dominical · 9 nov</h1>");
+  expect(readFileSync(join(carpetaProyecto(id), "exportados", nombre), "utf8")).toBe("%PDF-1.7 prueba");
+});

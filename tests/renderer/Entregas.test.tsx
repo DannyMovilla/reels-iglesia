@@ -23,3 +23,12 @@ test("un error se muestra en español", async () => {
   await userEvent.click(screen.getByRole("button", { name: "Crear SRT" }));
   expect(await screen.findByRole("alert")).toHaveTextContent("No hay transcripción.");
 });
+
+test("PDF de la transcripción", async () => {
+  const a = { crearPdf: vi.fn(async () => "culto-transcripcion.pdf") };
+  (window as unknown as { reels: unknown }).reels = a;
+  render(<Entregas proyectoId="p" />);
+  await userEvent.click(screen.getByRole("button", { name: "Crear PDF" }));
+  expect(a.crearPdf).toHaveBeenCalledWith("p");
+  expect(await screen.findByText("Listo: culto-transcripcion.pdf")).toBeInTheDocument();
+});

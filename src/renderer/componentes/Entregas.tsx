@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Captions, FolderOpen, LoaderCircle } from "lucide-react";
+import { Captions, FileText, FolderOpen, LoaderCircle } from "lucide-react";
 import { Interruptor } from "./Inspector";
 
 export const limpiarError = (e: unknown) => (e instanceof Error ? e.message : String(e)).replace(/^Error invoking remote method '[^']+': (Error: )?/, "");
@@ -37,6 +37,7 @@ export function Resultado({ listo, error }: { listo: string | null; error: strin
 export function Entregas({ proyectoId }: { proyectoId: string }) {
   const [completo, setCompleto] = useState(true);
   const srt = useAccion();
+  const pdf = useAccion();
   return (
     <div className="entregas">
       <p className="ayuda">Todo se guarda en la carpeta de exportados de esta prédica.</p>
@@ -53,6 +54,16 @@ export function Entregas({ proyectoId }: { proyectoId: string }) {
           </button>
         </div>
         <Resultado listo={srt.listo} error={srt.error} />
+      </section>
+      <section className="entrega">
+        <h3><FileText size={16} aria-hidden="true" />Transcripción en PDF</h3>
+        <p className="ayuda">Para estudios de célula: el texto de la prédica en párrafos, con el resumen y los capítulos si ya los creaste.</p>
+        <div className="fila">
+          <button type="button" className="btn" disabled={pdf.trabajando} onClick={() => void pdf.correr(() => window.reels!.crearPdf(proyectoId))}>
+            {pdf.trabajando && <LoaderCircle size={15} className="girar" aria-hidden="true" />}Crear PDF
+          </button>
+        </div>
+        <Resultado listo={pdf.listo} error={pdf.error} />
       </section>
       <button type="button" className="btn fantasma" onClick={() => void window.reels!.abrirCarpetaExportados(proyectoId)}>
         <FolderOpen size={15} aria-hidden="true" />Abrir carpeta
