@@ -10,6 +10,7 @@ import type { Analisis, Animo, Caras, ClipSpec, Creacion, Formato, Marca, TipoTa
 import type { Correccion } from "@shared/correcciones";
 import { clipManual } from "@shared/clip";
 import { pedirCambios, type EntradaHistorial } from "./claude/cambios";
+import { crearCapitulos, leerCapitulos } from "./claude/capitulos";
 import { palabrasDe } from "@shared/reel/tiempo";
 import type { Cola } from "./cola/cola";
 import { dimensionesVideo, duracionVideo } from "./procesos/video";
@@ -109,6 +110,8 @@ export function registrarIpc(deps: DepsIpc): void {
   ipcMain.handle("proyectos:quitarCorreccion", (_e, id: string, i: number) => quitarCorreccion(id, i));
   ipcMain.handle("proyectos:caras", (_e, id: string) => leerJson<Caras>(id, "caras.json"));
   ipcMain.handle("proyectos:guardarClip", (_e, id: string, clip: ClipSpec) => guardarClip(id, clip));
+  ipcMain.handle("proyectos:capitulos", (_e, id: string) => leerCapitulos(id));
+  ipcMain.handle("claude:capitulos", (_e, id: string) => crearCapitulos(id, { comando: process.env.REELS_CLAUDE_COMANDO }));
   ipcMain.handle("claude:cambios", (_e, id: string, clip: ClipSpec, pedido: string, historial: EntradaHistorial[]) =>
     pedirCambios(id, clip, pedido, historial, { comando: process.env.REELS_CLAUDE_COMANDO }));
   ipcMain.handle("proyectos:crearClip", async (_e, id: string, inicio: number, fin: number) => {

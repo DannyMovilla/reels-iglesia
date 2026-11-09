@@ -22,6 +22,11 @@ process.stdin.on("end", () => {
     console.log(JSON.stringify({ type: "result", is_error: false, result: "Aquí está:\n```json\n" + JSON.stringify(r) + "\n```" }));
     return;
   }
+  if (entrada.includes("CAPÍTULOS DE UNA PRÉDICA")) {
+    const r = readFileSync(join(aqui, "respuesta-capitulos.json"), "utf8").trim();
+    console.log(JSON.stringify({ type: "result", is_error: false, result: "```json" + String.fromCharCode(10) + r + String.fromCharCode(10) + "```" }));
+    return;
+  }
   if (entrada.includes("CAMBIOS DE UN CLIP")) {
     if (modo === "cambios-invalido") {
       console.log(JSON.stringify({ type: "result", is_error: false, result: "No sé qué hacer." }));

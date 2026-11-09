@@ -1,4 +1,5 @@
 import type { Correccion } from "./correcciones";
+import type { Capitulos } from "./capitulos";
 import type { Pista } from "./reel/pistas";
 import type { Analisis, Animo, Caras, ClipSpec, Creacion, Formato, Marca, Proyecto, Tarea, TipoTarea, Transcripcion, VideoOrigen } from "./tipos";
 
@@ -45,6 +46,10 @@ export interface ApiReels {
   guardarClip(proyectoId: string, clip: ClipSpec): Promise<void>;
   /** Pide a Claude un cambio del clip en palabras de la persona; devuelve el clip ya cambiado (sin guardarlo). */
   pedirCambios(proyectoId: string, clip: ClipSpec, pedido: string, historial: { pedido: string; resumen: string }[]): Promise<{ clip: ClipSpec; resumen: string; avisos: string[] }>;
+  /** Resumen y capítulos guardados de la prédica, o null. */
+  leerCapitulos(proyectoId: string): Promise<Capitulos | null>;
+  /** Claude escribe el resumen y los capítulos (una consulta) y se guardan. */
+  crearCapitulos(proyectoId: string): Promise<Capitulos>;
   /** Crea un clip a mano con ese tramo del video (ajustado a palabras) y lo agrega a clips.json. */
   crearClip(proyectoId: string, inicio: number, fin: number): Promise<ClipSpec>;
   leerMarca(): Promise<Marca>;

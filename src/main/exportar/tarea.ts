@@ -10,6 +10,7 @@ import { argsVozLimpia } from "../procesos/audio";
 import { ejecutarConProgreso } from "../procesos/lineas";
 import { dimensionesVideo, hayNvenc } from "../procesos/video";
 import { normalizarAudio } from "./mezcla";
+import { escribirCapitulosTxt } from "../claude/capitulos";
 import { musicaParaClip } from "../musica/banco";
 import { guardarJson, leerClips, leerJson, leerMarca, leerProyecto, leerTranscripcion } from "../proyectos/almacen";
 import { carpetaProyecto } from "../rutas";
@@ -175,6 +176,7 @@ export function crearEjecutorExportar(deps: DepsExportar = {}): Ejecutor {
       const durGancho = clip.apertura?.activa ? clip.apertura.fin - clip.apertura.inicio : Math.min(4.5, clip.fin - clip.inicio);
       await portada(salida, clip.gancho.trim() ? Math.min(1.2, durGancho / 2) : 1.2, salida.replace(/\.mp4$/i, "-portada.jpg"));
       await writeFile(join(exportados, textosNombre(nombre)), textosDelClip(clip), "utf8");
+      await escribirCapitulosTxt(t.proyectoId, exportados);
       const clips = await leerClips(t.proyectoId);
       await guardarJson(t.proyectoId, "clips.json", clips.map((c) => (c.id === clip.id ? { ...c, estado: "exportado" } : c)));
       ctx.alProgreso(100, nombre);

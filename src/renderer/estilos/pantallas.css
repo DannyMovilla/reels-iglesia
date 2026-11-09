@@ -325,3 +325,7 @@
 .chat-aviso { display: flex; gap: 6px; margin: 0; font-size: 12px; color: var(--text-2); }
 .chat-atajos { display: flex; flex-wrap: wrap; gap: 6px; }
 .chat-clip textarea { resize: vertical; }
+
+/* Plan 5: capítulos para YouTube. */
+.capitulos { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
+.capitulos textarea { resize: vertical; font-size: 13px; line-height: 1.6; }

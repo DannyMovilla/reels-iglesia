@@ -6,10 +6,11 @@ import { duracionReel, palabrasDe, partesDelReel, reelAVideo, videoAReel } from 
 import type { Correccion } from "@shared/correcciones";
 import { estiloDesdeClip, moverVersiculos } from "@shared/clip";
 import type { Pista } from "@shared/reel/pistas";
-import { Download, FileText, Play, Plus, Scissors } from "lucide-react";
+import { Download, FileText, ListOrdered, Play, Plus, Scissors } from "lucide-react";
 import { ColaExportacion } from "../componentes/ColaExportacion";
 import { Inspector } from "../componentes/Inspector";
 import type { EntradaChat } from "../componentes/ChatClip";
+import { Capitulos } from "../componentes/Capitulos";
 import { LineaTiempo } from "../componentes/LineaTiempo";
 import { ListaClips } from "../componentes/ListaClips";
 import { PanelProceso } from "../componentes/PanelProceso";
@@ -40,7 +41,7 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
   const guardando = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendiente = useRef<ClipSpec | null>(null);
   const [pistas, setPistas] = useState<Pista[]>([]);
-  const [centro, setCentro] = useState<"vista" | "transcripcion">("vista");
+  const [centro, setCentro] = useState<"vista" | "transcripcion" | "capitulos">("vista");
   const [rango, setRango] = useState<{ inicio: number; fin: number } | null>(null);
   /** Pedidos a Claude por clip (en esta sesión), para el historial y Deshacer. */
   const [conversaciones, setConversaciones] = useState<Record<string, EntradaChat[]>>({});
@@ -185,6 +186,7 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
           <div className="pestanas centro-pestanas" role="tablist" aria-label="Vista del centro">
             <button type="button" role="tab" aria-selected={centro === "vista"} onClick={() => setCentro("vista")}><Play size={14} aria-hidden="true" />Vista previa</button>
             <button type="button" role="tab" aria-selected={centro === "transcripcion"} onClick={() => setCentro("transcripcion")}><FileText size={14} aria-hidden="true" />Transcripción</button>
+            <button type="button" role="tab" aria-selected={centro === "capitulos"} onClick={() => setCentro("capitulos")}><ListOrdered size={14} aria-hidden="true" />Capítulos</button>
           </div>
         )}
         {centro === "transcripcion" && datos.transcripcion && (
@@ -206,6 +208,7 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
             )}
           </>
         )}
+        {centro === "capitulos" && <Capitulos proyectoId={proyecto.id} inicioRango={proyecto.rango.inicio} />}
         {listo && (
           <div className="centro-vista" hidden={centro !== "vista"}>
           <VistaPrevia ref={vista} proyectoId={proyecto.id} clip={clip} transcripcion={datos.transcripcion!} caras={datos.caras}
