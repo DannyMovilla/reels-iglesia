@@ -244,3 +244,30 @@ describe("efectos", () => {
     expect(dom(construirComposicion(entrada()).html).querySelector("#cierre .seguir")).toBeNull();
   });
 });
+
+describe("plan 5: fundidos de 10 ms en los cortes de voz", () => {
+  const conVoz = (c: ClipSpec) => ({ ...entrada("9:16", c), voz: { src: "voz.m4a", inicioRango: 0 } });
+  test("con cortes, cada tramo de voz sube y baja en 10 ms", () => {
+    const c = clip({ cortes: { pausas: true, muletillas: true, intensidad: "fuerte" } });
+    const r = construirComposicion(conVoz(c));
+    const voces = [...dom(r.html).querySelectorAll("audio.voz")];
+    expect(voces.length).toBeGreaterThan(1);
+    for (const v of voces) {
+      const dur = Number(v.getAttribute("data-duration"));
+      const carril = JSON.parse(v.getAttribute("data-automation")!);
+      expect(carril.lanes[0].target).toBe("volume");
+      const p = carril.lanes[0].points;
+      expect(p[0]).toEqual({ t: 0, v: 0 });
+      expect(p[1]).toEqual({ t: 0.01, v: 1 });
+      expect(p[2].t).toBeCloseTo(dur - 0.01, 3);
+      expect(p[3].t).toBeCloseTo(dur, 3);
+      expect(p[3].v).toBe(0);
+    }
+  });
+  test("sin cortes, la voz no lleva carril", () => {
+    const c = clip({ apertura: null, cortes: { pausas: false, muletillas: false } });
+    const voces = [...dom(construirComposicion(conVoz(c)).html).querySelectorAll("audio.voz")];
+    expect(voces).toHaveLength(1);
+    expect(voces[0].hasAttribute("data-automation")).toBe(false);
+  });
+});

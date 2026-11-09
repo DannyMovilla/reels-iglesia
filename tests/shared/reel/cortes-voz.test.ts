@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { expect, test } from "vitest";
-import { tramosDelClip } from "../../../src/shared/reel/cortes-voz";
+import { describe } from "vitest";
+import { detectarRepeticiones, tramosDelClip } from "../../../src/shared/reel/cortes-voz";
 import { construirComposicion } from "../../../src/shared/reel/composicion";
 import { bloquesSubtitulos } from "../../../src/shared/reel/subtitulos";
 import { duracionReel, partesDelReel, reelAVideo, videoAReel, type Palabra } from "../../../src/shared/reel/tiempo";
@@ -84,4 +85,67 @@ test("menor: un «eh» al inicio o al final del clip también se quita, y el sil
   const t = tramosDelClip(clip({ inicio: 9, fin: 16, cortes: { pausas: true, muletillas: true } }), ws);
   expect(t[0].inicio).toBeCloseTo(10.875, 3); // sin el silencio ni el «eh» del inicio
   expect(t.at(-1)!.fin).toBeCloseTo(14.125, 3); // sin el «mmm» ni el silencio del final
+});
+
+describe("plan 5: intensidad, lista, quitados y repeticiones", () => {
+  /** Habla 0–2 s, pausa de 0,6 s, habla 2,6–4 s, pausa de 0,9 s, habla 4,9–6 s. */
+  const ps: Palabra[] = [w(0, 1, "Dios"), w(1.1, 2, "es"), w(2.6, 4, "fiel"), w(4.9, 6, "siempre.")];
+  const base = (cortes: ClipSpec["cortes"]) => clip({ inicio: 0, fin: 6, cortes });
+
+  test("Normal (sin intensidad, como los clips viejos) corta solo la pausa de 0,9 s y deja 0,25 s", () => {
+    const t = tramosDelClip(base({ pausas: true, muletillas: false }), ps);
+    expect(t).toEqual([{ inicio: 0, fin: 4.125 }, { inicio: 4.775, fin: 6 }]);
+  });
+
+  test("Suave no corta pausas de menos de 1 s", () => {
+    expect(tramosDelClip(base({ pausas: true, muletillas: false, intensidad: "suave" }), ps)).toEqual([{ inicio: 0, fin: 6 }]);
+  });
+
+  test("Fuerte corta las pausas de más de 0,45 s y deja 0,16 s", () => {
+    const t = tramosDelClip(base({ pausas: true, muletillas: false, intensidad: "fuerte" }), ps);
+    expect(t).toEqual([{ inicio: 0, fin: 2.08 }, { inicio: 2.52, fin: 4.08 }, { inicio: 4.82, fin: 6 }]);
+  });
+
+  test("la lista propia reemplaza a la de por defecto", () => {
+    const t = tramosDelClip(clip({ cortes: { pausas: false, muletillas: true, lista: ["amor"] } }), palabras);
+    // "amor" (19,1–20, suelto) se quita; los "eh" se quedan.
+    expect(t.some((x) => x.inicio <= 16.5 && x.fin >= 16.7)).toBe(true);
+    expect(t.some((x) => x.inicio <= 19.5 && x.fin >= 19.5)).toBe(false);
+  });
+
+  test("tramos quitados que cruzan el inicio, el fin y una pausa ya cortada: sin superponerse ni pedazos diminutos", () => {
+    const quitados = [{ inicio: -1, fin: 0.5 }, { inicio: 3.9, fin: 5 }, { inicio: 5.98, fin: 9 }];
+    const t = tramosDelClip(base({ pausas: true, muletillas: false, quitados }), ps);
+    for (const x of t) expect(x.fin - x.inicio).toBeGreaterThanOrEqual(0.05);
+    for (let i = 1; i < t.length; i++) expect(t[i].inicio).toBeGreaterThanOrEqual(t[i - 1].fin);
+    expect(t[0].inicio).toBe(0.5);
+    expect(t.at(-1)!.fin).toBeLessThanOrEqual(5.98);
+    for (const q of quitados) for (const x of t) expect(x.fin <= q.inicio || x.inicio >= q.fin).toBe(true);
+  });
+
+  test("quitados sin pausas ni muletillas también se aplican", () => {
+    expect(tramosDelClip(base({ pausas: false, muletillas: false, quitados: [{ inicio: 1, fin: 2.6 }] }), ps))
+      .toEqual([{ inicio: 0, fin: 1 }, { inicio: 2.6, fin: 6 }]);
+  });
+});
+
+describe("detectarRepeticiones", () => {
+  const frase = (desde: number, textos: string[]) => textos.map((t, i) => w(desde + i * 0.4, desde + i * 0.4 + 0.35, t));
+
+  test("la misma frase de 3 palabras dentro de 8 s: se sugiere quitar la primera toma", () => {
+    const ps = [...frase(0, ["Y", "Dios", "te"]), ...frase(1.5, ["y", "Dios", "te", "ama."])];
+    const r = detectarRepeticiones(ps, 0, 10);
+    expect(r).toEqual([{ inicio: 0, fin: 1.5, texto: "Y Dios te" }]);
+  });
+
+  test("la misma frase a 12 s no es una repetición", () => {
+    const ps = [...frase(0, ["Y", "Dios", "te"]), ...frase(12, ["y", "Dios", "te", "ama."])];
+    expect(detectarRepeticiones(ps, 0, 20)).toEqual([]);
+  });
+
+  test("una primera toma de más de 12 palabras no se sugiere", () => {
+    const larga = ["y", "Dios", "te", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l"];
+    const ps = [...frase(0, larga), ...frase(6.2, ["y", "Dios", "te"])];
+    expect(detectarRepeticiones(ps, 0, 20)).toEqual([]);
+  });
 });

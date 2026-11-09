@@ -42,6 +42,10 @@ const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replac
 const n = (x: number) => String(r2(x));
 
 /** Construye la composición HyperFrames del reel. La misma sirve para la vista previa y para exportar. */
+/** Fundido de cada lado de un corte de voz (s). */
+export const FUNDIDO = 0.01;
+const r3 = (x: number) => Math.round(x * 1000) / 1000;
+
 export function construirComposicion(e: EntradaComposicion): { html: string; duracion: number; ancho: number; alto: number; avisos: string[] } {
   const { clip: c, marca, formato } = e;
   const W = ANCHO, H = ALTOS[formato];
@@ -63,6 +67,11 @@ export function construirComposicion(e: EntradaComposicion): { html: string; dur
   const caraY = pista?.caraY ?? 0.3;
 
   let nVideo = 0;
+  // Con cortes, cada tramo de voz sube y baja en 10 ms: el salto entre tramos no suena como un "clic".
+  const cortado = partes.some((p) => (p.tramos?.length ?? 1) > 1);
+  const fundido = (dur: number) => cortado
+    ? ` data-automation='${JSON.stringify({ version: 1, lanes: [{ target: "volume", points: [{ t: 0, v: 0 }, { t: FUNDIDO, v: 1 }, { t: r3(Math.max(FUNDIDO, dur - FUNDIDO)), v: 1 }, { t: r3(dur), v: 0 }] }] })}'`
+    : "";
   partes.forEach((p) => {
     if (p.tipo === "cierre") return;
     const bn = p.tipo === "apertura" ? "filter: grayscale(1) contrast(1.15) brightness(0.95);" : "";
@@ -72,7 +81,7 @@ export function construirComposicion(e: EntradaComposicion): { html: string; dur
       const id = `v${i}`;
       const sonido = e.voz ? `data-has-audio="false" muted` : `data-has-audio="true"`;
       el.push(`<video id="${id}" class="clip video" src="${esc(e.fuenteVideo)}" data-start="${n(tr.inicioReel)}" data-duration="${n(tr.duracion)}" data-media-start="${n(tr.inicioVideo)}" ${sonido} playsinline style="width:${r2(vw)}px;height:${r2(vh)}px;${bn}"></video>`);
-      if (e.voz) el.push(`<audio id="voz${i}" class="clip voz" src="${esc(e.voz.src)}" data-start="${n(tr.inicioReel)}" data-duration="${n(tr.duracion)}" data-media-start="${n(tr.inicioVideo - e.voz.inicioRango)}" data-volume="1"></audio>`);
+      if (e.voz) el.push(`<audio id="voz${i}" class="clip voz" src="${esc(e.voz.src)}" data-start="${n(tr.inicioReel)}" data-duration="${n(tr.duracion)}" data-media-start="${n(tr.inicioVideo - e.voz.inicioRango)}" data-volume="1"${fundido(tr.duracion)}></audio>`);
       const claves: ClaveCamara[] = pista ? pista.keys.filter((k) => k.t >= tr.inicioVideo && k.t <= tr.finVideo) : [];
       const ini = pos(pista ? (claves[0]?.x ?? pista.keys[0].x) : c.encuadre.x, caraY);
       js.push(`tl.set("#${id}", { x: ${ini.x}, y: ${ini.y} }, ${n(tr.inicioReel)});`);

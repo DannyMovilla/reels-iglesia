@@ -71,6 +71,7 @@ export interface Tarea {
 export type Animo = "reflexivo" | "esperanza" | "victoria" | "adoracion" | "tension";
 export const ANIMOS: readonly Animo[] = ["reflexivo", "esperanza", "victoria", "adoracion", "tension"];
 export type EstiloSub = "pop" | "caja" | "limpio" | "resaltado" | "karaoke" | "impacto" | "neon";
+export type Intensidad = "suave" | "normal" | "fuerte";
 export type ModoMusica = "auto" | "pista" | "pad" | "ninguna";
 
 export interface Redes {
@@ -84,7 +85,8 @@ export interface Redes {
 export interface EstiloIglesia {
   subtitulos: { estilo: EstiloSub; tamano: "s" | "m" | "l" };
   musica: { modo: ModoMusica; volumen: number };
-  cortes: { pausas: boolean; muletillas: boolean };
+  /** intensidad: sin ella, "normal". lista: muletillas que se quitan (sin ella, las de por defecto). */
+  cortes: { pausas: boolean; muletillas: boolean; intensidad?: Intensidad; lista?: string[] };
   efectos: { transicion: "destello" | "luz" | "ninguna"; grano: boolean; rotulo: boolean };
   cierre: boolean;
   formatos: Formato[];
@@ -125,7 +127,8 @@ export interface ClipSpec {
   encuadre: { modo: "auto" | "fijo"; x: number; zoom: number };
   subtitulos: { activos: boolean; estilo: EstiloSub; tamano: "s" | "m" | "l"; altura: number };
   musica: { modo: ModoMusica; pista: string | null; animo: Animo; tonalidad: string; volumen: number };
-  cortes: EstiloIglesia["cortes"];
+  /** quitados: tramos del video original que la persona quitó (frases repetidas, a mano). */
+  cortes: EstiloIglesia["cortes"] & { quitados?: { inicio: number; fin: number }[] };
   efectos: EstiloIglesia["efectos"];
   redes: Redes;
   cierre: boolean;
