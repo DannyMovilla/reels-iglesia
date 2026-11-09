@@ -363,3 +363,50 @@ iglesia y con la suscripción de Claude (`claude -p`), sin claves de pago.
 
 Fuera del plan 5 (van al plan 6): más fuentes, zonas seguras exactas por red, corrección de color,
 escenas con pinturas de dominio público, copiar el estilo de un reel, SRT, PDF, MP3 y traducción.
+
+## 17. Plan 6 — entregas de la semana, imagen y detalles (decidido 2026-11-09)
+
+Orden acordado: primero lo que se usa desde el primer domingo (entregas y detalles), después lo visual.
+
+**A. Detalles del plan 5** (los 9 menores de la revisión final): validar id, inicio y fin al crear un
+clip a mano; Claude no puede alargar un clip a más de 90 s (se recorta con aviso); mensaje en español
+si falla crear un clip, corregir una palabra o volver a analizar; el aviso de voz se borra al cambiar de
+clip; «Exportar N clips» y el contador no cuentan los ocultos; clic en una palabra fuera del clip ofrece
+«Crear clip desde aquí» y lo dice; una corrección puede cambiar también la puntuación (si la persona la
+escribe); «Volver a poner» por tramo; comentarios del código en su lugar.
+
+**B. Entregas de la semana** (pestaña «Entregas» del editor, todo se guarda en `exportados/`):
+1. **Subtítulos SRT** de la prédica: máximo 2 líneas de 42 caracteres, 1 a 7 s por bloque y como mucho
+   17 caracteres por segundo, cortando en la puntuación; con tiempos del video completo (por defecto) o
+   solo de la prédica. Usan la transcripción corregida.
+2. **Transcripción en PDF** (para estudios de célula): nombre de la iglesia, título, fecha y predicador,
+   resumen y capítulos si existen, y el texto en párrafos con su minuto. Se arma con la impresión a PDF
+   de Electron (sin librerías nuevas).
+3. **MP3 de la prédica** (podcast o WhatsApp): la voz del nivel elegido, a −16 LUFS (nivel de podcast),
+   128 kbps, con título, predicador e iglesia en las etiquetas y el logo como carátula.
+4. **Subtítulos traducidos** (inglés, portugués, francés, italiano, alemán, coreano, chino; elegir
+   varios): Claude traduce los bloques del SRT por partes, sin cambiar sus tiempos y con las reglas de
+   lectura; los versículos citados van en una versión reconocida de ese idioma, y si Claude no está seguro
+   lo dice. Un `.srt` por idioma.
+
+**C. Imagen de los reels:**
+5. **Zonas seguras exactas** por red (TikTok, Instagram Reels, YouTube Shorts y Facebook): la vista
+   previa dibuja la de la red elegida, y el gancho, los subtítulos, el versículo y el rótulo se acomodan
+   dentro de la zona segura común a todas (nunca tapados por botones ni textos de la red).
+6. **Corrección de color:** looks propios (Natural, Cálido, Frío, Cine, Suave, Blanco y negro suave)
+   con intensidad 0–100 %, y **«Corregir tono amarillo»** automático: la app mide el color promedio del
+   video y equilibra los blancos. Se aplica como filtro de color en la composición (se ve igual en la
+   vista previa y en el MP4).
+7. **Más fuentes:** un grupo de fuentes libres (OFL) elegidas para reels, descargadas una vez e incluidas
+   en la app, más **la fuente propia de la iglesia** (archivo .ttf, .otf o .woff2 en Marca). Se elige la
+   fuente de los subtítulos y la de los títulos.
+8. **Escenas con pinturas clásicas** de dominio público para «Con IA» (por ejemplo Rembrandt, Caravaggio,
+   Murillo, El Greco): un grupo pequeño descargado una vez de Wikimedia Commons e incluido en la app, con
+   su autor y obra en NOTICE; acercamiento lento y velo para que el texto se lea. Claude puede proponer
+   la pintura según el versículo.
+9. **Copiar el estilo de un reel:** la persona elige un video de referencia; la app saca algunos cuadros
+   y mide el ritmo de cortes y el volumen; Claude (leyendo los cuadros) propone el estilo de subtítulos,
+   la fuente, el color, la posición, el ánimo de la música y la intensidad de los cortes. La persona ve la
+   propuesta y la aplica a un clip o la guarda como estilo de la iglesia.
+
+Fuera del plan 6: publicar directo en las redes, generar imágenes o música con IA, cuentas de usuario.
