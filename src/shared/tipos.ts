@@ -81,6 +81,8 @@ export type Animo = "reflexivo" | "esperanza" | "victoria" | "adoracion" | "tens
 export const ANIMOS: readonly Animo[] = ["reflexivo", "esperanza", "victoria", "adoracion", "tension"];
 export type EstiloSub = "pop" | "caja" | "limpio" | "resaltado" | "karaoke" | "impacto" | "neon";
 export type Intensidad = "suave" | "normal" | "fuerte";
+/** Ligera: solo graves y volumen parejo. Limpia: también menos ruido (la de siempre). Podcast: Limpia + presencia y compresión. */
+export type NivelVoz = "ligera" | "limpia" | "podcast";
 export type ModoMusica = "auto" | "pista" | "pad" | "ninguna";
 
 export interface Redes {
@@ -99,6 +101,8 @@ export interface EstiloIglesia {
   efectos: { transicion: "destello" | "luz" | "ninguna"; grano: boolean; rotulo: boolean };
   cierre: boolean;
   formatos: Formato[];
+  /** Sin el campo: "limpia". */
+  voz?: NivelVoz;
 }
 
 export interface Marca {
@@ -143,6 +147,8 @@ export interface ClipSpec {
   cierre: boolean;
   formatos: Formato[];
   estado: "sugerido" | "editado" | "exportado";
+  /** Nivel de voz; sin el campo, "limpia". */
+  voz?: NivelVoz;
   favorito?: boolean;
   /** Oculto de la lista (se ve con "Ver ocultos"). */
   oculto?: boolean;

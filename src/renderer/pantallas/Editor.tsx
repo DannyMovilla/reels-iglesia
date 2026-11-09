@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { TriangleAlert } from "lucide-react";
-import type { Caras, ClipSpec, Marca, Proyecto, Tarea, Transcripcion } from "@shared/tipos";
+import type { Caras, ClipSpec, Marca, NivelVoz, Proyecto, Tarea, Transcripcion } from "@shared/tipos";
 import { formatoTiempo } from "@shared/validar";
 import { duracionReel, palabrasDe, partesDelReel, reelAVideo, videoAReel } from "@shared/reel/tiempo";
 import type { Correccion } from "@shared/correcciones";
@@ -43,6 +43,9 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
   const [pistas, setPistas] = useState<Pista[]>([]);
   const [centro, setCentro] = useState<"vista" | "transcripcion" | "capitulos">("vista");
   const [rango, setRango] = useState<{ inicio: number; fin: number } | null>(null);
+  /** Niveles de voz ya preparados (la Limpia siempre existe tras el paso de audio). */
+  const [voces, setVoces] = useState<NivelVoz[]>(["limpia"]);
+  const [errorVoz, setErrorVoz] = useState<string | null>(null);
   /** Pedidos a Claude por clip (en esta sesión), para el historial y Deshacer. */
   const [conversaciones, setConversaciones] = useState<Record<string, EntradaChat[]>>({});
   useEffect(() => { void window.reels!.listarPistas?.().then(setPistas); }, []);
@@ -136,8 +139,21 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
     setDatos((d) => ({ ...d, transcripcion }));
   };
 
+  const clipSel = clips.find((c) => c.id === sel);
+  const nivelPedido: NivelVoz = clipSel?.voz ?? "limpia";
+  const audioListo = proyecto?.pasos.audio?.estado === "ok";
+  useEffect(() => {
+    if (!audioListo || voces.includes(nivelPedido)) return;
+    let vivo = true;
+    setErrorVoz(null);
+    window.reels!.prepararVoz(proyectoId, nivelPedido)
+      .then(() => { if (vivo) setVoces((v) => [...v, nivelPedido]); })
+      .catch(() => { if (vivo) setErrorVoz("No se pudo preparar ese nivel de voz. La vista previa usa la voz Limpia; al exportar se intenta de nuevo."); });
+    return () => { vivo = false; };
+  }, [nivelPedido, audioListo, proyectoId]); // eslint-disable-line react-hooks/exhaustive-deps
+
   if (!proyecto) return <div className="cargando">Cargando…</div>;
-  const clip = clips.find((c) => c.id === sel);
+  const clip = clipSel;
   const listo = clip && datos.transcripcion && datos.marca && datos.dimensiones;
   // La transcripción trabaja en segundos del video original; la vista previa, en segundos del reel.
   const parteClip = clip && datos.transcripcion ? partesDelReel(clip, palabrasDe(datos.transcripcion)).find((p) => p.tipo === "clip") : undefined;
@@ -181,6 +197,7 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
             <button type="button" className="btn pequeno" onClick={() => void ubicar()}>Ubicar el video</button></p>
         )}
         {errorUbicar && <p className="error" role="alert">{errorUbicar}</p>}
+        {errorVoz && <p className="aviso" role="status"><TriangleAlert size={16} aria-hidden="true" />{errorVoz}</p>}
         {clip && <div className="centro-cabeza"><h2>{clip.titulo}</h2><span>{clip.categoria} · {formatoTiempo(datos.transcripcion ? duracionReel(clip, palabrasDe(datos.transcripcion)) : clip.fin - clip.inicio)}</span></div>}
         {datos.transcripcion && (
           <div className="pestanas centro-pestanas" role="tablist" aria-label="Vista del centro">
@@ -213,13 +230,14 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
           <div className="centro-vista" hidden={centro !== "vista"}>
           <VistaPrevia ref={vista} proyectoId={proyecto.id} clip={clip} transcripcion={datos.transcripcion!} caras={datos.caras}
             marca={datos.marca!} dimensiones={datos.dimensiones!} predicador={proyecto.predicador ?? datos.marca?.predicador}
-            inicioRango={proyecto.pasos.audio?.estado === "ok" ? proyecto.rango.inicio : undefined} alAvisos={setAvisos} alTiempo={setTiempo} />
+            inicioRango={proyecto.pasos.audio?.estado === "ok" ? proyecto.rango.inicio : undefined} nivelVoz={voces.includes(nivelPedido) ? nivelPedido : "limpia"} alAvisos={setAvisos} alTiempo={setTiempo} />
           </div>
         )}
       </main>
 
       <aside className="editor-der" aria-label="Datos del clip">
         {clip ? <Inspector clip={clip} avisos={avisos} alCambiar={cambiarClip} alGuardarEstilo={(c) => void guardarEstilo(c)} alAplicarEstilo={() => void aplicarEstilo()} pistas={pistas} palabras={datos.transcripcion ? palabrasDe(datos.transcripcion) : undefined}
+          preparandoVoz={audioListo && !voces.includes(nivelPedido) && !errorVoz}
           chat={datos.transcripcion ? { proyectoId, historial: conversaciones[clip.id] ?? [], alHistorial: (h) => setConversaciones((x) => ({ ...x, [clip.id]: h })) } : undefined} /> : <p className="vacio">Elige un clip para editarlo.</p>}
         {clip && (
           <div className="inspector-pie">

@@ -3,10 +3,10 @@ import { copyFile, link, readdir, rename, rm, writeFile } from "node:fs/promises
 import { extname, join } from "node:path";
 import { construirComposicion } from "@shared/reel/composicion";
 import { duracionReel, palabrasDe } from "@shared/reel/tiempo";
-import type { Caras, ClipSpec, Formato, Proyecto, Redes, Transcripcion } from "@shared/tipos";
+import type { Caras, ClipSpec, Formato, NivelVoz, Proyecto, Redes } from "@shared/tipos";
 import { NOMBRE_RED, textoParaPublicar } from "@shared/redes";
 import type { Ejecutor } from "../cola/cola";
-import { argsVozLimpia } from "../procesos/audio";
+import { archivoVoz, argsVozLimpia } from "../procesos/audio";
 import { ejecutarConProgreso } from "../procesos/lineas";
 import { dimensionesVideo, hayNvenc } from "../procesos/video";
 import { normalizarAudio } from "./mezcla";
@@ -54,7 +54,7 @@ export interface DepsExportar {
   /** Deja el MP4 en −14 LUFS / −1 dBTP. */
   normalizar?: (mp4: string, senal: AbortSignal) => Promise<void>;
   /** Crea voz.m4a para un proyecto que no la tiene (proyectos de antes del plan 3). */
-  crearVoz?: (p: Proyecto, destino: string, senal: AbortSignal) => Promise<void>;
+  crearVoz?: (p: Proyecto, destino: string, senal: AbortSignal, nivel?: NivelVoz) => Promise<void>;
   /** Archivo de música para el clip (pista o pad), o null para un reel sin música. */
   musica?: (clip: ClipSpec, proyecto: Proyecto, duracion: number) => Promise<string | null>;
   /** Saca la portada (un cuadro del MP4) en el segundo t. */
@@ -84,9 +84,9 @@ export async function crearVozSegura(destino: string, correr: (tmp: string) => P
   await rename(tmp, destino);
 }
 
-/** voz.m4a con FFmpeg (mismo filtro que el paso "audio" de la cola). */
-async function crearVozReal(p: Proyecto, destino: string, senal: AbortSignal): Promise<void> {
-  await crearVozSegura(destino, async (tmp) => (await ejecutarConProgreso("ffmpeg", argsVozLimpia(p.video.ruta, p.rango.inicio, p.rango.fin, tmp), { senal })).codigo);
+/** voz.m4a (o voz-<nivel>.m4a) con FFmpeg (el nivel Limpia es el mismo filtro que el paso "audio" de la cola). */
+export async function crearVozReal(p: Proyecto, destino: string, senal: AbortSignal, nivel: NivelVoz = "limpia"): Promise<void> {
+  await crearVozSegura(destino, async (tmp) => (await ejecutarConProgreso("ffmpeg", argsVozLimpia(p.video.ruta, p.rango.inicio, p.rango.fin, tmp, nivel), { senal })).codigo);
 }
 
 /** Enlace duro (instantáneo, sin ocupar disco) o copia si está en otro disco. */
@@ -134,8 +134,12 @@ export function crearEjecutorExportar(deps: DepsExportar = {}): Ejecutor {
     const enlazar = /[#?%]/.test(proyecto.video.ruta);
     const fuenteVideo = enlazar ? `video${extname(proyecto.video.ruta).toLowerCase()}` : proyecto.video.ruta.replace(/\\/g, "/");
     const carpeta = carpetaProyecto(t.proyectoId);
-    const voz = join(carpeta, "voz.m4a");
-    if (!existsSync(voz)) await crearVoz(proyecto, voz, ctx.senal);
+    const nivel = clip.voz ?? "limpia";
+    const voz = join(carpeta, archivoVoz(nivel));
+    if (!existsSync(voz)) {
+      ctx.alProgreso(1, "Preparando la voz…");
+      await crearVoz(proyecto, voz, ctx.senal, nivel);
+    }
     // Si la música no se puede preparar (p. ej. falla Python al crear el pad), el reel sale igual, sin música.
     const pista = await elegirMusica(clip, proyecto, duracionReel(clip, palabrasDe(transcripcion))).catch(() => null);
     const musica = pista ? `musica${extname(pista).toLowerCase()}` : undefined;

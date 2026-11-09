@@ -60,6 +60,7 @@ export function estiloDesdeClip(c: ClipSpec): EstiloIglesia {
     efectos: c.efectos,
     cierre: c.cierre,
     formatos: c.formatos,
+    ...(c.voz ? { voz: c.voz } : {}),
   });
 }
 
@@ -74,6 +75,7 @@ export function aplicarEstiloAClip(c: ClipSpec, e: EstiloIglesia): ClipSpec {
     efectos: e.efectos,
     cierre: e.cierre,
     formatos: e.formatos,
+    ...(e.voz ? { voz: e.voz } : {}),
   });
 }
 

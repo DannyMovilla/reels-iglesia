@@ -1,6 +1,7 @@
 import type { Correccion } from "./correcciones";
 import type { Capitulos } from "./capitulos";
 import type { Pista } from "./reel/pistas";
+import type { NivelVoz } from "./tipos";
 import type { Analisis, Animo, Caras, ClipSpec, Creacion, Formato, Marca, Proyecto, Tarea, TipoTarea, Transcripcion, VideoOrigen } from "./tipos";
 
 export interface Chequeo {
@@ -77,8 +78,10 @@ export interface ApiReels {
   urlPista(id: string): string;
   /** Música que sonará en el reel, para la vista previa (URL), o null si no lleva música. */
   urlMusicaVista(proyectoId: string, clip: ClipSpec, duracion: number): Promise<string | null>;
-  /** Voz limpia del proyecto (voz.m4a). */
-  urlVoz(proyectoId: string): string;
+  /** Voz del proyecto (voz.m4a, o voz-<nivel>.m4a para Ligera y Podcast). */
+  urlVoz(proyectoId: string, nivel?: NivelVoz): string;
+  /** Prepara (una vez por prédica) el archivo de voz de ese nivel. */
+  prepararVoz(proyectoId: string, nivel: NivelVoz): Promise<void>;
   guardarMarca(m: Marca): Promise<void>;
   /** Abre el diálogo para elegir el logo, lo copia a la carpeta de la marca y devuelve su ruta (null si se cancela). */
   elegirLogo(): Promise<string | null>;

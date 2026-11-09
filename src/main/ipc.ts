@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import { mkdir, stat } from "node:fs/promises";
 import { basename, join } from "node:path";
 import { dialog, ipcMain, protocol, shell, type BrowserWindow } from "electron";
@@ -6,11 +7,14 @@ import { descargarVideo } from "./descargas/ytdlp";
 import { agregarPista, cambiarAnimo, carpetaMusica, listarPistas, musicaParaVista, musicaVistaEn } from "./musica/banco";
 import { escribirCreacion } from "./ia/claude";
 import { carpetaCreacion, listarExportadosIa, borrarCreacion, copiarFondo, crearCreacion, guardarCreacion, leerCreacion, listarCreaciones } from "./ia/almacen";
+import type { NivelVoz } from "@shared/tipos";
 import type { Analisis, Animo, Caras, ClipSpec, Creacion, Formato, Marca, TipoTarea, Transcripcion } from "@shared/tipos";
 import type { Correccion } from "@shared/correcciones";
 import { clipManual } from "@shared/clip";
 import { pedirCambios, type EntradaHistorial } from "./claude/cambios";
 import { crearCapitulos, leerCapitulos } from "./claude/capitulos";
+import { archivoVoz } from "./procesos/audio";
+import { crearVozReal } from "./exportar/tarea";
 import { palabrasDe } from "@shared/reel/tiempo";
 import type { Cola } from "./cola/cola";
 import { dimensionesVideo, duracionVideo } from "./procesos/video";
@@ -42,6 +46,9 @@ const elegidos = new Set<string>();
  * proyecto/<id> el video original; archivo/<ruta> un video elegido con el diálogo o descargado;
  * musica/<archivo> una pista; exportado/<proyecto>/<archivo> una portada o un MP4 exportado.
  */
+/** Voces que se están preparando (para no correr FFmpeg dos veces sobre el mismo archivo). */
+const preparandoVoz = new Map<string, Promise<void>>();
+
 export async function resolverMedio(tipo: string, valor: string): Promise<string | null> {
   const simple = (x?: string) => !!x && x === basename(x) && !x.startsWith(".");
   if (tipo === "archivo") return elegidos.has(valor) ? valor : null;
@@ -56,7 +63,13 @@ export async function resolverMedio(tipo: string, valor: string): Promise<string
     const [id, archivo] = valor.split("/");
     return simple(id) && simple(archivo) && /^fondo\.\w+$/.test(archivo) ? join(carpetaCreacion(id), archivo) : null;
   }
-  if (tipo === "voz") return simple(valor) ? join(carpetaProyecto(valor), "voz.m4a") : null;
+  if (tipo === "voz") {
+    // "id" (voz Limpia) o "id/nivel".
+    const [id, nivel] = valor.split("/");
+    if (!simple(id)) return null;
+    if (nivel === undefined || nivel === "limpia") return join(carpetaProyecto(id), "voz.m4a");
+    return nivel === "ligera" || nivel === "podcast" ? join(carpetaProyecto(id), archivoVoz(nivel)) : null;
+  }
   if (tipo === "cache") return simple(valor) ? join(carpetaDatos(), "cache", valor) : null;
   if (tipo === "proyecto") return simple(valor) ? (await leerProyecto(valor).catch(() => null))?.video.ruta ?? null : null;
   return null;
@@ -110,6 +123,15 @@ export function registrarIpc(deps: DepsIpc): void {
   ipcMain.handle("proyectos:quitarCorreccion", (_e, id: string, i: number) => quitarCorreccion(id, i));
   ipcMain.handle("proyectos:caras", (_e, id: string) => leerJson<Caras>(id, "caras.json"));
   ipcMain.handle("proyectos:guardarClip", (_e, id: string, clip: ClipSpec) => guardarClip(id, clip));
+  ipcMain.handle("proyectos:prepararVoz", async (_e, id: string, nivel: NivelVoz) => {
+    const destino = join(carpetaProyecto(id), archivoVoz(nivel));
+    if (existsSync(destino)) return;
+    const previa = preparandoVoz.get(destino);
+    if (previa) return previa;
+    const trabajo = leerProyecto(id).then((p) => crearVozReal(p, destino, new AbortController().signal, nivel)).finally(() => preparandoVoz.delete(destino));
+    preparandoVoz.set(destino, trabajo);
+    return trabajo;
+  });
   ipcMain.handle("proyectos:capitulos", (_e, id: string) => leerCapitulos(id));
   ipcMain.handle("claude:capitulos", (_e, id: string) => crearCapitulos(id, { comando: process.env.REELS_CLAUDE_COMANDO }));
   ipcMain.handle("claude:cambios", (_e, id: string, clip: ClipSpec, pedido: string, historial: EntradaHistorial[]) =>

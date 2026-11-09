@@ -1,6 +1,6 @@
 import { existsSync, mkdtempSync, readFileSync, readdirSync, renameSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { basename, join, resolve } from "node:path";
 import { beforeEach, describe, expect, test } from "vitest";
 import { crearEjecutorExportar, nombreSalida, type DepsExportar } from "../../../src/main/exportar/tarea";
 import { crearProyecto, guardarJson, leerJson } from "../../../src/main/proyectos/almacen";
@@ -239,4 +239,31 @@ test("plan 5: el reel exportado usa la transcripción corregida", async () => {
   })({ id: "t1", proyectoId: id, tipo: "exportar", estado: "corriendo", pct: 0, creada: "", clipId: "c1", formato: "9:16", instantanea: clip }, ctx());
   expect(html).toContain("QUEBRANTO");
   expect(html).not.toMatch(/>quebrantamiento</i);
+});
+
+test("plan 5: un clip con voz Podcast crea voz-podcast.m4a una sola vez; sin nivel usa voz.m4a", async () => {
+  process.env.REELS_IGLESIA_DATOS = mkdtempSync(join(tmpdir(), "reels-exp-"));
+  const video = join(mkdtempSync(join(tmpdir(), "reels-v-")), "culto.mp4");
+  writeFileSync(video, "x");
+  const id = (await crearProyecto({ nombre: "Culto", video: { ruta: video, tamano: 1, modificado: 0, duracion: 100 }, rango: { inicio: 0, fin: 75 } })).id;
+  await guardarJson(id, "transcripcion.json", JSON.parse(readFileSync(join(FIX, "transcripcion-muestra.json"), "utf8")));
+  const base: ClipSpec = {
+    id: "c1", titulo: "T", gancho: "", ganchosAlternativos: [], categoria: "Exhortación", inicio: 30.93, fin: 63.46,
+    apertura: null, palabrasClave: [], versiculos: [], puntaje: 90, razon: "", descripcion: "", hashtags: [],
+    encuadre: { modo: "fijo", x: 0.5, zoom: 1.25 }, subtitulos: { activos: true, estilo: "pop", tamano: "m", altura: 0.74 },
+    ...PLAN3, musica: SIN_MUSICA, cierre: false, formatos: ["9:16"], estado: "sugerido",
+  };
+  await guardarJson(id, "clips.json", [base]);
+  const creadas: [string, string][] = [];
+  const ejecutor = crearEjecutorExportar({
+    gpu: async () => false, normalizar: async () => {}, musica: async () => null, portada: async (_m, _t, s) => writeFileSync(s, "j"),
+    crearVoz: async (_p, d, _s, nivel) => { creadas.push([basename(d), nivel ?? "limpia"]); writeFileSync(d, "m"); },
+    dimensiones: async () => ({ ancho: 1280, alto: 720 }),
+    renderizar: async (dir, salida) => { expect(existsSync(join(dir, "voz.m4a"))).toBe(true); writeFileSync(salida, "mp4"); },
+  });
+  const tarea = (c: ClipSpec): Tarea => ({ id: `t-${Math.random()}`, proyectoId: id, tipo: "exportar", estado: "corriendo", pct: 0, creada: "", clipId: c.id, formato: "9:16", instantanea: c });
+  await ejecutor(tarea(base), ctx());
+  await ejecutor(tarea({ ...base, voz: "podcast" }), ctx());
+  await ejecutor(tarea({ ...base, voz: "podcast" }), ctx());
+  expect(creadas).toEqual([["voz.m4a", "limpia"], ["voz-podcast.m4a", "podcast"]]);
 });

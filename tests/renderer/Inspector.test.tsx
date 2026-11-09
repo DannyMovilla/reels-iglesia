@@ -202,3 +202,15 @@ describe("plan 5: ritmo y frases repetidas", () => {
     expect(alCambiar.mock.calls.at(-1)![0].cortes.quitados).toEqual([]);
   });
 });
+
+test("plan 5: nivel de voz Ligera / Limpia / Podcast y aviso mientras se prepara", async () => {
+  const alCambiar = vi.fn();
+  const { rerender } = render(<Inspector clip={base} avisos={[]} alCambiar={alCambiar} />);
+  await userEvent.click(screen.getByRole("tab", { name: /Estilo/ }));
+  const grupo = screen.getByRole("group", { name: "Nivel de voz" });
+  expect(within(grupo).getByRole("button", { name: "Limpia" })).toHaveAttribute("aria-pressed", "true");
+  await userEvent.click(within(grupo).getByRole("button", { name: "Podcast" }));
+  expect(alCambiar.mock.calls.at(-1)![0].voz).toBe("podcast");
+  rerender(<Inspector clip={{ ...base, voz: "podcast" }} avisos={[]} alCambiar={alCambiar} preparandoVoz />);
+  expect(screen.getByText(/Preparando la voz/)).toBeInTheDocument();
+});

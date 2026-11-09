@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BookOpen, Check, Contrast, Copy, FileText, Flag, Send, Sparkles, TrendingUp, TriangleAlert, Type } from "lucide-react";
+import { BookOpen, Check, Contrast, Copy, FileText, Flag, LoaderCircle, Send, Sparkles, TrendingUp, TriangleAlert, Type } from "lucide-react";
 import { ANIMOS, type Animo, type ClipSpec, type EstiloSub, type Formato, type Redes } from "@shared/tipos";
 import { ESTILOS_SUB, NOMBRE_ESTILO } from "@shared/reel/estilos-sub";
 import { LIMITES_REDES, NOMBRE_RED, textoParaPublicar } from "@shared/redes";
@@ -21,6 +21,8 @@ interface Props {
   pistas?: Pista[];
   /** Palabras de la transcripción (para sugerir frases repetidas). */
   palabras?: Palabra[];
+  /** El nivel de voz elegido todavía se está preparando. */
+  preparandoVoz?: boolean;
   /** Pestaña «Claude»: pedir cambios en palabras (con su historial por clip). */
   chat?: { proyectoId: string; historial: EntradaChat[]; alHistorial(h: EntradaChat[]): void };
 }
@@ -43,7 +45,7 @@ export function Segmentos<T extends string>({ opciones, valor, etiqueta, alCambi
 
 const FORMATOS: [Formato, string, string][] = [["9:16", "Reels · TikTok", "12px 21px"], ["4:5", "Feed IG · FB", "15px 19px"], ["1:1", "Cuadrado", "17px 17px"]];
 
-export function Inspector({ clip: c, avisos, alCambiar, alGuardarEstilo, alAplicarEstilo, pistas, palabras, chat }: Props) {
+export function Inspector({ clip: c, avisos, alCambiar, alGuardarEstilo, alAplicarEstilo, pistas, palabras, chat, preparandoVoz }: Props) {
   const [pestana, setPestana] = useState<Pestana>("clip");
   const cambiar = (parcial: Partial<ClipSpec>) => alCambiar({ ...c, ...parcial });
   const cambiarVersiculo = (i: number, parcial: Partial<ClipSpec["versiculos"][number]>) =>
@@ -154,6 +156,12 @@ export function Inspector({ clip: c, avisos, alCambiar, alGuardarEstilo, alAplic
                 opciones={[["suave", "Suave"], ["normal", "Normal"], ["fuerte", "Fuerte"]]} alCambiar={(intensidad) => cambiar({ cortes: { ...c.cortes, intensidad } })} />
               <div className="fila"><Interruptor activo={c.cortes.muletillas} etiqueta="Quitar muletillas" alCambiar={(muletillas) => cambiar({ cortes: { ...c.cortes, muletillas } })} /> Quitar muletillas («eh», «em»)</div>
               {palabras && <Repeticiones clip={c} palabras={palabras} alCambiar={(quitados) => cambiar({ cortes: { ...c.cortes, quitados } })} />}
+            </div>
+            <div className="grupo"><h3>Voz</h3>
+              <Segmentos etiqueta="Nivel de voz" valor={c.voz ?? "limpia"} opciones={[["ligera", "Ligera"], ["limpia", "Limpia"], ["podcast", "Podcast"]]}
+                alCambiar={(voz) => cambiar({ voz })} />
+              <p className="ayuda">{{ ligera: "Para un buen micrófono: solo quita graves y empareja el volumen.", limpia: "Quita ruido, eco y graves (recomendada).", podcast: "Limpia, con más presencia y compresión suave, como un podcast." }[c.voz ?? "limpia"]}</p>
+              {preparandoVoz && <p className="ayuda" role="status"><LoaderCircle size={13} className="girar" aria-hidden="true" /> Preparando la voz… (una vez por prédica)</p>}
             </div>
             <div className="grupo"><h3>Música</h3>
               <Segmentos etiqueta="Música" valor={c.musica.modo} opciones={[["auto", "Automática"], ["pista", "Mi pista"], ["pad", "Pad"], ["ninguna", "Sin música"]]}

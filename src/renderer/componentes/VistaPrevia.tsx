@@ -4,7 +4,7 @@ import { Scan, Smartphone } from "lucide-react";
 import { ALTOS, construirComposicion } from "@shared/reel/composicion";
 import { duracionReel, palabrasDe } from "@shared/reel/tiempo";
 import { urlLogoVista } from "../pantallas/Marca";
-import type { Caras, ClipSpec, Formato, Marca, Transcripcion } from "@shared/tipos";
+import type { Caras, ClipSpec, Formato, Marca, NivelVoz, Transcripcion } from "@shared/tipos";
 
 export interface ControlVistaPrevia {
   seek(t: number): void;
@@ -23,6 +23,8 @@ interface Props {
   predicador?: string;
   /** Inicio del rango de la prédica (segundo 0 de voz.m4a). Sin él, la vista previa suena con el audio del video. */
   inicioRango?: number;
+  /** Nivel de voz ya preparado que debe sonar (sin él, la Limpia). */
+  nivelVoz?: NivelVoz;
   alTiempo?(t: number): void;
   alAvisos?(avisos: string[]): void;
 }
@@ -67,14 +69,14 @@ export const VistaPrevia = forwardRef<ControlVistaPrevia, Props>(function VistaP
         recursos: { gsap: "recursos/gsap.min.js", fuentes: "recursos/fuentes", runtime: "recursos/hyperframe.runtime.iife.js", logo: urlLogoVista(p.marca.logo) },
         modo: "vista",
         predicador: p.predicador,
-        ...(p.inicioRango !== undefined ? { voz: { src: window.reels!.urlVoz(p.proyectoId), inicioRango: p.inicioRango } } : {}),
+        ...(p.inicioRango !== undefined ? { voz: { src: window.reels!.urlVoz(p.proyectoId, p.nivelVoz), inicioRango: p.inicioRango } } : {}),
         ...(musica ? { musica: { src: musica } } : {}),
       });
       p.alAvisos?.(comp.avisos);
       setSrc(await window.reels!.registrarVista(`vista-${++version}`, comp.html));
     }, 300);
     return () => clearTimeout(espera);
-  }, [p.clip, p.transcripcion, p.caras, p.marca, p.dimensiones, p.proyectoId, p.predicador, p.inicioRango, formato]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [p.clip, p.transcripcion, p.caras, p.marca, p.dimensiones, p.proyectoId, p.predicador, p.inicioRango, p.nivelVoz, formato]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Al recargar la composición, vuelve al mismo segundo.
   useEffect(() => {
