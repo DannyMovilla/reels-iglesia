@@ -99,3 +99,24 @@ test("plan 5: un tramo elegido en la transcripción se convierte en un clip a ma
   expect(a.crearClip).toHaveBeenCalledWith("p", 70, 73);
   expect(await screen.findByRole("heading", { name: "Dios es fiel", level: 2 })).toBeInTheDocument();
 });
+
+test("revisión I3: «Quitar del clip» no deja un clip de menos de 5 s", async () => {
+  const t = {
+    formato: "pulpito-transcripcion/1", inicio: 0, fin: 100, modelo: "m", dispositivo: "cpu",
+    segmentos: [{ s: 30, e: 60, t: "Dios es fiel", w: [[30, 31, "Dios"], [31.1, 58, "es"], [58.1, 60, "fiel"]] }],
+  };
+  const a = {
+    leerProyecto: async () => ({ ...proyecto, pasos: { ...proyecto.pasos, transcripcion: { estado: "ok" } } }), leerClips: async () => [clip],
+    tareas: async () => [], alCambiarTareas: () => () => {}, leerTranscripcion: async () => t, leerCaras: async () => null,
+    leerMarca: async () => null, infoVideo: async () => null, urlVideo: () => "", guardarClip: vi.fn(async () => {}),
+  };
+  (window as unknown as { reels: unknown }).reels = a;
+  render(<Editor proyectoId="p" />);
+  await userEvent.click(await screen.findByRole("tab", { name: /Transcripción/ }));
+  await userEvent.click(await screen.findByRole("button", { name: "Dios" }));
+  fireEvent.click(screen.getByRole("button", { name: "es" }), { shiftKey: true });
+  await userEvent.click(screen.getByRole("button", { name: "Quitar del clip" }));
+  expect(await screen.findByRole("alert")).toHaveTextContent("No se puede quitar: el clip quedaría con menos de 5 segundos.");
+  await new Promise((r) => setTimeout(r, 600));
+  expect(a.guardarClip).not.toHaveBeenCalled();
+});

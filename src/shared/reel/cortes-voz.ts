@@ -45,6 +45,23 @@ export function tramosDelClip(c: ClipSpec, palabras: Palabra[]): { inicio: numbe
   return resto.length ? resto : [{ inicio: c.inicio, fin: c.fin }];
 }
 
+/** Segundos del video que quedan en el clip después de todos los cortes (0 si se quitó todo). */
+export function duracionConservada(c: ClipSpec, palabras: Palabra[]): number {
+  const quitados = (c.cortes?.quitados ?? []).filter((q) => q.fin > q.inicio);
+  const todoQuitado = quitados.some((q) => q.inicio <= c.inicio && q.fin >= c.fin);
+  if (todoQuitado) return 0;
+  return Math.round(tramosDelClip(c, palabras).reduce((a, t) => a + (t.fin - t.inicio), 0) * 1000) / 1000;
+}
+
+/** Un tramo a quitar ajustado a palabras completas: de la primera a la última palabra que toca (por su mitad), dentro del clip. */
+export function ajustarQuitado(q: { inicio: number; fin: number }, palabras: Palabra[], clip: { inicio: number; fin: number }): { inicio: number; fin: number } | null {
+  const ini = Math.max(clip.inicio, Math.min(q.inicio, q.fin)), fin = Math.min(clip.fin, Math.max(q.inicio, q.fin));
+  if (fin <= ini) return null;
+  const dentro = palabras.filter((w) => w.t.trim() && (w.s + w.e) / 2 >= ini && (w.s + w.e) / 2 <= fin);
+  if (!dentro.length) return { inicio: r3(ini), fin: r3(fin) };
+  return { inicio: r3(Math.max(clip.inicio, dentro[0].s)), fin: r3(Math.min(clip.fin, dentro[dentro.length - 1].e)) };
+}
+
 /**
  * Frases repetidas (el predicador se traba y vuelve a empezar): cuando las mismas 3 palabras se repiten
  * dentro de 8 s, se sugiere quitar la primera toma (de 3 a 12 palabras) y dejar la última.

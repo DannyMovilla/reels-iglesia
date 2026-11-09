@@ -46,6 +46,7 @@ export function completarClip(entrada: unknown, estilo: EstiloIglesia): ClipSpec
       volumen: m.volumen ?? estilo.musica.volumen,
     },
     cortes: c.cortes ?? { ...estilo.cortes },
+    ...((c.voz ?? estilo.voz) ? { voz: c.voz ?? estilo.voz } : {}),
     efectos: c.efectos ?? { ...estilo.efectos },
     redes,
   };

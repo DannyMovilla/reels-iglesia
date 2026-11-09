@@ -7,8 +7,10 @@ export interface Correccion {
   en?: number;
 }
 
-/** La palabra sin tildes, mayúsculas ni signos: "¡Dios," → "dios". */
+/** La palabra sin tildes, mayúsculas ni signos: "¡Dios," → "dios" (para buscar). */
 export const nucleo = (t: string): string => t.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9ñ]+/g, "");
+/** La palabra sin mayúsculas ni signos, pero con sus tildes y su ñ: "él" y "el" son palabras distintas (para corregir). */
+const clave = (t: string): string => t.normalize("NFC").toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "");
 /** Signos al principio y al final de la palabra: "¡Dios," → ["¡", ","]. */
 const bordes = (t: string): [string, string] => [/^[^\p{L}\p{N}]*/u.exec(t)![0], /[^\p{L}\p{N}]*$/u.exec(t)![0]];
 const sinBordes = (t: string): string => t.trim().replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, "");
@@ -20,7 +22,7 @@ const sinBordes = (t: string): string => t.trim().replace(/^[^\p{L}\p{N}]+|[^\p{
  */
 export function aplicarCorrecciones(t: Transcripcion, cs: Correccion[]): Transcripcion {
   if (!cs.length) return t;
-  const reglas = cs.map((c) => ({ ...c, n: nucleo(c.de), nuevo: sinBordes(c.a) })).filter((c) => c.n && c.nuevo);
+  const reglas = cs.map((c) => ({ ...c, n: clave(c.de), nuevo: sinBordes(c.a) })).filter((c) => c.n && c.nuevo);
   return {
     ...t,
     segmentos: t.segmentos.map((s) => {
@@ -28,7 +30,7 @@ export function aplicarCorrecciones(t: Transcripcion, cs: Correccion[]): Transcr
       const w = s.w.map(([ws, we, texto]): [number, number, string] => {
         let actual = texto;
         for (const r of reglas) {
-          if (nucleo(actual) !== r.n) continue;
+          if (clave(actual) !== r.n) continue;
           if (r.en !== undefined && Math.abs(ws - r.en) > 0.01) continue;
           const [antes, despues] = bordes(actual);
           actual = `${antes}${r.nuevo}${despues}`;

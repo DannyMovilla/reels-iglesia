@@ -52,7 +52,7 @@ describe("aplicarCambios", () => {
     expect(r.clip).toMatchObject({ titulo: "Nuevo", gancho: "Más fuerte", palabrasClave: ["gloria"] });
     expect(r.clip.musica.animo).toBe("victoria");
     expect(r.clip.subtitulos.estilo).toBe("neon");
-    expect(r.clip.cortes.quitados).toEqual([{ inicio: 40, fin: 41.5 }]);
+    expect(r.clip.cortes.quitados).toEqual([{ inicio: 40.1, fin: 41.16 }]); // ajustado a palabras completas
     expect(aplicarCambios(clip, { resumen: "", estilo_subtitulos: "rarisimo" }, palabras, rango).clip.subtitulos.estilo).toBe("pop");
   });
 
@@ -100,4 +100,18 @@ describe("pedirCambios con el Claude falso", () => {
     process.env.FALSO_CLAUDE_MODO = "cambios-invalido";
     await expect(pedirCambios(id, clip, "más corto", [], { comando })).rejects.toThrow("Claude no devolvió cambios válidos. Prueba con otras palabras.");
   });
+});
+
+test("revisión I2: los tramos que Claude quita se ajustan a palabras completas y se recortan al clip", () => {
+  // "inmediatamente" va de 51,64 a 52,16 y "celestial" de 54,26 a 54,8.
+  const r = aplicarCambios(clip, { resumen: "", quitar: [{ desde: "0:00:51.9", hasta: "0:00:54.6" }, { desde: "0:01:03.0", hasta: "0:01:10" }] }, palabras, rango);
+  expect(r.clip.cortes.quitados![0]).toEqual({ inicio: 51.64, fin: 54.8 });
+  expect(r.clip.cortes.quitados![1].inicio).toBeGreaterThanOrEqual(clip.inicio);
+  expect(r.clip.cortes.quitados![1].fin).toBeLessThanOrEqual(clip.fin);
+});
+
+test("revisión I3: no se quitan tramos que dejarían el clip con menos de 5 s", () => {
+  const r = aplicarCambios(clip, { resumen: "", quitar: [{ desde: "0:00:31", hasta: "0:01:03" }] }, palabras, rango);
+  expect(r.clip.cortes.quitados ?? []).toEqual([]);
+  expect(r.avisos.join(" ")).toMatch(/menos de 5 segundos/);
 });

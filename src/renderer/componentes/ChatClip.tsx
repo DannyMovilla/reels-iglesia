@@ -1,15 +1,18 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { LoaderCircle, Sparkles, TriangleAlert, Undo2 } from "lucide-react";
 import type { ClipSpec } from "@shared/tipos";
 
-/** Un pedido a Claude sobre este clip, con el clip de antes para poder deshacerlo. */
+/** Un pedido a Claude sobre este clip, con lo que había antes en los campos que cambió (para deshacerlo). */
 export interface EntradaChat {
   pedido: string;
   resumen: string;
   avisos: string[];
-  antes: ClipSpec;
+  antes: Partial<ClipSpec>;
   deshecho?: boolean;
 }
+
+const tomar = (c: ClipSpec, campos: (keyof ClipSpec)[]): Partial<ClipSpec> =>
+  Object.fromEntries(campos.map((k) => [k, structuredClone(c[k])])) as Partial<ClipSpec>;
 
 interface Props {
   proyectoId: string;
@@ -33,6 +36,9 @@ export function ChatClip({ proyectoId, clip, historial, alHistorial, alAplicar }
   const [pedido, setPedido] = useState("");
   const [pensando, setPensando] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // El clip de ahora: la persona puede seguir editando mientras Claude piensa.
+  const actual = useRef(clip);
+  actual.current = clip;
 
   const pedir = async () => {
     const texto = pedido.trim();
@@ -41,9 +47,13 @@ export function ChatClip({ proyectoId, clip, historial, alHistorial, alAplicar }
     setError(null);
     try {
       const previos = historial.filter((h) => !h.deshecho).map((h) => ({ pedido: h.pedido, resumen: h.resumen }));
-      const r = await window.reels!.pedirCambios(proyectoId, clip, texto, previos);
-      alHistorial([...historial, { pedido: texto, resumen: r.resumen, avisos: r.avisos, antes: clip }]);
-      alAplicar(r.clip);
+      const enviado = clip;
+      const r = await window.reels!.pedirCambios(proyectoId, enviado, texto, previos);
+      // Solo los campos que Claude cambió se aplican sobre el clip de ahora (no se pierde lo editado mientras pensaba).
+      const campos = (Object.keys(r.clip) as (keyof ClipSpec)[]).filter((k) => JSON.stringify(r.clip[k]) !== JSON.stringify(enviado[k]));
+      const ahora = actual.current;
+      alHistorial([...historial, { pedido: texto, resumen: r.resumen, avisos: r.avisos, antes: tomar(ahora, campos) }]);
+      alAplicar({ ...ahora, ...tomar(r.clip, campos) });
       setPedido("");
     } catch (e) {
       setError(limpiarError(e));
@@ -56,7 +66,7 @@ export function ChatClip({ proyectoId, clip, historial, alHistorial, alAplicar }
   const deshacer = () => {
     const h = historial[ultima];
     if (!h || h.deshecho) return;
-    alAplicar(h.antes);
+    alAplicar({ ...actual.current, ...structuredClone(h.antes) });
     alHistorial(historial.map((x, i) => (i === ultima ? { ...x, deshecho: true } : x)));
   };
 

@@ -1,5 +1,5 @@
 import type { ClipSpec, EstiloSub } from "../tipos";
-import { videoAReel, type Palabra, type Parte } from "./tiempo";
+import { siguienteConservado, videoAReel, type Palabra, type Parte } from "./tiempo";
 import { type Ventana, ventanaVersiculo } from "./versiculo";
 
 export interface PalabraBloque { texto: string; desde: number; hasta: number; clave: boolean }
@@ -36,7 +36,8 @@ export function bloquesSubtitulos(c: ClipSpec, palabras: Palabra[], partes: Part
   const bloques: Bloque[] = [];
   for (const parte of partes) {
     if (parte.tipo === "cierre") continue;
-    const aReel = (t: number) => videoAReel(parte, t) ?? parte.inicioReel + (t - parte.inicioVideo);
+    // Un momento que se cortó va al siguiente que se conserva (nunca a una cuenta lineal que ignore los cortes).
+    const aReel = (t: number) => videoAReel(parte, t) ?? videoAReel(parte, siguienteConservado(parte, t)) ?? Math.min(parte.inicioReel + parte.duracion, parte.inicioReel + Math.max(0, t - parte.inicioVideo));
     const finReel = parte.inicioReel + parte.duracion;
     let actual: Bloque | null = null;
     let previa: Palabra | null = null;

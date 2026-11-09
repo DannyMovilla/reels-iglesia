@@ -1,7 +1,8 @@
 import { z } from "zod";
 import { moverVersiculos } from "@shared/clip";
 import { recortarRedes } from "@shared/redes";
-import { ajustarCorte } from "@shared/reel/cortes";
+import { ajustarCorte, DURACION_MINIMA } from "@shared/reel/cortes";
+import { ajustarQuitado, duracionConservada } from "@shared/reel/cortes-voz";
 import { ESTILOS_SUB } from "@shared/reel/estilos-sub";
 import { palabrasDe, type Palabra } from "@shared/reel/tiempo";
 import { ANIMOS, type Animo, type ClipSpec, type EstiloSub, type Transcripcion } from "@shared/tipos";
@@ -86,9 +87,15 @@ export function aplicarCambios(clip: ClipSpec, cambios: CambiosClaude, palabras:
   if (cambios.quitar?.length) {
     const nuevos = cambios.quitar
       .map((q) => ({ inicio: aSegundos(q.desde), fin: aSegundos(q.hasta) }))
-      .filter((q) => Number.isFinite(q.inicio) && Number.isFinite(q.fin) && q.fin > q.inicio && q.inicio >= c.inicio && q.fin <= c.fin);
-    if (nuevos.length) c.cortes = { ...c.cortes, quitados: [...(c.cortes.quitados ?? []), ...nuevos] };
+      .filter((q) => Number.isFinite(q.inicio) && Number.isFinite(q.fin))
+      .map((q) => ajustarQuitado(q, palabras, c))
+      .filter((q): q is { inicio: number; fin: number } => q !== null);
     if (nuevos.length < cambios.quitar.length) avisos.push("Algunos tramos que Claude quería quitar quedaban fuera del clip; no los quité.");
+    if (nuevos.length) {
+      const conQuitados: ClipSpec = { ...c, cortes: { ...c.cortes, quitados: [...(c.cortes.quitados ?? []), ...nuevos] } };
+      if (duracionConservada(conQuitados, palabras) >= DURACION_MINIMA) c = conQuitados;
+      else avisos.push("No quité esos tramos: el clip quedaría con menos de 5 segundos.");
+    }
   }
   return { clip: c, avisos };
 }

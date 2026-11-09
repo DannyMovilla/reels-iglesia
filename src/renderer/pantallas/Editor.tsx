@@ -4,6 +4,8 @@ import type { Caras, ClipSpec, Marca, NivelVoz, Proyecto, Tarea, Transcripcion }
 import { formatoTiempo } from "@shared/validar";
 import { duracionReel, palabrasDe, partesDelReel, reelAVideo, videoAReel } from "@shared/reel/tiempo";
 import type { Correccion } from "@shared/correcciones";
+import { DURACION_MINIMA } from "@shared/reel/cortes";
+import { duracionConservada } from "@shared/reel/cortes-voz";
 import { estiloDesdeClip, moverVersiculos } from "@shared/clip";
 import type { Pista } from "@shared/reel/pistas";
 import { Download, FileText, ListOrdered, Play, Plus, Scissors } from "lucide-react";
@@ -43,6 +45,7 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
   const [pistas, setPistas] = useState<Pista[]>([]);
   const [centro, setCentro] = useState<"vista" | "transcripcion" | "capitulos">("vista");
   const [rango, setRango] = useState<{ inicio: number; fin: number } | null>(null);
+  const [avisoRango, setAvisoRango] = useState<string | null>(null);
   /** Niveles de voz ya preparados (la Limpia siempre existe tras el paso de audio). */
   const [voces, setVoces] = useState<NivelVoz[]>(["limpia"]);
   const [errorVoz, setErrorVoz] = useState<string | null>(null);
@@ -209,15 +212,20 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
         {centro === "transcripcion" && datos.transcripcion && (
           <>
             <VistaTranscripcion transcripcion={datos.transcripcion} clip={clip} tiempoVideo={tiempoVideo ?? undefined}
-              alBuscar={irAVideo} alCorregir={(c) => void corregirPalabra(c)} alSeleccionar={setRango} />
+              alBuscar={irAVideo} alCorregir={(c) => void corregirPalabra(c)} alSeleccionar={(r) => { setRango(r); setAvisoRango(null); }} />
             {rango && (
               <div className="barra-rango" role="toolbar" aria-label="Tramo elegido">
+                {avisoRango && <span className="error" role="alert">{avisoRango}</span>}
                 <span className="mono">{formatoTiempo(rango.inicio)} – {formatoTiempo(rango.fin)}</span>
                 <button type="button" className="btn pequeno primario" onClick={() => void crearClip(rango)}>
                   <Plus size={13} aria-hidden="true" />Crear clip con esto
                 </button>
                 {rangoEnClip && clip && (
-                  <button type="button" className="btn pequeno" onClick={() => cambiarClip({ ...clip, cortes: { ...clip.cortes, quitados: [...(clip.cortes.quitados ?? []), rangoEnClip] } })}>
+                  <button type="button" className="btn pequeno" onClick={() => {
+                    const nuevo = { ...clip, cortes: { ...clip.cortes, quitados: [...(clip.cortes.quitados ?? []), rangoEnClip] } };
+                    if (duracionConservada(nuevo, palabrasDe(datos.transcripcion!)) < DURACION_MINIMA) setAvisoRango("No se puede quitar: el clip quedaría con menos de 5 segundos.");
+                    else { setAvisoRango(null); cambiarClip(nuevo); }
+                  }}>
                     <Scissors size={13} aria-hidden="true" />Quitar del clip
                   </button>
                 )}

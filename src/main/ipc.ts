@@ -14,7 +14,7 @@ import { clipManual } from "@shared/clip";
 import { pedirCambios, type EntradaHistorial } from "./claude/cambios";
 import { crearCapitulos, leerCapitulos } from "./claude/capitulos";
 import { archivoVoz } from "./procesos/audio";
-import { crearVozReal } from "./exportar/tarea";
+import { asegurarVoz } from "./exportar/tarea";
 import { palabrasDe } from "@shared/reel/tiempo";
 import type { Cola } from "./cola/cola";
 import { dimensionesVideo, duracionVideo } from "./procesos/video";
@@ -46,9 +46,6 @@ const elegidos = new Set<string>();
  * proyecto/<id> el video original; archivo/<ruta> un video elegido con el diálogo o descargado;
  * musica/<archivo> una pista; exportado/<proyecto>/<archivo> una portada o un MP4 exportado.
  */
-/** Voces que se están preparando (para no correr FFmpeg dos veces sobre el mismo archivo). */
-const preparandoVoz = new Map<string, Promise<void>>();
-
 export async function resolverMedio(tipo: string, valor: string): Promise<string | null> {
   const simple = (x?: string) => !!x && x === basename(x) && !x.startsWith(".");
   if (tipo === "archivo") return elegidos.has(valor) ? valor : null;
@@ -124,13 +121,8 @@ export function registrarIpc(deps: DepsIpc): void {
   ipcMain.handle("proyectos:caras", (_e, id: string) => leerJson<Caras>(id, "caras.json"));
   ipcMain.handle("proyectos:guardarClip", (_e, id: string, clip: ClipSpec) => guardarClip(id, clip));
   ipcMain.handle("proyectos:prepararVoz", async (_e, id: string, nivel: NivelVoz) => {
-    const destino = join(carpetaProyecto(id), archivoVoz(nivel));
-    if (existsSync(destino)) return;
-    const previa = preparandoVoz.get(destino);
-    if (previa) return previa;
-    const trabajo = leerProyecto(id).then((p) => crearVozReal(p, destino, new AbortController().signal, nivel)).finally(() => preparandoVoz.delete(destino));
-    preparandoVoz.set(destino, trabajo);
-    return trabajo;
+    if (!["ligera", "limpia", "podcast"].includes(nivel)) throw new Error("Ese nivel de voz no existe.");
+    await asegurarVoz(await leerProyecto(id), nivel);
   });
   ipcMain.handle("proyectos:capitulos", (_e, id: string) => leerCapitulos(id));
   ipcMain.handle("claude:capitulos", (_e, id: string) => crearCapitulos(id, { comando: process.env.REELS_CLAUDE_COMANDO }));

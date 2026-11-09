@@ -31,3 +31,9 @@ test("varias palabras en el reemplazo y el original queda sin tocar", () => {
 test("sin correcciones devuelve la misma transcripción", () => {
   expect(aplicarCorrecciones(t, [])).toBe(t);
 });
+
+test("revisión I4: «él» → «Él» no cambia el artículo «el» (las tildes y la ñ distinguen palabras)", () => {
+  const t2: Transcripcion = { ...t, segmentos: [{ s: 0, e: 3, t: "él dijo el pan del año y ano", w: [[0, 0.2, "él"], [0.3, 0.5, "dijo"], [0.6, 0.7, "el"], [0.8, 1, "pan"], [1.1, 1.3, "del"], [1.4, 1.6, "año"], [1.7, 1.8, "y"], [1.9, 2, "ano"]] }] };
+  const r = aplicarCorrecciones(t2, [{ de: "él", a: "Él" }, { de: "año", a: "AÑO" }]);
+  expect(r.segmentos[0].w.map((x) => x[2])).toEqual(["Él", "dijo", "el", "pan", "del", "AÑO", "y", "ano"]);
+});

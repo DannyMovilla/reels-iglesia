@@ -65,3 +65,13 @@ test("plan 5: aplicar el estilo de la iglesia copia intensidad y lista pero cons
   expect(r.cortes).toEqual({ pausas: true, muletillas: false, intensidad: "fuerte", lista: ["este"], quitados: [{ inicio: 40, fin: 41 }] });
   expect(estiloDesdeClip(r).cortes).toEqual({ pausas: true, muletillas: false, intensidad: "fuerte", lista: ["este"] });
 });
+
+test("revisión I5: el nivel de voz del estilo de la iglesia llega a los clips nuevos (y no pisa el de un clip)", async () => {
+  const { clipManual } = await import("../../src/shared/clip");
+  const estilo = { ...ESTILO_POR_DEFECTO, voz: "podcast" as const };
+  expect(completarClip(viejo, estilo).voz).toBe("podcast");
+  expect(completarClip({ ...viejo, voz: "ligera" }, estilo).voz).toBe("ligera");
+  expect(completarClip(viejo, ESTILO_POR_DEFECTO).voz).toBeUndefined();
+  const ps = [{ s: 0, e: 3, t: "Dios" }, { s: 3, e: 7, t: "es" }];
+  expect(clipManual(0, 7, ps, estilo).voz).toBe("podcast");
+});

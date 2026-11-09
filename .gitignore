@@ -28,3 +28,6 @@ playwright-report/
 
 dist/
 *.tsbuildinfo
+
+# Los efectos de sonido propios (python/efectos.py) sí van en git: se incluyen en la app.
+!resources/efectos/*.wav

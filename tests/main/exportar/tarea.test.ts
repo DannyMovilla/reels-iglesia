@@ -276,3 +276,25 @@ test("plan 5: la carpeta del render lleva los efectos de sonido y la composició
     expect(existsSync(r[`recursos/efectos/${n}.wav`])).toBe(true);
   }
 });
+
+test("revisión C1: los WAV de los efectos están guardados en git (si no, en otra PC fallaría cada exportación)", async () => {
+  const { execFileSync } = await import("node:child_process");
+  const enGit = execFileSync("git", ["ls-files", "resources/efectos"], { cwd: resolve(__dirname, "../../.."), encoding: "utf8" }).split(/\r?\n/).filter(Boolean).sort();
+  expect(enGit).toEqual(["resources/efectos/pop.wav", "resources/efectos/whoosh-suave.wav", "resources/efectos/whoosh.wav"]);
+});
+
+test("revisión I1: preparar la misma voz desde la vista previa y desde la exportación corre FFmpeg una sola vez", async () => {
+  const { asegurarVoz } = await import("../../../src/main/exportar/tarea");
+  process.env.REELS_IGLESIA_DATOS = mkdtempSync(join(tmpdir(), "reels-voz-"));
+  const v = join(mkdtempSync(join(tmpdir(), "reels-v-")), "v.mp4");
+  writeFileSync(v, "x");
+  const p = await crearProyecto({ nombre: "Culto", video: { ruta: v, tamano: 1, modificado: 0, duracion: 100 }, rango: { inicio: 0, fin: 75 } });
+  let llamadas = 0;
+  const crear = async (_p: unknown, destino: string) => { llamadas++; await new Promise((r) => setTimeout(r, 50)); writeFileSync(destino, "m4a"); };
+  const [a, b] = await Promise.all([asegurarVoz(p, "podcast", undefined, crear), asegurarVoz(p, "podcast", undefined, crear)]);
+  expect(llamadas).toBe(1);
+  expect(a).toBe(b);
+  expect(basename(a)).toBe("voz-podcast.m4a");
+  await asegurarVoz(p, "podcast", undefined, crear);
+  expect(llamadas).toBe(1);
+});

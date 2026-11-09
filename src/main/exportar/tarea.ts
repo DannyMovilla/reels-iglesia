@@ -89,6 +89,21 @@ export async function crearVozReal(p: Proyecto, destino: string, senal: AbortSig
   await crearVozSegura(destino, async (tmp) => (await ejecutarConProgreso("ffmpeg", argsVozLimpia(p.video.ruta, p.rango.inicio, p.rango.fin, tmp, nivel), { senal })).codigo);
 }
 
+/** Voces que se están preparando (vista previa o exportación): una sola corrida de FFmpeg por archivo. */
+const preparandoVoz = new Map<string, Promise<string>>();
+
+/** Deja lista la voz de ese nivel en la carpeta del proyecto (la crea una vez) y devuelve su ruta. */
+export function asegurarVoz(p: Proyecto, nivel: NivelVoz, senal: AbortSignal = new AbortController().signal,
+  crear: (p: Proyecto, destino: string, senal: AbortSignal, nivel?: NivelVoz) => Promise<void> = crearVozReal): Promise<string> {
+  const destino = join(carpetaProyecto(p.id), archivoVoz(nivel));
+  if (existsSync(destino)) return Promise.resolve(destino);
+  const previa = preparandoVoz.get(destino);
+  if (previa) return previa;
+  const trabajo = crear(p, destino, senal, nivel).then(() => destino).finally(() => preparandoVoz.delete(destino));
+  preparandoVoz.set(destino, trabajo);
+  return trabajo;
+}
+
 /** Enlace duro (instantáneo, sin ocupar disco) o copia si está en otro disco. */
 const enlazarOCopiar = (origen: string, destino: string) => link(origen, destino).catch(() => copyFile(origen, destino));
 
@@ -135,11 +150,8 @@ export function crearEjecutorExportar(deps: DepsExportar = {}): Ejecutor {
     const fuenteVideo = enlazar ? `video${extname(proyecto.video.ruta).toLowerCase()}` : proyecto.video.ruta.replace(/\\/g, "/");
     const carpeta = carpetaProyecto(t.proyectoId);
     const nivel = clip.voz ?? "limpia";
-    const voz = join(carpeta, archivoVoz(nivel));
-    if (!existsSync(voz)) {
-      ctx.alProgreso(1, "Preparando la voz…");
-      await crearVoz(proyecto, voz, ctx.senal, nivel);
-    }
+    if (!existsSync(join(carpeta, archivoVoz(nivel)))) ctx.alProgreso(1, "Preparando la voz…");
+    const voz = await asegurarVoz(proyecto, nivel, ctx.senal, crearVoz);
     // Si la música no se puede preparar (p. ej. falla Python al crear el pad), el reel sale igual, sin música.
     const pista = await elegirMusica(clip, proyecto, duracionReel(clip, palabrasDe(transcripcion))).catch(() => null);
     const musica = pista ? `musica${extname(pista).toLowerCase()}` : undefined;

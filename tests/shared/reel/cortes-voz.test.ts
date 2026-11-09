@@ -149,3 +149,21 @@ describe("detectarRepeticiones", () => {
     expect(detectarRepeticiones(ps, 0, 20)).toEqual([]);
   });
 });
+
+test("revisión I2: una palabra que cruza un tramo quitado no hace que el subtítulo empiece tarde ni termine antes de empezar", () => {
+  const ps = [w(0, 1, "Dios"), w(1.1, 2, "es"), w(2.1, 3, "fiel"), w(3.1, 4, "siempre"), w(9.8, 10.4, "amén."), w(10.5, 11.5, "Gloria"), w(11.6, 13, "a Dios.")];
+  const c = clip({ inicio: 0, fin: 13, apertura: null, cierre: false, cortes: { pausas: false, muletillas: false, quitados: [{ inicio: 4.2, fin: 9.9 }] } });
+  const partes = partesDelReel(c, ps);
+  const total = partes.reduce((a, p) => a + p.duracion, 0);
+  for (const b of bloquesSubtitulos(c, ps, partes)) {
+    expect(b.hasta).toBeGreaterThanOrEqual(b.desde);
+    expect(b.desde).toBeLessThanOrEqual(total);
+    for (const p of b.palabras) expect(p.desde).toBeLessThanOrEqual(total);
+  }
+});
+
+test("revisión I3: duracionConservada cuenta lo que queda después de los cortes", async () => {
+  const { duracionConservada } = await import("../../../src/shared/reel/cortes-voz");
+  expect(duracionConservada(clip({ inicio: 5, fin: 23, cortes: { pausas: false, muletillas: false } }), palabras)).toBeCloseTo(18, 2);
+  expect(duracionConservada(clip({ inicio: 5, fin: 23, cortes: { pausas: false, muletillas: false, quitados: [{ inicio: 5, fin: 23 }] } }), palabras)).toBe(0);
+});
