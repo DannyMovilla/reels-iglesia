@@ -27,6 +27,7 @@ const api: ApiReels = {
   crearClip: (id, inicio, fin) => ipcRenderer.invoke("proyectos:crearClip", id, inicio, fin),
   crearSrt: (id, opciones) => ipcRenderer.invoke("entregas:srt", id, opciones),
   crearPdf: (id) => ipcRenderer.invoke("entregas:pdf", id),
+  crearMp3: (id, nivel) => ipcRenderer.invoke("entregas:mp3", id, nivel),
   leerCapitulos: (id) => ipcRenderer.invoke("proyectos:capitulos", id),
   crearCapitulos: (id) => ipcRenderer.invoke("claude:capitulos", id),
   pedirCambios: (id, clip, pedido, historial) => ipcRenderer.invoke("claude:cambios", id, clip, pedido, historial),

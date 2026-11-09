@@ -32,3 +32,13 @@ test("PDF de la transcripción", async () => {
   expect(a.crearPdf).toHaveBeenCalledWith("p");
   expect(await screen.findByText("Listo: culto-transcripcion.pdf")).toBeInTheDocument();
 });
+
+test("MP3 con el nivel de voz elegido", async () => {
+  const a = { crearMp3: vi.fn(async () => "culto.mp3") };
+  (window as unknown as { reels: unknown }).reels = a;
+  render(<Entregas proyectoId="p" />);
+  await userEvent.click(screen.getByRole("button", { name: "Podcast" }));
+  await userEvent.click(screen.getByRole("button", { name: "Crear MP3" }));
+  expect(a.crearMp3).toHaveBeenCalledWith("p", "podcast");
+  expect(await screen.findByText("Listo: culto.mp3")).toBeInTheDocument();
+});

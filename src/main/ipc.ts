@@ -15,6 +15,7 @@ import { pedirCambios, type EntradaHistorial } from "./claude/cambios";
 import { crearCapitulos, leerCapitulos } from "./claude/capitulos";
 import { guardarSrt } from "./entregas/entregas";
 import { guardarPdf } from "./entregas/pdf";
+import { guardarMp3 } from "./entregas/mp3";
 import { archivoVoz } from "./procesos/audio";
 import { asegurarVoz } from "./exportar/tarea";
 import { palabrasDe } from "@shared/reel/tiempo";
@@ -127,6 +128,7 @@ export function registrarIpc(deps: DepsIpc): void {
     await asegurarVoz(await leerProyecto(id), nivel);
   });
   ipcMain.handle("entregas:pdf", (_e, id: string) => guardarPdf(id));
+  ipcMain.handle("entregas:mp3", (_e, id: string, nivel: NivelVoz) => guardarMp3(id, ["ligera", "limpia", "podcast"].includes(nivel) ? nivel : "limpia"));
   ipcMain.handle("entregas:srt", (_e, id: string, o: { completo: boolean }) => guardarSrt(id, { completo: o?.completo !== false }));
   ipcMain.handle("proyectos:capitulos", (_e, id: string) => leerCapitulos(id));
   ipcMain.handle("claude:capitulos", (_e, id: string) => crearCapitulos(id, { comando: process.env.REELS_CLAUDE_COMANDO }));

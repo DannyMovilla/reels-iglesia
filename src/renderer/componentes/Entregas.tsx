@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Captions, FileText, FolderOpen, LoaderCircle } from "lucide-react";
-import { Interruptor } from "./Inspector";
+import { Captions, FileText, FolderOpen, LoaderCircle, Music } from "lucide-react";
+import type { NivelVoz } from "@shared/tipos";
+import { Interruptor, Segmentos } from "./Inspector";
 
 export const limpiarError = (e: unknown) => (e instanceof Error ? e.message : String(e)).replace(/^Error invoking remote method '[^']+': (Error: )?/, "");
 
@@ -38,6 +39,8 @@ export function Entregas({ proyectoId }: { proyectoId: string }) {
   const [completo, setCompleto] = useState(true);
   const srt = useAccion();
   const pdf = useAccion();
+  const mp3 = useAccion();
+  const [nivel, setNivel] = useState<NivelVoz>("limpia");
   return (
     <div className="entregas">
       <p className="ayuda">Todo se guarda en la carpeta de exportados de esta prédica.</p>
@@ -64,6 +67,18 @@ export function Entregas({ proyectoId }: { proyectoId: string }) {
           </button>
         </div>
         <Resultado listo={pdf.listo} error={pdf.error} />
+      </section>
+      <section className="entrega">
+        <h3><Music size={16} aria-hidden="true" />Prédica en MP3</h3>
+        <p className="ayuda">Para un podcast o para compartir por WhatsApp: al volumen de los podcasts, con el título, el predicador y el logo.</p>
+        <Segmentos<NivelVoz> etiqueta="Voz del MP3" valor={nivel} opciones={[["ligera", "Ligera"], ["limpia", "Limpia"], ["podcast", "Podcast"]] as [NivelVoz, string][]} alCambiar={setNivel} />
+        <div className="fila">
+          <button type="button" className="btn" disabled={mp3.trabajando} onClick={() => void mp3.correr(() => window.reels!.crearMp3(proyectoId, nivel))}>
+            {mp3.trabajando && <LoaderCircle size={15} className="girar" aria-hidden="true" />}Crear MP3
+          </button>
+          {mp3.trabajando && <span className="ayuda">Puede tardar unos minutos con una prédica larga.</span>}
+        </div>
+        <Resultado listo={mp3.listo} error={mp3.error} />
       </section>
       <button type="button" className="btn fantasma" onClick={() => void window.reels!.abrirCarpetaExportados(proyectoId)}>
         <FolderOpen size={15} aria-hidden="true" />Abrir carpeta

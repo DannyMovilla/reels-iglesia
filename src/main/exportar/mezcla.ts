@@ -7,8 +7,8 @@ export interface MedicionLoudnorm { i: string; tp: string; lra: string; thresh: 
 /** Nivel de Instagram/TikTok: −14 LUFS integrados, pico verdadero −1 dBTP. */
 const OBJETIVO = "I=-14:TP=-1:LRA=11";
 
-export const argsMedir = (mp4: string): string[] =>
-  ["-hide_banner", "-nostats", "-i", mp4, "-vn", "-af", `loudnorm=${OBJETIVO}:print_format=json`, "-f", "null", "-"];
+export const argsMedir = (mp4: string, objetivo = OBJETIVO): string[] =>
+  ["-hide_banner", "-nostats", "-i", mp4, "-vn", "-af", `loudnorm=${objetivo}:print_format=json`, "-f", "null", "-"];
 
 export function leerMedicion(salida: string): MedicionLoudnorm | null {
   const m = /\{[^{}]*"input_i"[^{}]*\}/.exec(salida);
