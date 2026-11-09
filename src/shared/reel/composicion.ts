@@ -42,11 +42,11 @@ const TAMANOS: Record<EstiloSub, { s: number; m: number; l: number }> = {
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const n = (x: number) => String(r2(x));
 
-/** Construye la composición HyperFrames del reel. La misma sirve para la vista previa y para exportar. */
 /** Fundido de cada lado de un corte de voz (s). */
 export const FUNDIDO = 0.01;
 const r3 = (x: number) => Math.round(x * 1000) / 1000;
 
+/** Construye la composición HyperFrames del reel. La misma sirve para la vista previa y para exportar. */
 export function construirComposicion(e: EntradaComposicion): { html: string; duracion: number; ancho: number; alto: number; avisos: string[] } {
   const { clip: c, marca, formato } = e;
   const W = ANCHO, H = ALTOS[formato];

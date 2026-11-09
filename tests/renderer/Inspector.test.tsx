@@ -214,3 +214,12 @@ test("plan 5: nivel de voz Ligera / Limpia / Podcast y aviso mientras se prepara
   rerender(<Inspector clip={{ ...base, voz: "podcast" }} avisos={[]} alCambiar={alCambiar} preparandoVoz />);
   expect(screen.getByText(/Preparando la voz/)).toBeInTheDocument();
 });
+
+test("plan 6: cada tramo quitado se lista con su minuto y se puede volver a poner solo", async () => {
+  const alCambiar = vi.fn();
+  const c = { ...base, cortes: { ...base.cortes, quitados: [{ inicio: 31, fin: 33.5 }, { inicio: 45, fin: 47 }] } };
+  render(<Inspector clip={c} avisos={[]} alCambiar={alCambiar} palabras={[]} />);
+  await userEvent.click(screen.getByRole("tab", { name: /Estilo/ }));
+  await userEvent.click(screen.getByRole("button", { name: "Volver a poner el tramo 0:45–0:47" }));
+  expect(alCambiar.mock.calls.at(-1)![0].cortes.quitados).toEqual([{ inicio: 31, fin: 33.5 }]);
+});

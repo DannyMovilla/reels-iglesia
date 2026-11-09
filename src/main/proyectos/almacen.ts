@@ -192,12 +192,20 @@ export async function leerClips(proyectoId: string): Promise<ClipSpec[]> {
   return clips.map((c) => completarClip(c, estilo));
 }
 
-/** Reemplaza un clip por id en clips.json (un clip que no existe se ignora). */
+/** Un tramo para un clip a mano: id simple y tiempos válidos dentro de la prédica. */
+export function validarTramoClip(id: string, inicio: number, fin: number, p: { rango: { inicio: number; fin: number } }): void {
+  const simple = /^[\w-]+$/.test(id);
+  if (!simple || !Number.isFinite(inicio) || !Number.isFinite(fin) || fin <= inicio || inicio < p.rango.inicio - 0.5 || fin > p.rango.fin + 0.5) {
+    throw new Error("No pude crear el clip con ese tramo.");
+  }
+}
+
 /** Agrega un clip nuevo (hecho a mano) a clips.json. */
 export async function agregarClip(proyectoId: string, clip: ClipSpec): Promise<void> {
   await guardarJson(proyectoId, "clips.json", [...(await leerClips(proyectoId)), clip]);
 }
 
+/** Reemplaza un clip por id en clips.json (un clip que no existe se ignora). */
 export async function guardarClip(proyectoId: string, clip: ClipSpec): Promise<void> {
   const clips = (await leerJson<ClipSpec[]>(proyectoId, "clips.json")) ?? [];
   if (!clips.some((c) => c.id === clip.id)) return;

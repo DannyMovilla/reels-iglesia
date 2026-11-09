@@ -39,6 +39,8 @@ export type CambiosClaude = z.infer<typeof CambiosClaude>;
 export interface EntradaHistorial { pedido: string; resumen: string }
 
 const r2 = (n: number) => Math.round(n * 100) / 100;
+/** Un reel no pasa de 90 s. */
+export const DURACION_MAXIMA = 90;
 /** 30.93 → "0:00:30.9" */
 export function tiempoDecimas(seg: number): string {
   const d = Math.round(seg * 10) / 10;
@@ -66,7 +68,13 @@ export function aplicarCambios(clip: ClipSpec, cambios: CambiosClaude, palabras:
     if (problema) avisos.push(`No pude usar el nuevo corte: ${problema}`);
     else {
       const enRango = palabras.filter((w) => w.s >= rango.inicio && w.e <= rango.fin);
-      const corte = ajustarCorte({ inicio: ini, fin }, enRango);
+      let corte = ajustarCorte({ inicio: ini, fin }, enRango);
+      if (corte.fin - corte.inicio > DURACION_MAXIMA) {
+        // Un reel no pasa de 90 s: se corta en la última palabra que cabe.
+        const ultima = enRango.filter((w) => w.s >= corte.inicio && w.e <= corte.inicio + DURACION_MAXIMA).at(-1);
+        corte = { inicio: corte.inicio, fin: ultima ? ultima.e : corte.inicio + DURACION_MAXIMA };
+        avisos.push("Lo dejé en 90 segundos, el máximo para un reel.");
+      }
       c = { ...c, inicio: corte.inicio, fin: corte.fin, versiculos: moverVersiculos(clip.versiculos, clip.inicio, clip.fin, corte.inicio, corte.fin) };
     }
   }

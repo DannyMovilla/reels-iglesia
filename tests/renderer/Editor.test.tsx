@@ -120,3 +120,71 @@ test("revisión I3: «Quitar del clip» no deja un clip de menos de 5 s", async 
   await new Promise((r) => setTimeout(r, 600));
   expect(a.guardarClip).not.toHaveBeenCalled();
 });
+
+describe("plan 6: detalles del editor", () => {
+  const t = {
+    formato: "pulpito-transcripcion/1", inicio: 0, fin: 100, modelo: "m", dispositivo: "cpu",
+    segmentos: [{ s: 31, e: 34, t: "Dios es fiel", w: [[31, 32, "Dios"], [32.1, 33, "es"], [33.1, 34, "fiel"]] },
+      { s: 80, e: 82, t: "Fuera del clip", w: [[80, 81, "Fuera"], [81.1, 82, "afuera"]] }],
+  };
+  const api = (extra: Record<string, unknown> = {}) => {
+    const a = {
+      leerProyecto: async () => ({ ...proyecto, pasos: { ...proyecto.pasos, transcripcion: { estado: "ok" } } }),
+      leerClips: async () => [clip, { ...clip, id: "o", titulo: "Oculto", oculto: true }, { ...clip, id: "v", titulo: "Visible" }],
+      tareas: async () => [], alCambiarTareas: () => () => {}, leerTranscripcion: async () => t, leerCaras: async () => null,
+      leerMarca: async () => null, infoVideo: async () => null, urlVideo: () => "", guardarClip: vi.fn(async () => {}),
+      exportar: vi.fn(async () => {}), ...extra,
+    };
+    (window as unknown as { reels: unknown }).reels = a;
+    return a;
+  };
+
+  test("los ocultos no cuentan ni se exportan con «Exportar N clips»", async () => {
+    const a = api();
+    render(<Editor proyectoId="p" />);
+    expect(await screen.findByText("2 sugeridos")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: /Exportar 2 clips/ }));
+    await vi.waitFor(() => expect(a.exportar).toHaveBeenCalledWith("p", ["c", "v"]));
+  });
+
+  test("si falla corregir o crear un clip, se ve el mensaje en español", async () => {
+    api({
+      corregir: vi.fn(async () => { throw new Error("Error invoking remote method 'proyectos:corregir': Error: No hay transcripción para corregir."); }),
+      crearClip: vi.fn(async () => { throw new Error("Error invoking remote method 'proyectos:crearClip': Error: No pude crear el clip con ese tramo."); }),
+    });
+    render(<Editor proyectoId="p" />);
+    await userEvent.click(await screen.findByRole("tab", { name: /Transcripción/ }));
+    fireEvent.doubleClick(await screen.findByRole("button", { name: "Dios" }));
+    await userEvent.click(screen.getByRole("button", { name: "En toda la prédica" }));
+    expect(await screen.findByText("No hay transcripción para corregir.")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Dios" }));
+    fireEvent.click(screen.getByRole("button", { name: "fiel" }), { shiftKey: true });
+    await userEvent.click(screen.getByRole("button", { name: "Crear clip con esto" }));
+    expect(await screen.findByText("No pude crear el clip con ese tramo.")).toBeInTheDocument();
+  });
+
+  test("clic en una palabra fuera del clip lo dice y ofrece crear un clip desde ahí", async () => {
+    const a = api({ crearClip: vi.fn(async () => ({ ...clip, id: "n", titulo: "Fuera afuera", inicio: 80, fin: 110 })) });
+    render(<Editor proyectoId="p" />);
+    await userEvent.click(await screen.findByRole("tab", { name: /Transcripción/ }));
+    await userEvent.click(await screen.findByRole("button", { name: "Fuera" }));
+    expect(screen.getByText("Esta parte no está en el clip.")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Crear clip desde aquí" }));
+    expect((a as unknown as { crearClip: ReturnType<typeof vi.fn> }).crearClip).toHaveBeenCalledWith("p", 80, 100); // 30 s, sin pasar del fin de la prédica
+  });
+});
+
+test("plan 6: el aviso de voz se borra al elegir un clip con voz Limpia", async () => {
+  const t = { formato: "pulpito-transcripcion/1", inicio: 0, fin: 100, modelo: "m", dispositivo: "cpu", segmentos: [{ s: 31, e: 34, t: "Dios", w: [[31, 34, "Dios"]] }] };
+  (window as unknown as { reels: unknown }).reels = {
+    leerProyecto: async () => ({ ...proyecto, pasos: { ...proyecto.pasos, transcripcion: { estado: "ok" }, audio: { estado: "ok" } } }),
+    leerClips: async () => [{ ...clip, id: "a", titulo: "Con podcast", puntaje: 99, voz: "podcast" }, { ...clip, id: "b", titulo: "Con limpia", puntaje: 10 }],
+    tareas: async () => [], alCambiarTareas: () => () => {}, leerTranscripcion: async () => t, leerCaras: async () => null,
+    leerMarca: async () => null, infoVideo: async () => null, urlVideo: () => "", guardarClip: vi.fn(async () => {}),
+    prepararVoz: vi.fn(async () => { throw new Error("falló"); }),
+  };
+  render(<Editor proyectoId="p" />);
+  expect(await screen.findByText(/No se pudo preparar ese nivel de voz/)).toBeInTheDocument();
+  await userEvent.click(screen.getByRole("heading", { name: "Con limpia" }));
+  await vi.waitFor(() => expect(screen.queryByText(/No se pudo preparar ese nivel de voz/)).toBeNull());
+});

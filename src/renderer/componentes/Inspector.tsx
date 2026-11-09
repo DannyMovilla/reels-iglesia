@@ -4,6 +4,7 @@ import { ANIMOS, type Animo, type ClipSpec, type EstiloSub, type Formato, type R
 import { ESTILOS_SUB, NOMBRE_ESTILO } from "@shared/reel/estilos-sub";
 import { LIMITES_REDES, NOMBRE_RED, textoParaPublicar } from "@shared/redes";
 import type { Pista } from "@shared/reel/pistas";
+import { formatoTiempo } from "@shared/validar";
 import { detectarRepeticiones } from "@shared/reel/cortes-voz";
 import type { Palabra } from "@shared/reel/tiempo";
 import { ChatClip, type EntradaChat } from "./ChatClip";
@@ -304,10 +305,24 @@ function Repeticiones({ clip: c, palabras, alCambiar }: { clip: ClipSpec; palabr
         </ul>
       )}
       {quitados.length > 0 && (
-        <div className="fila">
-          <span>Tramos quitados a mano: {quitados.length}</span>
-          <button type="button" className="btn pequeno fantasma" onClick={() => alCambiar([])}>Volver a poner todos</button>
-        </div>
+        <>
+          <div className="fila">
+            <span>Tramos quitados a mano: {quitados.length}</span>
+            <button type="button" className="btn pequeno fantasma" onClick={() => alCambiar([])}>Volver a poner todos</button>
+          </div>
+          <ul className="tramos-quitados">
+            {quitados.map((q, i) => {
+              const texto = `${formatoTiempo(q.inicio)}–${formatoTiempo(q.fin)}`;
+              return (
+                <li key={`${q.inicio}-${q.fin}-${i}`}>
+                  <span className="mono">{texto}</span>
+                  <button type="button" className="btn pequeno fantasma" aria-label={`Volver a poner el tramo ${texto}`}
+                    onClick={() => alCambiar(quitados.filter((_, j) => j !== i))}>Volver a poner</button>
+                </li>
+              );
+            })}
+          </ul>
+        </>
       )}
     </div>
   );

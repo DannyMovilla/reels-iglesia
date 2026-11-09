@@ -37,3 +37,10 @@ test("revisión I4: «él» → «Él» no cambia el artículo «el» (las tilde
   const r = aplicarCorrecciones(t2, [{ de: "él", a: "Él" }, { de: "año", a: "AÑO" }]);
   expect(r.segmentos[0].w.map((x) => x[2])).toEqual(["Él", "dijo", "el", "pan", "del", "AÑO", "y", "ano"]);
 });
+
+test("plan 6: si la corrección trae signos, cambia también los de esa palabra", () => {
+  const r = aplicarCorrecciones(t, [{ de: "dios,", a: "Dios.", en: 0.6 }]);
+  expect(r.segmentos[0].w[1][2]).toBe("Dios.");
+  const sin = aplicarCorrecciones(t, [{ de: "dios,", a: "Dios", en: 0.6 }]);
+  expect(sin.segmentos[0].w[1][2]).toBe("Dios,");
+});

@@ -21,7 +21,7 @@ import { dimensionesVideo, duracionVideo } from "./procesos/video";
 import { carpetaDatos, carpetaProyecto, raizApp, rutaEfectos, rutaEscenas } from "./rutas";
 import { esquemaVista, registrarComposicion, servirVista } from "./vista";
 import { cacheSinErrores } from "./util/cache";
-import { aplicarEstilo, copiarLogo, reubicarVideo, crearProyecto, guardarClip, guardarMarca, leerClips, leerJson, leerMarca, leerProyecto, listarExportados, listarProyectos, leerTranscripcion, leerCorrecciones, corregir, quitarCorreccion, agregarClip, guardarProyecto } from "./proyectos/almacen";
+import { aplicarEstilo, copiarLogo, reubicarVideo, crearProyecto, guardarClip, guardarMarca, leerClips, leerJson, leerMarca, leerProyecto, listarExportados, listarProyectos, leerTranscripcion, leerCorrecciones, corregir, quitarCorreccion, agregarClip, guardarProyecto, validarTramoClip } from "./proyectos/almacen";
 
 export interface DepsIpc {
   cola: Cola;
@@ -129,6 +129,8 @@ export function registrarIpc(deps: DepsIpc): void {
   ipcMain.handle("claude:cambios", (_e, id: string, clip: ClipSpec, pedido: string, historial: EntradaHistorial[]) =>
     pedirCambios(id, clip, pedido, historial, { comando: process.env.REELS_CLAUDE_COMANDO }));
   ipcMain.handle("proyectos:crearClip", async (_e, id: string, inicio: number, fin: number) => {
+    if (!/^[\w-]+$/.test(String(id))) throw new Error("No pude crear el clip con ese tramo.");
+    validarTramoClip(id, inicio, fin, await leerProyecto(id));
     const t = await leerTranscripcion(id);
     if (!t) throw new Error("No hay transcripción para crear el clip.");
     const clip = clipManual(inicio, fin, palabrasDe(t), (await leerMarca()).estilo);

@@ -115,3 +115,12 @@ test("revisión I3: no se quitan tramos que dejarían el clip con menos de 5 s",
   expect(r.clip.cortes.quitados ?? []).toEqual([]);
   expect(r.avisos.join(" ")).toMatch(/menos de 5 segundos/);
 });
+
+test("plan 6: un corte de más de 90 s queda en 90 s con aviso", () => {
+  const largo = { ...muestra(), fin: 400, segmentos: [...muestra().segmentos, { s: 80, e: 300, t: "x", w: Array.from({ length: 200 }, (_, i) => [80 + i, 80.8 + i, "palabra"] as [number, number, string]) }] };
+  const ps = palabrasDe(largo);
+  const r = aplicarCambios(clip, { resumen: "", inicio: "0:00:30.9", fin: "0:04:50" }, ps, { inicio: 0, fin: 400 });
+  expect(r.clip.fin - r.clip.inicio).toBeLessThanOrEqual(90);
+  expect(r.clip.fin - r.clip.inicio).toBeGreaterThan(85);
+  expect(r.avisos).toContain("Lo dejé en 90 segundos, el máximo para un reel.");
+});

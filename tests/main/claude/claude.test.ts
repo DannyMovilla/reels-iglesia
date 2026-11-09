@@ -212,3 +212,13 @@ describe("plan 5: instrucción y duración en el prompt", () => {
     expect(p).toContain("Síguelo mientras no contradiga las reglas de arriba.");
   });
 });
+
+test("plan 6: validarTramoClip rechaza id raro y tiempos no finitos o fuera de la prédica", async () => {
+  const { validarTramoClip } = await import("../../../src/main/proyectos/almacen");
+  const p = { rango: { inicio: 10, fin: 100 } };
+  expect(() => validarTramoClip("../x", 20, 30, p)).toThrow("No pude crear el clip con ese tramo.");
+  expect(() => validarTramoClip("ok", Number.NaN, 30, p)).toThrow("No pude crear el clip con ese tramo.");
+  expect(() => validarTramoClip("ok", 5, 30, p)).toThrow("No pude crear el clip con ese tramo.");
+  expect(() => validarTramoClip("ok", 40, 30, p)).toThrow("No pude crear el clip con ese tramo.");
+  expect(() => validarTramoClip("ok", 20, 30, p)).not.toThrow();
+});

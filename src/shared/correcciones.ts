@@ -22,7 +22,12 @@ const sinBordes = (t: string): string => t.trim().replace(/^[^\p{L}\p{N}]+|[^\p{
  */
 export function aplicarCorrecciones(t: Transcripcion, cs: Correccion[]): Transcripcion {
   if (!cs.length) return t;
-  const reglas = cs.map((c) => ({ ...c, n: clave(c.de), nuevo: sinBordes(c.a) })).filter((c) => c.n && c.nuevo);
+  // Si la persona cambió los signos en la corrección ("dios," → "Dios."), se usan los suyos; si no, cada palabra conserva los propios.
+  const reglas = cs.map((c) => {
+    const [deAntes, deDespues] = bordes(c.de.trim()), [aAntes, aDespues] = bordes(c.a.trim());
+    const signos: [string, string] = [aAntes !== deAntes ? aAntes : "", aDespues !== deDespues ? aDespues : ""];
+    return { ...c, n: clave(c.de), nuevo: sinBordes(c.a), signos };
+  }).filter((c) => c.n && c.nuevo);
   return {
     ...t,
     segmentos: t.segmentos.map((s) => {
@@ -33,7 +38,7 @@ export function aplicarCorrecciones(t: Transcripcion, cs: Correccion[]): Transcr
           if (clave(actual) !== r.n) continue;
           if (r.en !== undefined && Math.abs(ws - r.en) > 0.01) continue;
           const [antes, despues] = bordes(actual);
-          actual = `${antes}${r.nuevo}${despues}`;
+          actual = `${r.signos[0] || antes}${r.nuevo}${r.signos[1] || despues}`;
         }
         if (actual !== texto) cambio = true;
         return [ws, we, actual];

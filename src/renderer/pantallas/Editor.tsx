@@ -46,6 +46,9 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
   const [centro, setCentro] = useState<"vista" | "transcripcion" | "capitulos">("vista");
   const [rango, setRango] = useState<{ inicio: number; fin: number } | null>(null);
   const [avisoRango, setAvisoRango] = useState<string | null>(null);
+  const [errorAccion, setErrorAccion] = useState<string | null>(null);
+  /** Segundo del video de una palabra tocada fuera del clip (para ofrecer un clip desde ahí). */
+  const [fuera, setFuera] = useState<number | null>(null);
   /** Niveles de voz ya preparados (la Limpia siempre existe tras el paso de audio). */
   const [voces, setVoces] = useState<NivelVoz[]>(["limpia"]);
   const [errorVoz, setErrorVoz] = useState<string | null>(null);
@@ -130,23 +133,35 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
     cambiarClip({ ...c, inicio, fin, versiculos: moverVersiculos(c.versiculos, c.inicio, c.fin, inicio, fin) });
   };
 
-  const crearClip = async (r: { inicio: number; fin: number }) => {
+  /** Corre una acción y, si falla, muestra su mensaje en español (sin el prefijo de Electron). */
+  const intentar = async (accion: () => Promise<void>) => {
+    setErrorAccion(null);
+    try {
+      await accion();
+    } catch (e) {
+      setErrorAccion((e instanceof Error ? e.message : String(e)).replace(/^Error invoking remote method '[^']+': (Error: )?/, ""));
+    }
+  };
+
+  const crearClip = (r: { inicio: number; fin: number }) => intentar(async () => {
     await guardarYa();
     const nuevo = await window.reels!.crearClip(proyectoId, r.inicio, r.fin);
     setClips((cs) => [...cs, nuevo]);
     setSel(nuevo.id);
-  };
+    setFuera(null);
+  });
 
-  const corregirPalabra = async (c: Correccion) => {
+  const corregirPalabra = (c: Correccion) => intentar(async () => {
     const transcripcion = await window.reels!.corregir(proyectoId, c);
     setDatos((d) => ({ ...d, transcripcion }));
-  };
+  });
 
   const clipSel = clips.find((c) => c.id === sel);
   const nivelPedido: NivelVoz = clipSel?.voz ?? "limpia";
   const audioListo = proyecto?.pasos.audio?.estado === "ok";
   useEffect(() => {
-    if (!audioListo || voces.includes(nivelPedido)) return;
+    if (voces.includes(nivelPedido)) { setErrorVoz(null); return; }
+    if (!audioListo) return;
     let vivo = true;
     setErrorVoz(null);
     window.reels!.prepararVoz(proyectoId, nivelPedido)
@@ -163,10 +178,12 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
   const tiempoVideo = parteClip && tiempo >= parteClip.inicioReel && tiempo <= parteClip.inicioReel + parteClip.duracion ? reelAVideo(parteClip, tiempo) : undefined;
   const irAVideo = (t: number) => {
     const r = parteClip ? videoAReel(parteClip, t) : null;
+    setFuera(r === null ? t : null);
     if (r === null) return;
     setTiempo(r);
     vista.current?.seek(r);
   };
+  const visibles = clips.filter((c) => !c.oculto);
   const rangoEnClip = clip && rango && rango.inicio >= clip.inicio && rango.fin <= clip.fin ? rango : null;
 
   return (
@@ -175,11 +192,11 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
         <div className="titulo-seccion">Proceso</div>
         <PanelProceso proyecto={proyecto} tareas={tareas} alReintentar={(id) => void window.reels!.reintentar(id)}
           alProcesar={(desde) => void window.reels!.procesar(proyecto.id, desde)}
-          alReanalizar={(a) => void window.reels!.reanalizar(proyecto.id, a).then(recargar)} />
-        <div className="titulo-seccion">Clips <span>{clips.length === 1 ? "1 sugerido" : clips.length ? `${clips.length} sugeridos` : ""}</span></div>
-        {clips.length > 1 && (
-          <button type="button" className="btn pequeno exportar-todos" onClick={() => void exportar(proyecto.id, clips.map((c) => c.id))}>
-            <Download size={13} aria-hidden="true" />Exportar {clips.length} clips
+          alReanalizar={(a) => void intentar(async () => { await window.reels!.reanalizar(proyecto.id, a); await recargar(); })} />
+        <div className="titulo-seccion">Clips <span>{visibles.length === 1 ? "1 sugerido" : visibles.length ? `${visibles.length} sugeridos` : ""}</span></div>
+        {visibles.length > 1 && (
+          <button type="button" className="btn pequeno exportar-todos" onClick={() => void exportar(proyecto.id, visibles.map((c) => c.id))}>
+            <Download size={13} aria-hidden="true" />Exportar {visibles.length} clips
           </button>
         )}
         {clips.length > 0 ? (
@@ -200,6 +217,7 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
             <button type="button" className="btn pequeno" onClick={() => void ubicar()}>Ubicar el video</button></p>
         )}
         {errorUbicar && <p className="error" role="alert">{errorUbicar}</p>}
+        {errorAccion && <p className="error" role="alert">{errorAccion}</p>}
         {errorVoz && <p className="aviso" role="status"><TriangleAlert size={16} aria-hidden="true" />{errorVoz}</p>}
         {clip && <div className="centro-cabeza"><h2>{clip.titulo}</h2><span>{clip.categoria} · {formatoTiempo(datos.transcripcion ? duracionReel(clip, palabrasDe(datos.transcripcion)) : clip.fin - clip.inicio)}</span></div>}
         {datos.transcripcion && (
@@ -213,6 +231,14 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
           <>
             <VistaTranscripcion transcripcion={datos.transcripcion} clip={clip} tiempoVideo={tiempoVideo ?? undefined}
               alBuscar={irAVideo} alCorregir={(c) => void corregirPalabra(c)} alSeleccionar={(r) => { setRango(r); setAvisoRango(null); }} />
+            {fuera !== null && !rango && (
+              <div className="barra-rango" role="toolbar" aria-label="Fuera del clip">
+                <span>Esta parte no está en el clip.</span>
+                <button type="button" className="btn pequeno primario" onClick={() => void crearClip({ inicio: fuera, fin: Math.min(fuera + 30, proyecto.rango.fin) })}>
+                  <Plus size={13} aria-hidden="true" />Crear clip desde aquí
+                </button>
+              </div>
+            )}
             {rango && (
               <div className="barra-rango" role="toolbar" aria-label="Tramo elegido">
                 {avisoRango && <span className="error" role="alert">{avisoRango}</span>}

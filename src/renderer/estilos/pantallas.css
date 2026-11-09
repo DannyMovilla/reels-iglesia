@@ -329,3 +329,7 @@
 /* Plan 5: capítulos para YouTube. */
 .capitulos { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
 .capitulos textarea { resize: vertical; font-size: 13px; line-height: 1.6; }
+
+/* Plan 6: tramos quitados uno por uno. */
+.tramos-quitados { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.tramos-quitados li { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12px; }
