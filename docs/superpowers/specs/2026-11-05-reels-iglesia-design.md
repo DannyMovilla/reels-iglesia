@@ -311,3 +311,55 @@ Fuera del plan 3: publicar directo en las redes, generación de música con IA.
   Gemini de pago y Stable Diffusion local).
 - **Dónde vive:** sección "Con IA" del riel (deja de ser "Pronto"); cada reel en `<datos>/ia/<id>/`
   (`creacion.json`, fondo copiado, `exportados/`); los MP4 aparecen también en "Exportados".
+
+## 16. Plan 5 — el editor como FilmScribe (decidido 2026-11-09)
+
+Ideas tomadas de FilmScribe (filmscribe.ai, app web de pago con página para prédicas) y del repositorio
+GlennSomers/threads (solo ideas: no tiene licencia, no se copia código). Todo sigue en la PC de la
+iglesia y con la suscripción de Claude (`claude -p`), sin claves de pago.
+
+1. **Pedir cambios a Claude en palabras** (pestaña "Claude" del inspector): "córtalo en menos de 60
+   segundos", "otro gancho más fuerte", "textos más cortos". Una consulta por pedido, con la
+   transcripción del clip (±60 s) y el clip actual. Claude puede cambiar: inicio y fin, gancho, título,
+   frase de apertura, palabras clave, textos por red, ánimo de la música, estilo de subtítulos y tramos a
+   quitar. Nunca agrega versículos. La app ajusta los tiempos a límites de palabra, mueve los versículos
+   como al cortar a mano, muestra en una línea qué cambió y ofrece **Deshacer**.
+2. **Cortes más finos:**
+   - tres intensidades para las pausas: **Suave** (pausas de más de 1,0 s, deja 0,36 s), **Normal**
+     (0,7 s → 0,25 s, la de hoy) y **Fuerte** (0,45 s → 0,16 s);
+   - la lista de muletillas se edita en Marca (por defecto "eh", "ehh", "em", "emm", "mm", "mmm"); solo
+     se quitan cuando van sueltas, como hoy;
+   - **frases repetidas** (el predicador se traba y repite): la app las sugiere; cuando las mismas 3
+     palabras se repiten dentro de 8 s, se sugiere quitar la primera toma (máx. 12 palabras) y dejar la
+     última. Nada se quita hasta que la persona toca "Quitar";
+   - **tramos quitados a mano** desde la transcripción (seleccionar palabras → "Quitar del clip");
+   - **fundidos de 10 ms** en cada corte de la voz para que no suene un "clic".
+3. **Lista de clips con buscador, filtros y orden** (como FilmScribe): buscar por texto (título, gancho,
+   transcripción), filtrar por categoría, duración, puntaje mínimo, con versículo, favoritos; ordenar por
+   mayor impacto, orden en el video, más cortos, más largos; marcar **favorito** y **ocultar**.
+   **Clip a mano:** seleccionar palabras en la transcripción → "Crear clip con esto".
+   Volver a analizar conserva favoritos, clips a mano, editados y exportados; solo reemplaza las
+   sugerencias que nadie tocó.
+4. **Instrucción al analizar** (opcional, hasta 300 caracteres: "prioriza lo que habla de la
+   ansiedad") y **duración de los clips**: Cortos (15–30 s), Normales (30–60 s, por defecto) o Largos
+   (60–90 s). Se piden al crear la prédica y al "Analizar de nuevo".
+5. **Transcripción completa** (vista del centro del editor, junto a la vista previa): buscador, clic en
+   una palabra para ir a ese momento, y **corregir una palabra** en esa aparición o en todas. Las
+   correcciones se guardan aparte (`correcciones.json`) y se aplican siempre al leer la transcripción:
+   subtítulos, clips, análisis y capítulos usan el texto corregido, y no se pierden si se vuelve a
+   transcribir.
+6. **Capítulos y resumen** (una consulta a Claude por prédica, botón "Crear capítulos"): un resumen de
+   2 a 4 oraciones y capítulos con título para pegar en la descripción de YouTube (formato de YouTube:
+   el primero en 0:00, al menos 3, cada uno de 10 s o más). Con tiempos del video completo (por defecto,
+   sumando el inicio de la prédica, con "0:00 Inicio del culto" si la prédica no empieza en 0) o solo
+   de la prédica. Botón Copiar; al exportar se guarda `capitulos.txt` en exportados.
+7. **Niveles de voz:** **Ligera** (solo graves y volumen parejo, para buenos micrófonos), **Limpia**
+   (la de hoy, por defecto) y **Podcast** (Limpia + presencia a 3,5 kHz, menos siseo de las "s" y
+   compresión suave). Cada nivel se prepara una vez por prédica cuando se usa por primera vez.
+8. **Efectos de sonido** (opcionales, encendidos por defecto en el estilo de la iglesia): un "whoosh"
+   en el paso de la apertura al clip y del clip al cierre, y un "pop" suave cuando aparece el gancho. En
+   «Con IA», un "whoosh" suave entre tarjetas del versículo. Los sonidos se generan con un script propio
+   (`python/efectos.py`), así que no hay licencias de terceros, y van incluidos en la app.
+
+Fuera del plan 5 (van al plan 6): más fuentes, zonas seguras exactas por red, corrección de color,
+escenas con pinturas de dominio público, copiar el estilo de un reel, SRT, PDF, MP3 y traducción.
