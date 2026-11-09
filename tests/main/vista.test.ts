@@ -46,3 +46,11 @@ test("plan 5: entrega los efectos de sonido propios y nada más de esa carpeta",
   expect(rutaRecurso("recursos/efectos/otro.wav", RAIZ, undefined, undefined, efectos)).toBeNull();
   expect(rutaRecurso("recursos/efectos/whoosh.wav", RAIZ)).toBeNull();
 });
+
+test("plan 6: la vista previa entrega la fuente de la iglesia y nada más de la carpeta de la marca", () => {
+  const datos = "C:/datos";
+  expect(rutaRecurso("marca/fuente.ttf", RAIZ, datos)).toBe(join(datos, "marca", "fuente.ttf"));
+  expect(rutaRecurso("marca/fuente.woff2", RAIZ, datos)).toBe(join(datos, "marca", "fuente.woff2"));
+  expect(rutaRecurso("marca/fuente.exe", RAIZ, datos)).toBeNull();
+  expect(rutaRecurso("marca/marca.json", RAIZ, datos)).toBeNull();
+});

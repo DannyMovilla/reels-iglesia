@@ -26,7 +26,7 @@ import { dimensionesVideo, duracionVideo } from "./procesos/video";
 import { carpetaDatos, carpetaProyecto, raizApp, rutaEfectos, rutaEscenas } from "./rutas";
 import { esquemaVista, registrarComposicion, servirVista } from "./vista";
 import { cacheSinErrores } from "./util/cache";
-import { aplicarEstilo, copiarLogo, reubicarVideo, crearProyecto, guardarClip, guardarMarca, leerClips, leerJson, leerMarca, leerProyecto, listarExportados, listarProyectos, leerTranscripcion, leerCorrecciones, corregir, quitarCorreccion, agregarClip, guardarProyecto, validarTramoClip } from "./proyectos/almacen";
+import { aplicarEstilo, copiarLogo, reubicarVideo, crearProyecto, guardarClip, guardarMarca, leerClips, leerJson, leerMarca, leerProyecto, listarExportados, listarProyectos, leerTranscripcion, leerCorrecciones, corregir, quitarCorreccion, agregarClip, guardarProyecto, validarTramoClip, copiarFuente } from "./proyectos/almacen";
 
 export interface DepsIpc {
   cola: Cola;
@@ -175,6 +175,10 @@ export function registrarIpc(deps: DepsIpc): void {
   });
   ipcMain.handle("musica:animo", (_e, id: string, animo: Animo) => cambiarAnimo(id, animo));
   ipcMain.handle("marca:guardar", (_e, m: Marca) => guardarMarca(m));
+  ipcMain.handle("marca:elegirFuente", async () => {
+    const r = await dialog.showOpenDialog({ title: "Elegir la fuente de la iglesia", properties: ["openFile"], filters: [{ name: "Fuentes", extensions: ["ttf", "otf", "woff", "woff2"] }] });
+    return r.canceled || !r.filePaths[0] ? null : copiarFuente(r.filePaths[0]);
+  });
   ipcMain.handle("marca:elegirLogo", async () => {
     const r = await dialog.showOpenDialog({ title: "Elige el logo de la iglesia", properties: ["openFile"], filters: [{ name: "Imágenes", extensions: ["png", "jpg", "jpeg", "svg", "webp"] }] });
     return r.canceled || !r.filePaths[0] ? null : copiarLogo(r.filePaths[0]);

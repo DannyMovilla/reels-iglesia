@@ -43,3 +43,21 @@ test("aplicar el estilo de la iglesia cambia los clips sin exportar y respeta lo
   expect(a.formatos).toEqual(["1:1"]);
   expect(b.subtitulos.estilo).toBe("pop");
 });
+
+test("plan 6: la fuente de la iglesia se copia con un nombre seguro; un archivo que no es fuente se rechaza", async () => {
+  const { copiarFuente } = await import("../../../src/main/proyectos/almacen");
+  const dir = mkdtempSync(join(tmpdir(), "fuente #1 ñ-"));
+  const ttf = join(dir, "Mi Fuente #Iglesia.ttf");
+  writeFileSync(ttf, Buffer.concat([Buffer.from([0, 1, 0, 0]), Buffer.alloc(200, 7)]));
+  const ruta = await copiarFuente(ttf);
+  expect(ruta).toBe(join(datos, "marca", "fuente.ttf"));
+  expect(existsSync(ruta)).toBe(true);
+  const woff2 = join(dir, "otra.woff2");
+  writeFileSync(woff2, Buffer.concat([Buffer.from("wOF2"), Buffer.alloc(100)]));
+  expect(await copiarFuente(woff2)).toBe(join(datos, "marca", "fuente.woff2"));
+  expect(existsSync(ruta)).toBe(false); // la anterior se borra
+  const falsa = join(dir, "falsa.ttf");
+  writeFileSync(falsa, "esto no es una fuente");
+  await expect(copiarFuente(falsa)).rejects.toThrow("Ese archivo no es una fuente.");
+  await expect(copiarFuente(join(dir, "foto.png"))).rejects.toThrow("La fuente tiene que ser un archivo TTF, OTF, WOFF o WOFF2.");
+});

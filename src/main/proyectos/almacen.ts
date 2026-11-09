@@ -165,6 +165,22 @@ export async function guardarMarca(m: Marca): Promise<void> {
 }
 
 const EXT_LOGO = [".png", ".jpg", ".jpeg", ".svg", ".webp"];
+const EXT_FUENTE = [".ttf", ".otf", ".woff", ".woff2"];
+
+/** Copia la fuente de la iglesia a <datos>/marca/fuente.<ext> (borra la anterior), si de verdad es una fuente. */
+export async function copiarFuente(origen: string): Promise<string> {
+  const ext = extname(origen).toLowerCase();
+  if (!EXT_FUENTE.includes(ext)) throw new Error("La fuente tiene que ser un archivo TTF, OTF, WOFF o WOFF2.");
+  const firma = (await readFile(origen)).subarray(0, 4);
+  const valida = [Buffer.from([0, 1, 0, 0]), Buffer.from("OTTO"), Buffer.from("true"), Buffer.from("wOFF"), Buffer.from("wOF2")].some((f) => f.equals(firma));
+  if (!valida) throw new Error("Ese archivo no es una fuente.");
+  const dir = join(carpetaDatos(), "marca");
+  await mkdir(dir, { recursive: true });
+  for (const e of EXT_FUENTE) await rm(join(dir, `fuente${e}`), { force: true });
+  const destino = join(dir, `fuente${ext}`);
+  await copyFile(origen, destino);
+  return destino;
+}
 
 /** Copia el logo elegido a <datos>/marca/logo.<ext> (borra el anterior) y devuelve su ruta. */
 export async function copiarLogo(origen: string): Promise<string> {

@@ -58,3 +58,11 @@ test("muletillas: se agregan con Enter, se quitan con × y se restablecen", asyn
   await userEvent.click(screen.getByRole("button", { name: "Restablecer" }));
   await vi.waitFor(() => expect((a.guardarMarca.mock.calls.at(-1) as unknown as [TMarca])[0].estilo.cortes.lista).toEqual(["eh", "ehh", "em", "emm", "mm", "mmm"]), { timeout: 2000 });
 });
+
+test("plan 6: elegir la fuente de la iglesia la guarda en la marca", async () => {
+  const a = api({ elegirFuente: vi.fn(async () => "C:/datos/marca/fuente.ttf") });
+  render(<Marca />);
+  await userEvent.click(await screen.findByRole("button", { name: /Elegir fuente de la iglesia/ }));
+  await vi.waitFor(() => expect(a.guardarMarca).toHaveBeenLastCalledWith(expect.objectContaining({ fuente: "C:/datos/marca/fuente.ttf" })), { timeout: 2000 });
+  expect(screen.getByText("fuente.ttf")).toBeInTheDocument();
+});

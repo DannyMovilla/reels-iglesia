@@ -27,7 +27,7 @@ export function rutaRecurso(ruta: string, raiz: string, datos?: string, escenas?
   if (ruta === "recursos/escenas/shaders.iife.js") return escenas ? join(escenas, "shaders.iife.js") : null;
   const efecto = /^recursos\/efectos\/(whoosh|whoosh-suave|pop)\.wav$/.exec(ruta);
   if (efecto) return efectos ? join(efectos, `${efecto[1]}.wav`) : null;
-  if (ruta.startsWith("marca/")) return datos && /^marca\/logo\.(png|jpe?g|svg|webp)$/.test(ruta) ? join(datos, "marca", ruta.slice(6)) : null;
+  if (ruta.startsWith("marca/")) return datos && /^marca\/(logo\.(png|jpe?g|svg|webp)|fuente\.(ttf|otf|woff2?))$/.test(ruta) ? join(datos, "marca", ruta.slice(6)) : null;
   const nm = join(raiz, "node_modules");
   const fijos: Record<string, string> = {
     "recursos/gsap.min.js": join(nm, "gsap", "dist", "gsap.min.js"),
@@ -42,7 +42,7 @@ export function rutaRecurso(ruta: string, raiz: string, datos?: string, escenas?
 }
 
 const TIPOS: Record<string, string> = {
-  ".wav": "audio/wav", ".js": "text/javascript", ".woff2": "font/woff2", ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".svg": "image/svg+xml", ".webp": "image/webp",
+  ".wav": "audio/wav", ".ttf": "font/ttf", ".otf": "font/otf", ".woff": "font/woff", ".js": "text/javascript", ".woff2": "font/woff2", ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".svg": "image/svg+xml", ".webp": "image/webp",
 };
 const CSP = "default-src 'self' reels-comp: http://127.0.0.1:*; script-src 'self' 'unsafe-inline' reels-comp:; style-src 'self' 'unsafe-inline' reels-comp:; font-src reels-comp: data:; media-src http://127.0.0.1:* reels-comp: blob:; img-src reels-comp: data: blob:";
 

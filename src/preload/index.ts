@@ -65,6 +65,7 @@ const api: ApiReels = {
   urlExportado: (id, archivo) => `${medios}/exportado/${encodeURIComponent(id)}/${encodeURIComponent(archivo)}`,
   guardarMarca: (m) => ipcRenderer.invoke("marca:guardar", m),
   elegirLogo: () => ipcRenderer.invoke("marca:elegirLogo"),
+  elegirFuente: () => ipcRenderer.invoke("marca:elegirFuente"),
   aplicarEstilo: (id) => ipcRenderer.invoke("proyectos:aplicarEstilo", id),
   infoVideo: (id) => ipcRenderer.invoke("proyectos:infoVideo", id),
   ubicarVideo: (id) => ipcRenderer.invoke("proyectos:ubicarVideo", id),

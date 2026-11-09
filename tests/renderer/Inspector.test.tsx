@@ -244,3 +244,16 @@ test("plan 6: color — look, intensidad y «Corregir tono amarillo» (y quitarl
   await userEvent.click(screen.getByRole("button", { name: "Quitar corrección de tono" }));
   expect(alCambiar.mock.calls.at(-1)![0].color.balance).toBeUndefined();
 });
+
+test("plan 6: fuente de títulos y de subtítulos (la de la iglesia solo si la marca tiene una)", async () => {
+  const alCambiar = vi.fn();
+  const { rerender } = render(<Inspector clip={base} avisos={[]} alCambiar={alCambiar} />);
+  await userEvent.click(screen.getByRole("tab", { name: /Estilo/ }));
+  expect(screen.queryByRole("option", { name: "La de la iglesia" })).toBeNull();
+  expect(screen.getByLabelText("Fuente de títulos")).toHaveValue("figtree");
+  await userEvent.selectOptions(screen.getByLabelText("Fuente de títulos"), "montserrat");
+  expect(alCambiar.mock.calls.at(-1)![0].fuentes).toEqual({ titulos: "montserrat", subtitulos: "montserrat" });
+  rerender(<Inspector clip={base} avisos={[]} alCambiar={alCambiar} fuenteIglesia />);
+  await userEvent.selectOptions(screen.getByLabelText("Fuente de subtítulos"), "iglesia");
+  expect(alCambiar.mock.calls.at(-1)![0].fuentes).toEqual({ titulos: "figtree", subtitulos: "iglesia" });
+});

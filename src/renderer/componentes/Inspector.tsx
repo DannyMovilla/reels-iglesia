@@ -1,3 +1,4 @@
+import { FUENTES, FUENTES_POR_DEFECTO, type IdFuente } from "@shared/reel/fuentes";
 import { NOMBRE_LOOK, type Look } from "@shared/reel/color";
 import { useState } from "react";
 import { BookOpen, Check, Contrast, Copy, FileText, Flag, LoaderCircle, Send, Sparkles, TrendingUp, TriangleAlert, Type } from "lucide-react";
@@ -23,6 +24,8 @@ interface Props {
   pistas?: Pista[];
   /** Palabras de la transcripción (para sugerir frases repetidas). */
   palabras?: Palabra[];
+  /** La marca tiene fuente propia (aparece «La de la iglesia»). */
+  fuenteIglesia?: boolean;
   /** Mide el balance de blancos del video de este clip («Corregir tono amarillo»). */
   alMedirColor?(): Promise<[number, number, number]>;
   /** El nivel de voz elegido todavía se está preparando. */
@@ -49,7 +52,7 @@ export function Segmentos<T extends string>({ opciones, valor, etiqueta, alCambi
 
 const FORMATOS: [Formato, string, string][] = [["9:16", "Reels · TikTok", "12px 21px"], ["4:5", "Feed IG · FB", "15px 19px"], ["1:1", "Cuadrado", "17px 17px"]];
 
-export function Inspector({ clip: c, avisos, alCambiar, alGuardarEstilo, alAplicarEstilo, pistas, palabras, chat, preparandoVoz, alMedirColor }: Props) {
+export function Inspector({ clip: c, avisos, alCambiar, alGuardarEstilo, alAplicarEstilo, pistas, palabras, chat, preparandoVoz, alMedirColor, fuenteIglesia }: Props) {
   const [pestana, setPestana] = useState<Pestana>("clip");
   const cambiar = (parcial: Partial<ClipSpec>) => alCambiar({ ...c, ...parcial });
   const cambiarVersiculo = (i: number, parcial: Partial<ClipSpec["versiculos"][number]>) =>
@@ -161,6 +164,17 @@ export function Inspector({ clip: c, avisos, alCambiar, alGuardarEstilo, alAplic
                 opciones={[["suave", "Suave"], ["normal", "Normal"], ["fuerte", "Fuerte"]]} alCambiar={(intensidad) => cambiar({ cortes: { ...c.cortes, intensidad } })} />
               <div className="fila"><Interruptor activo={c.cortes.muletillas} etiqueta="Quitar muletillas" alCambiar={(muletillas) => cambiar({ cortes: { ...c.cortes, muletillas } })} /> Quitar muletillas («eh», «em»)</div>
               {palabras && <Repeticiones clip={c} palabras={palabras} alCambiar={(quitados) => cambiar({ cortes: { ...c.cortes, quitados } })} />}
+            </div>
+            <div className="grupo"><h3>Fuentes</h3>
+              {(["titulos", "subtitulos"] as const).map((k) => (
+                <label key={k} className="campo">{k === "titulos" ? "Fuente de títulos" : "Fuente de subtítulos"}
+                  <select className="entrada" aria-label={k === "titulos" ? "Fuente de títulos" : "Fuente de subtítulos"}
+                    value={(c.fuentes ?? FUENTES_POR_DEFECTO)[k]}
+                    onChange={(e) => cambiar({ fuentes: { ...(c.fuentes ?? FUENTES_POR_DEFECTO), [k]: e.target.value as IdFuente } })}>
+                    {(Object.keys(FUENTES) as IdFuente[]).filter((id) => id !== "iglesia" || fuenteIglesia).map((id) => <option key={id} value={id}>{FUENTES[id].nombre}</option>)}
+                  </select>
+                </label>
+              ))}
             </div>
             <ColorGrupo clip={c} alCambiar={(color) => cambiar({ color })} alMedir={alMedirColor} />
             <div className="grupo"><h3>Voz</h3>

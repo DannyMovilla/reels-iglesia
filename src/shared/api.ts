@@ -97,6 +97,8 @@ export interface ApiReels {
   guardarMarca(m: Marca): Promise<void>;
   /** Abre el diálogo para elegir el logo, lo copia a la carpeta de la marca y devuelve su ruta (null si se cancela). */
   elegirLogo(): Promise<string | null>;
+  /** Abre el diálogo para elegir la fuente de la iglesia (TTF, OTF, WOFF, WOFF2), la copia y devuelve su ruta (null si se cancela). */
+  elegirFuente(): Promise<string | null>;
   /** Aplica el estilo de la iglesia a los clips sin exportar del proyecto. */
   aplicarEstilo(proyectoId: string): Promise<void>;
   /** Ancho y alto del video original (para encuadrar). */

@@ -82,6 +82,7 @@ export const ANIMOS: readonly Animo[] = ["reflexivo", "esperanza", "victoria", "
 export type EstiloSub = "pop" | "caja" | "limpio" | "resaltado" | "karaoke" | "impacto" | "neon";
 export type Intensidad = "suave" | "normal" | "fuerte";
 /** Color del video: look, intensidad 0–1 y balance de blancos (ganancias R, G, B) medido del video. */
+export interface FuentesClip { titulos: import("./reel/fuentes").IdFuente; subtitulos: import("./reel/fuentes").IdFuente }
 export interface ColorClip { look: import("./reel/color").Look; intensidad: number; balance?: [number, number, number] }
 /** Ligera: solo graves y volumen parejo. Limpia: también menos ruido (la de siempre). Podcast: Limpia + presencia y compresión. */
 export type NivelVoz = "ligera" | "limpia" | "podcast";
@@ -108,6 +109,8 @@ export interface EstiloIglesia {
   voz?: NivelVoz;
   /** Look de color de la iglesia (sin balance: el balance es de cada video). */
   color?: ColorClip;
+  /** Fuentes de títulos y subtítulos; sin el campo, las de siempre. */
+  fuentes?: FuentesClip;
 }
 
 export interface Marca {
@@ -119,6 +122,8 @@ export interface Marca {
   logoEscala: number;
   redes: { instagram?: string; tiktok?: string; facebook?: string; youtube?: string };
   predicador?: string;
+  /** Archivo de la fuente propia de la iglesia (<datos>/marca/fuente.<ext>). */
+  fuente?: string;
   estilo: EstiloIglesia;
 }
 
@@ -156,6 +161,8 @@ export interface ClipSpec {
   voz?: NivelVoz;
   /** Corrección de color; sin el campo, el video queda como está. */
   color?: ColorClip;
+  /** Fuentes de títulos y subtítulos; sin el campo, las de siempre (Figtree y Montserrat). */
+  fuentes?: FuentesClip;
   favorito?: boolean;
   /** Oculto de la lista (se ve con "Ver ocultos"). */
   oculto?: boolean;

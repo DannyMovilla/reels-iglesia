@@ -157,13 +157,14 @@ export function crearEjecutorExportar(deps: DepsExportar = {}): Ejecutor {
     const musica = pista ? `musica${extname(pista).toLowerCase()}` : undefined;
     const marca = await leerMarca();
     const logo = marca.logo && existsSync(marca.logo) ? `recursos/logo${extname(marca.logo).toLowerCase()}` : undefined;
+    const fuenteIglesia = marca.fuente && existsSync(marca.fuente) ? `recursos/fuente-iglesia${extname(marca.fuente).toLowerCase()}` : undefined;
     const comp = construirComposicion({
       clip, transcripcion, formato,
       caras: await leerJson<Caras>(t.proyectoId, "caras.json"),
       marca,
       dimensiones: await dimensiones(proyecto.video.ruta),
       fuenteVideo,
-      recursos: { gsap: "recursos/gsap.min.js", fuentes: "recursos/fuentes", logo, efectos: "recursos/efectos" },
+      recursos: { gsap: "recursos/gsap.min.js", fuentes: "recursos/fuentes", logo, efectos: "recursos/efectos", fuenteIglesia },
       modo: "render",
       voz: { src: "voz.m4a", inicioRango: proyecto.rango.inicio },
       predicador: proyecto.predicador ?? marca.predicador,
@@ -174,6 +175,7 @@ export function crearEjecutorExportar(deps: DepsExportar = {}): Ejecutor {
     try {
       await prepararCarpeta(tmp, comp.html);
       if (logo && marca.logo) await copyFile(marca.logo, join(tmp, logo));
+      if (fuenteIglesia && marca.fuente) await copyFile(marca.fuente, join(tmp, fuenteIglesia));
       await enlazarOCopiar(voz, join(tmp, "voz.m4a"));
       if (pista && musica) await copyFile(pista, join(tmp, musica));
       if (enlazar) await enlazarOCopiar(proyecto.video.ruta, join(tmp, fuenteVideo));

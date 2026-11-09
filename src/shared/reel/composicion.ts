@@ -1,3 +1,4 @@
+import { cssFuentesElegidas } from "./fuentes";
 import { colorActivo, htmlFiltroColor, matrizColor } from "./color";
 import { dentroDeZona } from "./zonas";
 import type { Caras, ClipSpec, EstiloSub, Formato, Marca, Transcripcion } from "../tipos";
@@ -24,7 +25,7 @@ export interface EntradaComposicion {
   fuenteVideo: string;
   /** Rutas relativas a la carpeta del reel (o a reels-comp:// en la vista previa). `logo` solo si la marca tiene logo. */
   /** efectos: carpeta de los WAV de efectos de sonido (sin ella, el reel no lleva efectos). */
-  recursos: { gsap: string; fuentes: string; runtime?: string; logo?: string; efectos?: string };
+  recursos: { gsap: string; fuentes: string; runtime?: string; logo?: string; efectos?: string; fuenteIglesia?: string };
   modo: "vista" | "render";
   /** Voz limpia del proyecto (segundo 0 = inicio del rango de la prédica). Sin ella, el video suena con su audio. */
   voz?: { src: string; inicioRango: number };
@@ -190,7 +191,8 @@ export function construirComposicion(e: EntradaComposicion): { html: string; dur
     if (cierre) agregarEfecto(el, e.recursos.efectos, "whoosh", cierre.inicioReel - 0.25, 0.5);
   }
 
-  const css = cssComposicion({ ancho: W, alto: H, color: marca.color, fuentes: e.recursos.fuentes, tamanoSub: TAMANOS[c.subtitulos.estilo][c.subtitulos.tamano], estiloSub: c.subtitulos.estilo });
+  const css = cssComposicion({ ancho: W, alto: H, color: marca.color, fuentes: e.recursos.fuentes, tamanoSub: TAMANOS[c.subtitulos.estilo][c.subtitulos.tamano], estiloSub: c.subtitulos.estilo })
+    + cssFuentesElegidas(c.fuentes, e.recursos.fuenteIglesia);
   return { html: documento(W, H, duracion, css, e.recursos, e.modo, el, js), duracion, ancho: W, alto: H, avisos };
 }
 

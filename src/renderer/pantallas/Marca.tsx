@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import "@hyperframes/player";
-import { ImagePlus, X } from "lucide-react";
+import { ImagePlus, Type, X } from "lucide-react";
 import { construirMuestraMarca } from "@shared/reel/composicion";
 import { MULETILLAS_POR_DEFECTO } from "@shared/reel/cortes-voz";
 import type { Marca as TMarca } from "@shared/tipos";
@@ -17,6 +17,7 @@ let version = 0;
 export function Marca() {
   const [marca, setMarca] = useState<TMarca | null>(null);
   const [src, setSrc] = useState<string | null>(null);
+  const [errorFuente, setErrorFuente] = useState<string | null>(null);
   const guardando = useRef<ReturnType<typeof setTimeout> | null>(null);
   const reproductor = useRef<(HTMLElement & { seek(t: number): void }) | null>(null);
 
@@ -56,6 +57,16 @@ export function Marca() {
     guardando.current = setTimeout(() => void window.reels!.guardarMarca(nueva), 400);
   };
 
+  const elegirFuente = async () => {
+    setErrorFuente(null);
+    try {
+      const ruta = await window.reels!.elegirFuente();
+      if (ruta) cambiar({ fuente: ruta });
+    } catch (e) {
+      setErrorFuente((e instanceof Error ? e.message : String(e)).replace(/^Error invoking remote method '[^']+': (Error: )?/, ""));
+    }
+  };
+
   const elegirLogo = async () => {
     const ruta = await window.reels!.elegirLogo();
     if (ruta) cambiar({ logo: ruta });
@@ -85,6 +96,14 @@ export function Marca() {
               <button type="button" className="btn" onClick={() => void elegirLogo()}><ImagePlus size={16} aria-hidden="true" />{marca.logo ? "Cambiar logo" : "Elegir logo"}</button>
               {marca.logo && <span className="ayuda">PNG con fondo transparente se ve mejor.</span>}
             </div>
+          </div>
+          <div className="campo">Fuente de la iglesia
+            <div className="fila">
+              <button type="button" className="btn" onClick={() => void elegirFuente()}><Type size={16} aria-hidden="true" />{marca.fuente ? "Cambiar fuente de la iglesia" : "Elegir fuente de la iglesia"}</button>
+              {marca.fuente && <span className="ayuda mono">{marca.fuente.split(/[\\/]/).pop()}</span>}
+            </div>
+            <span className="ayuda">Un archivo TTF, OTF, WOFF o WOFF2. Luego elígela en cada clip o en el estilo de la iglesia.</span>
+            {errorFuente && <span className="error" role="alert">{errorFuente}</span>}
           </div>
           <label className="campo">
             <span className="campo-cabeza">Tamaño del logo <span className="mono">{Math.round(marca.logoEscala * 100)} %</span></span>
