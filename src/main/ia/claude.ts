@@ -57,7 +57,7 @@ Escribe como habla la iglesia, cercano y en español sencillo. Que no suene a in
 }
 
 /** El objeto JSON de la respuesta (texto completo, bloque ```json o del primer { al último }). */
-function extraerObjeto(texto: string): unknown {
+export function extraerObjeto(texto: string, mensaje = "Claude no devolvió el reel en el formato esperado. Toca «Pedir a Claude otra vez»."): unknown {
   const intentos = [texto.trim()];
   const bloque = /```(?:json)?\s*([\s\S]*?)```/i.exec(texto);
   if (bloque) intentos.push(bloque[1].trim());
@@ -71,7 +71,7 @@ function extraerObjeto(texto: string): unknown {
       /* siguiente intento */
     }
   }
-  throw new Error("Claude no devolvió el reel en el formato esperado. Toca «Pedir a Claude otra vez».");
+  throw new Error(mensaje);
 }
 
 const DIEZ_MINUTOS = 10 * 60 * 1000;

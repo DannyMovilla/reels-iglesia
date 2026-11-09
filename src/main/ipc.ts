@@ -9,6 +9,7 @@ import { carpetaCreacion, listarExportadosIa, borrarCreacion, copiarFondo, crear
 import type { Analisis, Animo, Caras, ClipSpec, Creacion, Formato, Marca, TipoTarea, Transcripcion } from "@shared/tipos";
 import type { Correccion } from "@shared/correcciones";
 import { clipManual } from "@shared/clip";
+import { pedirCambios, type EntradaHistorial } from "./claude/cambios";
 import { palabrasDe } from "@shared/reel/tiempo";
 import type { Cola } from "./cola/cola";
 import { dimensionesVideo, duracionVideo } from "./procesos/video";
@@ -108,6 +109,8 @@ export function registrarIpc(deps: DepsIpc): void {
   ipcMain.handle("proyectos:quitarCorreccion", (_e, id: string, i: number) => quitarCorreccion(id, i));
   ipcMain.handle("proyectos:caras", (_e, id: string) => leerJson<Caras>(id, "caras.json"));
   ipcMain.handle("proyectos:guardarClip", (_e, id: string, clip: ClipSpec) => guardarClip(id, clip));
+  ipcMain.handle("claude:cambios", (_e, id: string, clip: ClipSpec, pedido: string, historial: EntradaHistorial[]) =>
+    pedirCambios(id, clip, pedido, historial, { comando: process.env.REELS_CLAUDE_COMANDO }));
   ipcMain.handle("proyectos:crearClip", async (_e, id: string, inicio: number, fin: number) => {
     const t = await leerTranscripcion(id);
     if (!t) throw new Error("No hay transcripción para crear el clip.");

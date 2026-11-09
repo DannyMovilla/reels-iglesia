@@ -25,6 +25,7 @@ const api: ApiReels = {
   leerCaras: (id) => ipcRenderer.invoke("proyectos:caras", id),
   guardarClip: (id, clip) => ipcRenderer.invoke("proyectos:guardarClip", id, clip),
   crearClip: (id, inicio, fin) => ipcRenderer.invoke("proyectos:crearClip", id, inicio, fin),
+  pedirCambios: (id, clip, pedido, historial) => ipcRenderer.invoke("claude:cambios", id, clip, pedido, historial),
   leerMarca: () => ipcRenderer.invoke("marca:leer"),
   listarCreaciones: () => ipcRenderer.invoke("ia:listar"),
   crearCreacion: (entrada) => ipcRenderer.invoke("ia:crear", entrada),

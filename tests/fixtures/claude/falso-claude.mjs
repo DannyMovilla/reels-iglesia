@@ -22,6 +22,15 @@ process.stdin.on("end", () => {
     console.log(JSON.stringify({ type: "result", is_error: false, result: "Aquí está:\n```json\n" + JSON.stringify(r) + "\n```" }));
     return;
   }
+  if (entrada.includes("CAMBIOS DE UN CLIP")) {
+    if (modo === "cambios-invalido") {
+      console.log(JSON.stringify({ type: "result", is_error: false, result: "No sé qué hacer." }));
+      return;
+    }
+    const r = readFileSync(join(aqui, "respuesta-cambios.json"), "utf8");
+    console.log(JSON.stringify({ type: "result", is_error: false, result: "Listo:\n```json\n" + r.trim() + "\n```" }));
+    return;
+  }
   if (!entrada.includes("Transcripción:")) {
     console.log(JSON.stringify({ type: "result", is_error: true, result: "Prompt vacío" }));
     process.exit(1);

@@ -9,6 +9,7 @@ import type { Pista } from "@shared/reel/pistas";
 import { Download, FileText, Play, Plus, Scissors } from "lucide-react";
 import { ColaExportacion } from "../componentes/ColaExportacion";
 import { Inspector } from "../componentes/Inspector";
+import type { EntradaChat } from "../componentes/ChatClip";
 import { LineaTiempo } from "../componentes/LineaTiempo";
 import { ListaClips } from "../componentes/ListaClips";
 import { PanelProceso } from "../componentes/PanelProceso";
@@ -41,6 +42,8 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
   const [pistas, setPistas] = useState<Pista[]>([]);
   const [centro, setCentro] = useState<"vista" | "transcripcion">("vista");
   const [rango, setRango] = useState<{ inicio: number; fin: number } | null>(null);
+  /** Pedidos a Claude por clip (en esta sesión), para el historial y Deshacer. */
+  const [conversaciones, setConversaciones] = useState<Record<string, EntradaChat[]>>({});
   useEffect(() => { void window.reels!.listarPistas?.().then(setPistas); }, []);
 
   const recargar = useCallback(async () => {
@@ -213,7 +216,8 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
       </main>
 
       <aside className="editor-der" aria-label="Datos del clip">
-        {clip ? <Inspector clip={clip} avisos={avisos} alCambiar={cambiarClip} alGuardarEstilo={(c) => void guardarEstilo(c)} alAplicarEstilo={() => void aplicarEstilo()} pistas={pistas} palabras={datos.transcripcion ? palabrasDe(datos.transcripcion) : undefined} /> : <p className="vacio">Elige un clip para editarlo.</p>}
+        {clip ? <Inspector clip={clip} avisos={avisos} alCambiar={cambiarClip} alGuardarEstilo={(c) => void guardarEstilo(c)} alAplicarEstilo={() => void aplicarEstilo()} pistas={pistas} palabras={datos.transcripcion ? palabrasDe(datos.transcripcion) : undefined}
+          chat={datos.transcripcion ? { proyectoId, historial: conversaciones[clip.id] ?? [], alHistorial: (h) => setConversaciones((x) => ({ ...x, [clip.id]: h })) } : undefined} /> : <p className="vacio">Elige un clip para editarlo.</p>}
         {clip && (
           <div className="inspector-pie">
             <button type="button" className="btn primario" disabled={clip.formatos.length === 0}

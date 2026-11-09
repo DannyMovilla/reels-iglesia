@@ -6,6 +6,7 @@ import { LIMITES_REDES, NOMBRE_RED, textoParaPublicar } from "@shared/redes";
 import type { Pista } from "@shared/reel/pistas";
 import { detectarRepeticiones } from "@shared/reel/cortes-voz";
 import type { Palabra } from "@shared/reel/tiempo";
+import { ChatClip, type EntradaChat } from "./ChatClip";
 import { NOMBRE_ANIMO } from "../pantallas/Musica";
 
 interface Props {
@@ -20,11 +21,13 @@ interface Props {
   pistas?: Pista[];
   /** Palabras de la transcripción (para sugerir frases repetidas). */
   palabras?: Palabra[];
+  /** Pestaña «Claude»: pedir cambios en palabras (con su historial por clip). */
+  chat?: { proyectoId: string; historial: EntradaChat[]; alHistorial(h: EntradaChat[]): void };
 }
 
 const TONALIDADES = ["Do", "Re", "Mi", "Fa", "Sol", "La", "Si", "Mib", "Lab", "Sib"];
 
-type Pestana = "clip" | "estilo" | "publicar";
+type Pestana = "clip" | "estilo" | "publicar" | "claude";
 
 export function Interruptor({ activo, etiqueta, alCambiar }: { activo: boolean; etiqueta: string; alCambiar(v: boolean): void }) {
   return <button type="button" className="interruptor" role="switch" aria-checked={activo} aria-label={etiqueta} onClick={() => alCambiar(!activo)} />;
@@ -40,7 +43,7 @@ export function Segmentos<T extends string>({ opciones, valor, etiqueta, alCambi
 
 const FORMATOS: [Formato, string, string][] = [["9:16", "Reels · TikTok", "12px 21px"], ["4:5", "Feed IG · FB", "15px 19px"], ["1:1", "Cuadrado", "17px 17px"]];
 
-export function Inspector({ clip: c, avisos, alCambiar, alGuardarEstilo, alAplicarEstilo, pistas, palabras }: Props) {
+export function Inspector({ clip: c, avisos, alCambiar, alGuardarEstilo, alAplicarEstilo, pistas, palabras, chat }: Props) {
   const [pestana, setPestana] = useState<Pestana>("clip");
   const cambiar = (parcial: Partial<ClipSpec>) => alCambiar({ ...c, ...parcial });
   const cambiarVersiculo = (i: number, parcial: Partial<ClipSpec["versiculos"][number]>) =>
@@ -49,7 +52,7 @@ export function Inspector({ clip: c, avisos, alCambiar, alGuardarEstilo, alAplic
   return (
     <div className="inspector">
       <div className="pestanas" role="tablist">
-        {([["clip", "Clip", FileText], ["estilo", "Estilo", Type], ["publicar", "Publicar", Send]] as const).map(([id, texto, Icono]) => (
+        {([["clip", "Clip", FileText], ["estilo", "Estilo", Type], ["publicar", "Publicar", Send], ...(chat ? [["claude", "Claude", Sparkles]] as const : [])] as const).map(([id, texto, Icono]) => (
           <button key={id} type="button" role="tab" aria-selected={pestana === id} onClick={() => setPestana(id)}><Icono size={14} aria-hidden="true" />{texto}</button>
         ))}
       </div>
@@ -209,6 +212,7 @@ export function Inspector({ clip: c, avisos, alCambiar, alGuardarEstilo, alAplic
           </>
         )}
 
+        {pestana === "claude" && chat && <ChatClip proyectoId={chat.proyectoId} clip={c} historial={chat.historial} alHistorial={chat.alHistorial} alAplicar={alCambiar} />}
         {pestana === "publicar" && <Publicar redes={c.redes} alCambiar={(redes) => cambiar({ redes })} />}
       </div>
     </div>
