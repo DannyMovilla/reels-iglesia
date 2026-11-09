@@ -44,3 +44,17 @@ test("el logo se elige y su tamaño va de 50 % a 150 %", async () => {
   await vi.waitFor(() => expect(a.guardarMarca).toHaveBeenLastCalledWith(expect.objectContaining({ logoEscala: 1.4 })), { timeout: 2000 });
   await vi.waitFor(() => expect(a.registrarVista).toHaveBeenLastCalledWith(expect.any(String), expect.stringContaining("marca/logo.png")), { timeout: 2000 });
 });
+
+test("muletillas: se agregan con Enter, se quitan con × y se restablecen", async () => {
+  const a = api();
+  render(<Marca />);
+  const nueva = await screen.findByLabelText("Agregar muletilla");
+  await userEvent.type(nueva, "este{Enter}");
+  await vi.waitFor(() => expect(a.guardarMarca).toHaveBeenLastCalledWith(expect.objectContaining({
+    estilo: expect.objectContaining({ cortes: expect.objectContaining({ lista: ["eh", "ehh", "em", "emm", "mm", "mmm", "este"] }) }),
+  })), { timeout: 2000 });
+  await userEvent.click(screen.getByRole("button", { name: "Quitar «eh»" }));
+  await vi.waitFor(() => expect((a.guardarMarca.mock.calls.at(-1) as unknown as [TMarca])[0].estilo.cortes.lista).not.toContain("eh"), { timeout: 2000 });
+  await userEvent.click(screen.getByRole("button", { name: "Restablecer" }));
+  await vi.waitFor(() => expect((a.guardarMarca.mock.calls.at(-1) as unknown as [TMarca])[0].estilo.cortes.lista).toEqual(["eh", "ehh", "em", "emm", "mm", "mmm"]), { timeout: 2000 });
+});

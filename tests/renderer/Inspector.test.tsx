@@ -155,3 +155,50 @@ test("un versículo que quedó fuera del corte lo avisa", async () => {
   render(<Inspector clip={c} avisos={[]} alCambiar={() => {}} />);
   expect(screen.getByText(/Quedó fuera del corte/)).toBeInTheDocument();
 });
+
+describe("plan 5: ritmo y frases repetidas", () => {
+  const w = (s: number, e: number, t: string) => ({ s, e, t });
+  // "y Dios te" (40–41,2) se repite en 42: la primera toma se sugiere para quitar.
+  const palabras = [w(40, 40.3, "y"), w(40.4, 40.8, "Dios"), w(40.9, 41.2, "te"), w(42, 42.3, "y"), w(42.4, 42.8, "Dios"), w(42.9, 43.2, "te"), w(43.3, 43.8, "ama.")];
+  function ConPalabras({ alCambiar, clip = base }: { alCambiar: (c: ClipSpec) => void; clip?: ClipSpec }) {
+    const [c, setC] = useState(clip);
+    return <Inspector clip={c} avisos={[]} palabras={palabras} alCambiar={(n) => { setC(n); alCambiar(n); }} />;
+  }
+
+  test("intensidad Suave / Normal / Fuerte; deshabilitada si las pausas están apagadas", async () => {
+    const alCambiar = vi.fn();
+    render(<ConPalabras alCambiar={alCambiar} />);
+    await userEvent.click(screen.getByRole("tab", { name: /Estilo/ }));
+    const grupo = screen.getByRole("group", { name: "Intensidad de los cortes" });
+    expect(within(grupo).getByRole("button", { name: "Normal" })).toHaveAttribute("aria-pressed", "true");
+    expect(within(grupo).getByRole("button", { name: "Suave" })).toBeDisabled(); // el clip de prueba no acorta pausas
+    await userEvent.click(screen.getByRole("switch", { name: "Acortar pausas largas" }));
+    await userEvent.click(within(grupo).getByRole("button", { name: "Fuerte" }));
+    expect(alCambiar.mock.calls.at(-1)![0].cortes.intensidad).toBe("fuerte");
+    await userEvent.click(screen.getByRole("switch", { name: "Acortar pausas largas" }));
+    expect(within(grupo).getByRole("button", { name: "Suave" })).toBeDisabled();
+  });
+
+  test("las frases repetidas se quitan y se vuelven a poner", async () => {
+    const alCambiar = vi.fn();
+    render(<ConPalabras alCambiar={alCambiar} />);
+    await userEvent.click(screen.getByRole("tab", { name: /Estilo/ }));
+    expect(screen.getByText("«y Dios te»")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Quitar «y Dios te»" }));
+    expect(alCambiar.mock.calls.at(-1)![0].cortes.quitados).toEqual([{ inicio: 40, fin: 42 }]);
+    expect(screen.getByText("Tramos quitados a mano: 1")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Volver a poner «y Dios te»" }));
+    expect(alCambiar.mock.calls.at(-1)![0].cortes.quitados).toEqual([]);
+  });
+
+  test("sin repeticiones: un aviso; «Volver a poner todos» vacía los quitados", async () => {
+    const alCambiar = vi.fn();
+    const conQuitados = { ...base, inicio: 50, fin: 60, cortes: { ...base.cortes, quitados: [{ inicio: 51, fin: 52 }, { inicio: 55, fin: 56 }] } };
+    render(<ConPalabras alCambiar={alCambiar} clip={conQuitados} />);
+    await userEvent.click(screen.getByRole("tab", { name: /Estilo/ }));
+    expect(screen.getByText("No encontré frases repetidas en este clip.")).toBeInTheDocument();
+    expect(screen.getByText("Tramos quitados a mano: 2")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Volver a poner todos" }));
+    expect(alCambiar.mock.calls.at(-1)![0].cortes.quitados).toEqual([]);
+  });
+});

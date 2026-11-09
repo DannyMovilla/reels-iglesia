@@ -153,7 +153,7 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
       </main>
 
       <aside className="editor-der" aria-label="Datos del clip">
-        {clip ? <Inspector clip={clip} avisos={avisos} alCambiar={cambiarClip} alGuardarEstilo={(c) => void guardarEstilo(c)} alAplicarEstilo={() => void aplicarEstilo()} pistas={pistas} /> : <p className="vacio">Elige un clip para editarlo.</p>}
+        {clip ? <Inspector clip={clip} avisos={avisos} alCambiar={cambiarClip} alGuardarEstilo={(c) => void guardarEstilo(c)} alAplicarEstilo={() => void aplicarEstilo()} pistas={pistas} palabras={datos.transcripcion ? palabrasDe(datos.transcripcion) : undefined} /> : <p className="vacio">Elige un clip para editarlo.</p>}
         {clip && (
           <div className="inspector-pie">
             <button type="button" className="btn primario" disabled={clip.formatos.length === 0}

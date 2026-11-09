@@ -4,6 +4,8 @@ import { ANIMOS, type Animo, type ClipSpec, type EstiloSub, type Formato, type R
 import { ESTILOS_SUB, NOMBRE_ESTILO } from "@shared/reel/estilos-sub";
 import { LIMITES_REDES, NOMBRE_RED, textoParaPublicar } from "@shared/redes";
 import type { Pista } from "@shared/reel/pistas";
+import { detectarRepeticiones } from "@shared/reel/cortes-voz";
+import type { Palabra } from "@shared/reel/tiempo";
 import { NOMBRE_ANIMO } from "../pantallas/Musica";
 
 interface Props {
@@ -16,6 +18,8 @@ interface Props {
   alAplicarEstilo?(): void;
   /** Pistas propias de la iglesia (para "Mi pista"). */
   pistas?: Pista[];
+  /** Palabras de la transcripción (para sugerir frases repetidas). */
+  palabras?: Palabra[];
 }
 
 const TONALIDADES = ["Do", "Re", "Mi", "Fa", "Sol", "La", "Si", "Mib", "Lab", "Sib"];
@@ -26,17 +30,17 @@ export function Interruptor({ activo, etiqueta, alCambiar }: { activo: boolean; 
   return <button type="button" className="interruptor" role="switch" aria-checked={activo} aria-label={etiqueta} onClick={() => alCambiar(!activo)} />;
 }
 
-export function Segmentos<T extends string>({ opciones, valor, etiqueta, alCambiar }: { opciones: [T, string][]; valor: T; etiqueta: string; alCambiar(v: T): void }) {
+export function Segmentos<T extends string>({ opciones, valor, etiqueta, alCambiar, deshabilitado }: { opciones: [T, string][]; valor: T; etiqueta: string; alCambiar(v: T): void; deshabilitado?: boolean }) {
   return (
     <div className="seg" role="group" aria-label={etiqueta}>
-      {opciones.map(([v, texto]) => <button key={v} type="button" aria-pressed={valor === v} onClick={() => alCambiar(v)}>{texto}</button>)}
+      {opciones.map(([v, texto]) => <button key={v} type="button" disabled={deshabilitado} aria-pressed={valor === v} onClick={() => alCambiar(v)}>{texto}</button>)}
     </div>
   );
 }
 
 const FORMATOS: [Formato, string, string][] = [["9:16", "Reels · TikTok", "12px 21px"], ["4:5", "Feed IG · FB", "15px 19px"], ["1:1", "Cuadrado", "17px 17px"]];
 
-export function Inspector({ clip: c, avisos, alCambiar, alGuardarEstilo, alAplicarEstilo, pistas }: Props) {
+export function Inspector({ clip: c, avisos, alCambiar, alGuardarEstilo, alAplicarEstilo, pistas, palabras }: Props) {
   const [pestana, setPestana] = useState<Pestana>("clip");
   const cambiar = (parcial: Partial<ClipSpec>) => alCambiar({ ...c, ...parcial });
   const cambiarVersiculo = (i: number, parcial: Partial<ClipSpec["versiculos"][number]>) =>
@@ -143,7 +147,10 @@ export function Inspector({ clip: c, avisos, alCambiar, alGuardarEstilo, alAplic
             </div>
             <div className="grupo"><h3>Ritmo</h3>
               <div className="fila"><Interruptor activo={c.cortes.pausas} etiqueta="Acortar pausas largas" alCambiar={(pausas) => cambiar({ cortes: { ...c.cortes, pausas } })} /> Acortar pausas largas</div>
+              <Segmentos etiqueta="Intensidad de los cortes" valor={c.cortes.intensidad ?? "normal"} deshabilitado={!c.cortes.pausas}
+                opciones={[["suave", "Suave"], ["normal", "Normal"], ["fuerte", "Fuerte"]]} alCambiar={(intensidad) => cambiar({ cortes: { ...c.cortes, intensidad } })} />
               <div className="fila"><Interruptor activo={c.cortes.muletillas} etiqueta="Quitar muletillas" alCambiar={(muletillas) => cambiar({ cortes: { ...c.cortes, muletillas } })} /> Quitar muletillas («eh», «em»)</div>
+              {palabras && <Repeticiones clip={c} palabras={palabras} alCambiar={(quitados) => cambiar({ cortes: { ...c.cortes, quitados } })} />}
             </div>
             <div className="grupo"><h3>Música</h3>
               <Segmentos etiqueta="Música" valor={c.musica.modo} opciones={[["auto", "Automática"], ["pista", "Mi pista"], ["pad", "Pad"], ["ninguna", "Sin música"]]}
@@ -255,5 +262,40 @@ export function Publicar({ redes, alCambiar }: { redes: Redes; alCambiar(r: Rede
         {copiado && <span className="ok-texto" role="status">Copiado</span>}
       </div>
     </>
+  );
+}
+
+/** Frases repetidas que la app sugiere quitar (nada se quita hasta tocar "Quitar") y los tramos quitados. */
+function Repeticiones({ clip: c, palabras, alCambiar }: { clip: ClipSpec; palabras: Palabra[]; alCambiar(q: { inicio: number; fin: number }[]): void }) {
+  const sugerencias = detectarRepeticiones(palabras, c.inicio, c.fin);
+  const quitados = c.cortes.quitados ?? [];
+  const igual = (a: { inicio: number; fin: number }, b: { inicio: number; fin: number }) => a.inicio === b.inicio && a.fin === b.fin;
+  return (
+    <div className="repeticiones">
+      <h4>Frases repetidas</h4>
+      {sugerencias.length === 0 && <p className="ayuda">No encontré frases repetidas en este clip.</p>}
+      {sugerencias.length > 0 && (
+        <ul>
+          {sugerencias.map((r) => {
+            const q = quitados.some((x) => igual(x, r));
+            return (
+              <li key={`${r.inicio}-${r.fin}`} className={q ? "quitada" : ""}>
+                <span>«{r.texto}»</span>
+                <button type="button" className="btn pequeno" aria-label={`${q ? "Volver a poner" : "Quitar"} «${r.texto}»`}
+                  onClick={() => alCambiar(q ? quitados.filter((x) => !igual(x, r)) : [...quitados, { inicio: r.inicio, fin: r.fin }])}>
+                  {q ? "Volver a poner" : "Quitar"}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+      {quitados.length > 0 && (
+        <div className="fila">
+          <span>Tramos quitados a mano: {quitados.length}</span>
+          <button type="button" className="btn pequeno fantasma" onClick={() => alCambiar([])}>Volver a poner todos</button>
+        </div>
+      )}
+    </div>
   );
 }

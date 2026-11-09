@@ -54,7 +54,7 @@ export function estiloDesdeClip(c: ClipSpec): EstiloIglesia {
   return structuredClone({
     subtitulos: { estilo: c.subtitulos.estilo, tamano: c.subtitulos.tamano },
     musica: { modo: c.musica.modo, volumen: c.musica.volumen },
-    cortes: c.cortes,
+    cortes: (({ quitados: _q, ...resto }) => resto)(c.cortes),
     efectos: c.efectos,
     cierre: c.cierre,
     formatos: c.formatos,
@@ -67,7 +67,8 @@ export function aplicarEstiloAClip(c: ClipSpec, e: EstiloIglesia): ClipSpec {
     ...c,
     subtitulos: { ...c.subtitulos, estilo: e.subtitulos.estilo, tamano: e.subtitulos.tamano },
     musica: { ...c.musica, modo: e.musica.modo, volumen: e.musica.volumen },
-    cortes: e.cortes,
+    // Los tramos quitados son del contenido del clip: se conservan.
+    cortes: { ...e.cortes, ...(c.cortes?.quitados ? { quitados: c.cortes.quitados } : {}) },
     efectos: e.efectos,
     cierre: e.cierre,
     formatos: e.formatos,

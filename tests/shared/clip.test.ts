@@ -56,3 +56,12 @@ test("el estilo de la iglesia se toma de un clip", async () => {
     cierre: false, formatos: ["1:1"],
   });
 });
+
+test("plan 5: aplicar el estilo de la iglesia copia intensidad y lista pero conserva los tramos quitados del clip", async () => {
+  const { aplicarEstiloAClip, estiloDesdeClip } = await import("../../src/shared/clip");
+  const c = completarClip({ ...viejo, cortes: { pausas: true, muletillas: true, quitados: [{ inicio: 40, fin: 41 }] } }, ESTILO_POR_DEFECTO);
+  const e = { ...ESTILO_POR_DEFECTO, cortes: { pausas: true, muletillas: false, intensidad: "fuerte" as const, lista: ["este"] } };
+  const r = aplicarEstiloAClip(c, e);
+  expect(r.cortes).toEqual({ pausas: true, muletillas: false, intensidad: "fuerte", lista: ["este"], quitados: [{ inicio: 40, fin: 41 }] });
+  expect(estiloDesdeClip(r).cortes).toEqual({ pausas: true, muletillas: false, intensidad: "fuerte", lista: ["este"] });
+});

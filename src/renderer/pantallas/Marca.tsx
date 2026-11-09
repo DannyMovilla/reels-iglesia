@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import "@hyperframes/player";
-import { ImagePlus } from "lucide-react";
+import { ImagePlus, X } from "lucide-react";
 import { construirMuestraMarca } from "@shared/reel/composicion";
+import { MULETILLAS_POR_DEFECTO } from "@shared/reel/cortes-voz";
 import type { Marca as TMarca } from "@shared/tipos";
 
 type Red = keyof TMarca["redes"];
@@ -101,6 +102,8 @@ export function Marca() {
           <label className="campo">Predicador por defecto
             <input className="entrada" value={marca.predicador ?? ""} placeholder="Pastor Juan Pérez" onChange={(e) => cambiar({ predicador: e.target.value || undefined })} />
           </label>
+          <Muletillas lista={marca.estilo.cortes.lista ?? MULETILLAS_POR_DEFECTO}
+            alCambiar={(lista) => cambiar({ estilo: { ...marca.estilo, cortes: { ...marca.estilo.cortes, lista } } })} />
         </div>
         <div className="marca-vista" aria-label="Vista previa del cierre">
           <div className="pantalla-reel" style={{ aspectRatio: "1080 / 1920" }}>
@@ -109,5 +112,33 @@ export function Marca() {
         </div>
       </div>
     </section>
+  );
+}
+
+/** Muletillas que se quitan de los clips (solo cuando van sueltas). Llegan a los clips con "Aplicar a todos los clips". */
+function Muletillas({ lista, alCambiar }: { lista: string[]; alCambiar(l: string[]): void }) {
+  const [nueva, setNueva] = useState("");
+  const agregar = () => {
+    const t = nueva.trim().toLowerCase();
+    if (t && !lista.includes(t)) alCambiar([...lista, t]);
+    setNueva("");
+  };
+  return (
+    <fieldset className="grupo-redes muletillas">
+      <legend>Muletillas que se quitan</legend>
+      <p className="ayuda">Solo se quitan cuando van sueltas, con una pausa antes o después.</p>
+      <div className="chips">
+        {lista.map((m) => (
+          <span key={m} className="chip">{m}
+            <button type="button" aria-label={`Quitar «${m}»`} onClick={() => alCambiar(lista.filter((x) => x !== m))}><X size={12} aria-hidden="true" /></button>
+          </span>
+        ))}
+      </div>
+      <div className="fila">
+        <input className="entrada" aria-label="Agregar muletilla" placeholder="Escribe y presiona Enter" value={nueva}
+          onChange={(e) => setNueva(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); agregar(); } }} />
+        <button type="button" className="btn pequeno fantasma" onClick={() => alCambiar([...MULETILLAS_POR_DEFECTO])}>Restablecer</button>
+      </div>
+    </fieldset>
   );
 }
