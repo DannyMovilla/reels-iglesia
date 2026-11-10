@@ -24,8 +24,10 @@ export function BarraTitulo({ migas, acciones }: Props) {
           ))}
         </nav>
       )}
+      {/* Huecos donde cada pantalla pone su estado y sus acciones (el editor: «Prédica lista», Guardar estilo, Exportar). */}
+      <div className="barra-estado" id="barra-estado" />
       <span className="espacio" />
-      {acciones && <div className="acciones">{acciones}</div>}
+      <div className="acciones" id="barra-acciones">{acciones}</div>
       <div className="ventana" aria-label="Ventana">
         <button type="button" aria-label="Minimizar" onClick={() => ventana?.minimizar()}><Minus size={16} /></button>
         <button type="button" aria-label="Maximizar" onClick={() => ventana?.maximizar()}><Square size={13} /></button>

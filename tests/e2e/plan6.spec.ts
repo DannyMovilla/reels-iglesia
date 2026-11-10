@@ -46,6 +46,7 @@ test("plan 6: entregas (SRT, PDF, MP3, traducción), color y fuente, y exportar"
   await v.getByRole("tab", { name: "Imagen" }).click();
   await v.getByRole("group", { name: "Look de color" }).getByRole("button", { name: "Cine" }).click();
   await v.getByRole("tab", { name: "Subtítulos" }).click();
+  await v.getByRole("button", { name: /^Fuentes/ }).click();
   await v.getByLabel("Fuente de títulos").selectOption("montserrat");
   await v.getByRole("tab", { name: "Publicar" }).click();
   await v.getByRole("group", { name: "Formatos" }).getByRole("button", { name: /4:5/ }).click();

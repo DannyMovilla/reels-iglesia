@@ -23,12 +23,15 @@ interface Props {
   alCambiarCorte(inicio: number, fin: number): void;
   /** Tocar el nombre de una pista abre sus ajustes en el panel de la derecha. */
   alElegirPista?(c: Categoria): void;
+  /** Categoría abierta en el panel: su pista se ve resaltada. */
+  categoriaActiva?: Categoria;
   alAlternarReproduccion?(): void;
 }
 
 const conDecimal = (t: number) => `${formatoTiempo(t)}.${Math.floor((t % 1) * 10)}`;
 
-export function LineaTiempo({ clip, palabras, tiempoActual, alBuscar, alCambiarCorte, alElegirPista, alAlternarReproduccion }: Props) {
+export function LineaTiempo({ clip, palabras, tiempoActual, alBuscar, alCambiarCorte, alElegirPista, categoriaActiva, alAlternarReproduccion }: Props) {
+  const act = (c: Categoria) => (categoriaActiva === c ? " activo" : "");
   const [error, setError] = useState<string | null>(null);
   const [arrastre, setArrastre] = useState<{ borde: "inicio" | "fin"; delta: number } | null>(null);
   const carriles = useRef<HTMLDivElement>(null);
@@ -104,7 +107,7 @@ export function LineaTiempo({ clip, palabras, tiempoActual, alBuscar, alCambiarC
         {alElegirPista ? (
           <div className="lt-etiquetas" role="group" aria-label="Pistas">
             {PISTAS.map(([Icono, nombre, cat]) => (
-              <button key={nombre} type="button" title={`Ajustes de ${nombre.toLowerCase()}`} onClick={() => alElegirPista(cat)}><Icono size={13} aria-hidden="true" />{nombre}</button>
+              <button key={nombre} type="button" title={`Ajustes de ${nombre.toLowerCase()}`} aria-pressed={categoriaActiva === cat} onClick={() => alElegirPista(cat)}><Icono size={13} aria-hidden="true" />{nombre}</button>
             ))}
           </div>
         ) : (
@@ -114,7 +117,7 @@ export function LineaTiempo({ clip, palabras, tiempoActual, alBuscar, alCambiarC
         )}
         <div className="lt-carriles" ref={carriles} onPointerDown={(e) => alBuscar(tiempoEn(e.clientX))}>
           <div className="lt-regla">{marcas.map((m) => <span key={m} style={{ left: pct(m) }}>{formatoTiempo(m)}</span>)}</div>
-          <div className="lt-carril video">
+          <div className={`lt-carril video${act("imagen")}`}>
             {partes.map((p) => {
               const b = bloquePara(p);
               return (
@@ -131,12 +134,12 @@ export function LineaTiempo({ clip, palabras, tiempoActual, alBuscar, alCambiarC
               );
             })}
           </div>
-          <div className="lt-carril">
+          <div className={`lt-carril${act("gancho")}`}>
             {durGancho > 0 && (
               <div className="lt-bloque gancho" style={{ left: 0, width: pct(durGancho) }} onClick={() => alElegirPista?.("gancho")}><Type size={11} aria-hidden="true" />{clip.gancho}</div>
             )}
           </div>
-          <div className="lt-carril" onClick={() => alElegirPista?.("subtitulos")}>
+          <div className={`lt-carril${act("subtitulos")}`} onClick={() => alElegirPista?.("subtitulos")}>
             {bloques.map((b, i) => (
               <div key={i} className={`lt-sub${b.palabras.some((p) => p.clave) ? " clave" : ""}`} style={{ left: pct(b.desde), width: pct(Math.max(0.1, b.hasta - b.desde)) }} />
             ))}
@@ -144,12 +147,12 @@ export function LineaTiempo({ clip, palabras, tiempoActual, alBuscar, alCambiarC
               <div key={v.ref} className="lt-oculto" style={{ left: pct(w.desde), width: pct(w.hasta - w.desde) }}><EyeOff size={11} aria-hidden="true" />ocultos por la cita</div>
             ))}
           </div>
-          <div className="lt-carril">
+          <div className={`lt-carril${act("versiculo")}`}>
             {ventanas.map(({ v, w }) => (
               <div key={v.ref} className="lt-bloque versiculo" style={{ left: pct(w.desde), width: pct(w.hasta - w.desde) }} onClick={() => alElegirPista?.("versiculo")}><BookOpen size={11} aria-hidden="true" />{v.ref}</div>
             ))}
           </div>
-          <div className="lt-carril">
+          <div className={`lt-carril${act("audio")}`}>
             {clip.musica.modo !== "ninguna" && (
               <div className="lt-bloque musica" style={{ left: 0, width: "100%" }} onClick={() => alElegirPista?.("audio")}><Music size={11} aria-hidden="true" />Música · {NOMBRE_MUSICA[clip.musica.modo]}</div>
             )}

@@ -252,6 +252,7 @@ test("plan 6: fuente de títulos y de subtítulos (la de la iglesia solo si la m
   const alCambiar = vi.fn();
   const { rerender } = render(<Inspector clip={base} avisos={[]} alCambiar={alCambiar} />);
   await userEvent.click(screen.getByRole("tab", { name: "Subtítulos" }));
+  await userEvent.click(screen.getByRole("button", { name: /^Fuentes/ }));
   expect(screen.queryByRole("option", { name: "La de la iglesia" })).toBeNull();
   expect(screen.getByLabelText("Fuente de títulos")).toHaveValue("figtree");
   await userEvent.selectOptions(screen.getByLabelText("Fuente de títulos"), "montserrat");
@@ -281,6 +282,7 @@ test("plan 7: cambiar el look mientras se mide el tono no se pierde", async () =
 test("plan 7: si el clip usa la fuente de la iglesia y el archivo falta, el selector lo dice", async () => {
   render(<Inspector clip={{ ...base, fuentes: { titulos: "iglesia", subtitulos: "montserrat" } }} avisos={[]} alCambiar={() => {}} />);
   await userEvent.click(screen.getByRole("tab", { name: "Subtítulos" }));
+  await userEvent.click(screen.getByRole("button", { name: /^Fuentes/ }));
   expect(screen.getByLabelText("Fuente de títulos")).toHaveValue("iglesia");
   expect(screen.getByRole("option", { name: "La de la iglesia (falta el archivo: se usa Figtree)" })).toBeInTheDocument();
 });

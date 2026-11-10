@@ -23,7 +23,9 @@ export interface Muestra {
 /** Lienzo de la muestra: el ancho del reel y solo la franja del medio (así las 15 tarjetas entran en el panel). */
 const ANCHO = 1080, ALTO = 260;
 /** Ancho del lienzo que se ve en la tarjeta con `recorte` (solo el centro): así el texto se ve más grande. */
-export const VISIBLE = 840;
+export const VISIBLE = 820;
+/** Alto de la tarjeta con `recorte` (en px del lienzo): más alta que la franja, como en la maqueta. */
+const ALTO_VISIBLE = 480;
 const FRASE = "Tu prueba no es el final";
 
 /** Antepone `raiz` a cada selector, para que el CSS de la muestra no toque el resto de la app. */
@@ -166,7 +168,7 @@ export function Galeria<T extends string>({ etiqueta, opciones: todas, valor, al
   };
   const rejilla = (
     <div className="galeria" role="radiogroup" aria-label={etiqueta} ref={grupo}
-      style={{ ["--vis" as string]: visible, ["--x" as string]: `${-(ANCHO - visible) / 2}px` }}>
+      style={{ ["--vis" as string]: visible, ["--alto" as string]: recorte ? ALTO_VISIBLE : ALTO, ["--x" as string]: `${-(ANCHO - visible) / 2}px`, ["--y" as string]: `${recorte ? (ALTO_VISIBLE - ALTO) / 2 : 0}px` }}>
       {opciones.map(([id, nombre], i) => (
         <button key={id} type="button" role="radio" aria-checked={valor === id} aria-label={nombre} tabIndex={valor === id ? 0 : -1}
           className="galeria-opcion" onClick={() => alCambiar(id)} onKeyDown={(e) => mover(e, i)}>

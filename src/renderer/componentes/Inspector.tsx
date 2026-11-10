@@ -175,12 +175,12 @@ export function Inspector({ clip: c, avisos, alCambiar, alGuardarEstilo, alAplic
                 <Segmentos etiqueta="Tamaño de subtítulos" valor={c.subtitulos.tamano} opciones={[["s", "Chico"], ["m", "Medio"], ["l", "Grande"]]}
                   alCambiar={(tamano) => cambiar({ subtitulos: { ...c.subtitulos, tamano } })} />
               </Seccion>
-              <Seccion titulo="Altura en pantalla" resumen={`${Math.round(c.subtitulos.altura * 100)} %`}>
+              <Seccion titulo="Altura en pantalla" abierta={false} resumen={`${Math.round(c.subtitulos.altura * 100)} %`}>
                 <label className="campo">Altura (9:16)
                   <input type="range" min={0.55} max={0.86} step={0.01} value={c.subtitulos.altura} onChange={(e) => cambiar({ subtitulos: { ...c.subtitulos, altura: Number(e.target.value) } })} />
                 </label>
               </Seccion>
-              <Seccion titulo="Fuentes" resumen={`${nombreFuente(fuentes.titulos)} · ${nombreFuente(fuentes.subtitulos)}`}>
+              <Seccion titulo="Fuentes" abierta={false} resumen={`${nombreFuente(fuentes.titulos)} · ${nombreFuente(fuentes.subtitulos)}`}>
                 {(["titulos", "subtitulos"] as const).map((k) => (
                   <label key={k} className="campo">{k === "titulos" ? "Fuente de títulos" : "Fuente de subtítulos"}
                     <select className="entrada" aria-label={k === "titulos" ? "Fuente de títulos" : "Fuente de subtítulos"}

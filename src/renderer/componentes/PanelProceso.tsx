@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { Check, ChevronDown, CircleAlert, Circle, LoaderCircle, RotateCcw, Sparkles } from "lucide-react";
 import type { Analisis, NombrePaso, Proyecto, Tarea, TipoTarea } from "@shared/tipos";
 import { limpiarAnalisis, OpcionesAnalisis } from "./OpcionesAnalisis";
@@ -18,9 +19,11 @@ interface Props {
   alProcesar(desde: TipoTarea): void;
   /** "Analizar de nuevo" con otra instrucción o duración. */
   alReanalizar?(a: Analisis): void;
+  /** Dónde va el resumen «Prédica lista» (la barra de arriba); si no hay, va en el panel. */
+  destinoResumen?: HTMLElement | null;
 }
 
-export function PanelProceso({ proyecto, tareas, alReintentar, alProcesar, alReanalizar }: Props) {
+export function PanelProceso({ proyecto, tareas, alReintentar, alProcesar, alReanalizar, destinoResumen }: Props) {
   const [reanalizando, setReanalizando] = useState<Analisis | null>(null);
   const analizando = tareas.some((t) => t.proyectoId === proyecto.id && t.tipo === "analizar" && (t.estado === "pendiente" || t.estado === "corriendo"));
   const puedeReanalizar = alReanalizar && proyecto.pasos.analisis?.estado === "ok" && !analizando;
@@ -29,16 +32,17 @@ export function PanelProceso({ proyecto, tareas, alReintentar, alProcesar, alRea
   const terminado = !ocupado && PASOS.every(({ paso }) => proyecto.pasos[paso]?.estado === "ok");
   const [abierto, setAbierto] = useState(false);
   const compacto = terminado && !abierto;
-  return (
-    <>
-    {!terminado && <div className="titulo-seccion">Proceso</div>}
-    {terminado && (
+  const resumen = (
       <button type="button" className="proceso-resumen" aria-expanded={abierto} onClick={() => setAbierto((a) => !a)}>
         <span className="punto" aria-hidden="true"><Check size={13} strokeWidth={2.6} /></span>
         <span>Prédica lista <span className="tenue">· {PASOS.length} de {PASOS.length} pasos</span></span>
         <ChevronDown size={15} className="flecha" aria-hidden="true" />
       </button>
-    )}
+  );
+  return (
+    <>
+    {!terminado && <div className="titulo-seccion">Proceso</div>}
+    {terminado && (destinoResumen ? createPortal(resumen, destinoResumen) : resumen)}
     <ol className={`pasos${compacto ? " compacta" : ""}`} aria-label="Proceso">
       {PASOS.map(({ paso, tipo, titulo }) => {
         const p = proyecto.pasos[paso] ?? { estado: "pendiente" as const };

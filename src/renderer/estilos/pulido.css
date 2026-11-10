@@ -285,3 +285,28 @@ select.entrada, .orden select, .selector-zona select {
 .editor-abajo { overflow: hidden; }
 .linea-tiempo { grid-template-columns: minmax(0, 1fr); }
 .lt-pie { min-width: 0; }
+
+/* Como la maqueta: estado y acciones del clip en la barra de arriba; título y pestañas en una fila. */
+.barra-estado { display: flex; align-items: center; -webkit-app-region: no-drag; }
+.barra-estado:empty { display: none; }
+.barra-titulo .proceso-resumen { margin: 0 0 0 6px; min-height: 28px; padding: 0 10px; gap: 7px; border-radius: 999px; border: 0; background: rgba(74, 222, 128, 0.12); color: var(--ok); font-size: 12px; }
+.barra-titulo .proceso-resumen .punto { width: 16px; height: 16px; background: none; }
+.barra-titulo .proceso-resumen .tenue { color: inherit; opacity: 0.8; }
+.barra-titulo .proceso-resumen .flecha { color: inherit; }
+.barra-titulo .acciones { align-items: center; gap: 8px; margin-right: 6px; }
+.barra-titulo .acciones .btn { height: 34px; margin: 0; }
+.barra-titulo .guardar-estilo { margin-left: 0; border: 1px solid var(--line-2); }
+.centro-cabeza { min-height: 48px; padding-bottom: 8px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.centro-cabeza .centro-pestanas { margin-left: auto; border-bottom: 0; padding: 3px; gap: 2px; border-radius: 10px; background: var(--bg-1); border: 1px solid var(--line); }
+.centro-cabeza .centro-pestanas button { height: 32px; padding: 0 12px; border-radius: 7px; border-bottom: 0; font-size: 12.5px; }
+.centro-cabeza .centro-pestanas button[aria-selected="true"] { background: var(--bg-3); color: var(--text); }
+.centro-cabeza .guardar-estilo { margin-left: auto; }
+.centro-cabeza .guardar-estilo ~ .centro-pestanas { margin-left: 0; }
+.lt-etiquetas button[aria-pressed="true"] { color: var(--text); background: var(--luz-soft); }
+.lt-carril.activo { background: color-mix(in srgb, var(--luz) 7%, transparent); border-radius: 6px; }
+.muestra-escenario { aspect-ratio: var(--vis, 1080) / var(--alto, 260); }
+.muestra-lienzo { transform: scale(var(--k, 0.14)) translate(var(--x, 0px), var(--y, 0px)); }
+.centro-cabeza { flex-wrap: nowrap; }
+.centro-cabeza .centro-titulo { flex: 1 1 auto; }
+.centro-cabeza .centro-pestanas { flex: none; }
+.centro-cabeza .centro-pestanas svg { display: none; }

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { TriangleAlert } from "lucide-react";
 import type { Caras, ClipSpec, Marca, NivelVoz, Proyecto, Tarea, Transcripcion } from "@shared/tipos";
 import { formatoTiempo } from "@shared/validar";
@@ -58,6 +59,9 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
   /** Categoría abierta en el panel de la derecha (la línea de tiempo también la cambia). */
   const [categoria, setCategoria] = useState<Categoria>("gancho");
   const [estiloGuardado, setEstiloGuardado] = useState(false);
+  /** Huecos de la barra de arriba (si la pantalla corre sin ella, todo queda en el editor). */
+  const [barra, setBarra] = useState<{ estado: HTMLElement | null; acciones: HTMLElement | null }>({ estado: null, acciones: null });
+  useEffect(() => setBarra({ estado: document.getElementById("barra-estado"), acciones: document.getElementById("barra-acciones") }), []);
   useEffect(() => { void window.reels!.listarPistas?.().then(setPistas); }, []);
 
   const recargar = useCallback(async () => {
@@ -190,10 +194,24 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
   const visibles = clips.filter((c) => !c.oculto);
   const rangoEnClip = clip && rango && rango.inicio >= clip.inicio && rango.fin <= clip.fin ? rango : null;
 
+  const botonesClip = clip && (
+    <>
+      <button type="button" className="btn fantasma guardar-estilo" title="Guardar como estilo de la iglesia: los próximos clips salen igual"
+        onClick={() => void guardarEstilo(clip).then(() => { setEstiloGuardado(true); setTimeout(() => setEstiloGuardado(false), 2000); })}>
+        {estiloGuardado ? <><Check size={15} aria-hidden="true" />Estilo guardado</> : "Guardar estilo"}
+      </button>
+      <button type="button" className="btn primario exportar-clip" disabled={clip.formatos.length === 0}
+        title={clip.formatos.length === 0 ? "Elige al menos un formato en Publicar" : undefined}
+        onClick={() => void exportar(proyecto.id, [clip.id])}>
+        <Download size={15} aria-hidden="true" />Exportar este clip
+      </button>
+    </>
+  );
   return (
     <div className="editor">
+      {barra.acciones && botonesClip && createPortal(botonesClip, barra.acciones)}
       <aside className="editor-izq" aria-label="Proceso y clips">
-        <PanelProceso proyecto={proyecto} tareas={tareas} alReintentar={(id) => void window.reels!.reintentar(id)}
+        <PanelProceso proyecto={proyecto} destinoResumen={barra.estado} tareas={tareas} alReintentar={(id) => void window.reels!.reintentar(id)}
           alProcesar={(desde) => void window.reels!.procesar(proyecto.id, desde)}
           alReanalizar={(a) => void intentar(async () => { await window.reels!.reanalizar(proyecto.id, a); await recargar(); })} />
         <div className="titulo-seccion">Clips <span>{visibles.length === 1 ? "1 sugerido" : visibles.length ? `${visibles.length} sugeridos` : ""}</span></div>
@@ -222,26 +240,18 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
         {errorUbicar && <p className="error" role="alert">{errorUbicar}</p>}
         {errorAccion && <p className="error" role="alert">{errorAccion}</p>}
         {errorVoz && <p className="aviso" role="status"><TriangleAlert size={16} aria-hidden="true" />{errorVoz}</p>}
-        {clip && (
+        {(clip || datos.transcripcion) && (
           <div className="centro-cabeza">
-            <div className="centro-titulo"><h2>{clip.titulo}</h2><span>{clip.categoria} · {formatoTiempo(datos.transcripcion ? duracionReel(clip, palabrasDe(datos.transcripcion)) : clip.fin - clip.inicio)}</span></div>
-            <button type="button" className="btn fantasma guardar-estilo" title="Guardar como estilo de la iglesia: los próximos clips salen igual"
-              onClick={() => void guardarEstilo(clip).then(() => { setEstiloGuardado(true); setTimeout(() => setEstiloGuardado(false), 2000); })}>
-              {estiloGuardado ? <><Check size={15} aria-hidden="true" />Estilo guardado</> : "Guardar estilo"}
-            </button>
-            <button type="button" className="btn primario exportar-clip" disabled={clip.formatos.length === 0}
-              title={clip.formatos.length === 0 ? "Elige al menos un formato en Publicar" : undefined}
-              onClick={() => void exportar(proyecto.id, [clip.id])}>
-              <Download size={15} aria-hidden="true" />Exportar este clip
-            </button>
-          </div>
-        )}
-        {datos.transcripcion && (
-          <div className="pestanas centro-pestanas" role="tablist" aria-label="Vista del centro">
-            <button type="button" role="tab" aria-selected={centro === "vista"} onClick={() => setCentro("vista")}><Play size={14} aria-hidden="true" />Vista previa</button>
-            <button type="button" role="tab" aria-selected={centro === "transcripcion"} onClick={() => setCentro("transcripcion")}><FileText size={14} aria-hidden="true" />Transcripción</button>
-            <button type="button" role="tab" aria-selected={centro === "capitulos"} onClick={() => setCentro("capitulos")}><ListOrdered size={14} aria-hidden="true" />Capítulos</button>
-            <button type="button" role="tab" aria-selected={centro === "entregas"} onClick={() => setCentro("entregas")}><Package size={14} aria-hidden="true" />Entregas</button>
+            {clip && <div className="centro-titulo"><h2 title={clip.titulo}>{clip.titulo}</h2><span>{clip.categoria} · {formatoTiempo(datos.transcripcion ? duracionReel(clip, palabrasDe(datos.transcripcion)) : clip.fin - clip.inicio)}</span></div>}
+            {!barra.acciones && botonesClip}
+            {datos.transcripcion && (
+            <div className="pestanas centro-pestanas" role="tablist" aria-label="Vista del centro">
+              <button type="button" role="tab" aria-selected={centro === "vista"} onClick={() => setCentro("vista")}><Play size={14} aria-hidden="true" />Vista previa</button>
+              <button type="button" role="tab" aria-selected={centro === "transcripcion"} onClick={() => setCentro("transcripcion")}><FileText size={14} aria-hidden="true" />Transcripción</button>
+              <button type="button" role="tab" aria-selected={centro === "capitulos"} onClick={() => setCentro("capitulos")}><ListOrdered size={14} aria-hidden="true" />Capítulos</button>
+              <button type="button" role="tab" aria-selected={centro === "entregas"} onClick={() => setCentro("entregas")}><Package size={14} aria-hidden="true" />Entregas</button>
+            </div>
+            )}
           </div>
         )}
         {centro === "transcripcion" && datos.transcripcion && (
@@ -300,7 +310,7 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
         {listo && (
           <LineaTiempo clip={clip} palabras={palabrasDe(datos.transcripcion!)} tiempoActual={tiempo}
             alBuscar={(t) => { setTiempo(t); vista.current?.seek(t); }}
-            alCambiarCorte={(i, f) => cambiarCorte(clip, i, f)} alAlternarReproduccion={() => vista.current?.alternar()} alElegirPista={setCategoria} />
+            alCambiarCorte={(i, f) => cambiarCorte(clip, i, f)} alAlternarReproduccion={() => vista.current?.alternar()} alElegirPista={setCategoria} categoriaActiva={categoria} />
         )}
       </div>
     </div>

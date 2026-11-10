@@ -134,3 +134,9 @@ test("con los 4 pasos listos el proceso se resume en una línea y se puede abrir
   await userEvent.click(resumen);
   expect(screen.getByText("Listo en 30 s")).toBeInTheDocument();
 });
+
+test("la pista de la categoría abierta se ve marcada", () => {
+  render(<LineaTiempo clip={base} palabras={[]} tiempoActual={0} alBuscar={() => {}} alCambiarCorte={() => {}} alElegirPista={() => {}} categoriaActiva="subtitulos" />);
+  expect(screen.getByRole("button", { name: "Subtítulos" })).toHaveAttribute("aria-pressed", "true");
+  expect(screen.getByRole("button", { name: "Gancho" })).toHaveAttribute("aria-pressed", "false");
+});
