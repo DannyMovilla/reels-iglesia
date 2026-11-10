@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Captions, FileText, FolderOpen, Languages, LoaderCircle, Music } from "lucide-react";
 import type { NivelVoz } from "@shared/tipos";
 import { Interruptor, Segmentos } from "./Inspector";
+import { FrasesPublicar } from "./FrasesPublicar";
 
 export const limpiarError = (e: unknown) => (e instanceof Error ? e.message : String(e)).replace(/^Error invoking remote method '[^']+': (Error: )?/, "");
 
@@ -37,8 +38,8 @@ export function Resultado({ listo, error }: { listo: string | null; error: strin
 /** Idiomas de la traducción (los mismos códigos del proceso principal). */
 const IDIOMAS: Record<string, string> = { en: "Inglés", pt: "Portugués", fr: "Francés", it: "Italiano", de: "Alemán", ko: "Coreano", zh: "Chino" };
 
-/** Lo que la prédica deja para la semana: subtítulos, PDF, MP3 y traducciones (en la carpeta de exportados). */
-export function Entregas({ proyectoId }: { proyectoId: string }) {
+/** Lo que la prédica deja para la semana: subtítulos, PDF, MP3, traducciones y frases (en la carpeta de exportados). */
+export function Entregas({ proyectoId, alIrA, videoDisponible }: { proyectoId: string; alIrA?(t: number): void; videoDisponible?: boolean }) {
   const [completo, setCompleto] = useState(true);
   const srt = useAccion();
   const pdf = useAccion();
@@ -116,6 +117,7 @@ export function Entregas({ proyectoId }: { proyectoId: string }) {
         </div>
         <Resultado listo={traduccion.listo} error={traduccion.error} />
       </section>
+      <FrasesPublicar proyectoId={proyectoId} alIrA={alIrA} videoDisponible={videoDisponible} />
       <button type="button" className="btn fantasma" onClick={() => void window.reels!.abrirCarpetaExportados(proyectoId)}>
         <FolderOpen size={15} aria-hidden="true" />Abrir carpeta
       </button>

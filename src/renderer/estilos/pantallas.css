@@ -365,3 +365,11 @@
 .muestra-escenario { position: relative; display: block; width: 100%; aspect-ratio: 1080 / 560; overflow: hidden; border-radius: 6px; background: radial-gradient(circle at 50% 35%, #3a4566, #0a0c16 75%); }
 .muestra-lienzo { position: absolute; left: 0; top: 0; width: 1080px; height: 560px; transform-origin: 0 0; transform: scale(0.1407); pointer-events: none; }
 .muestra-lienzo.quieta .w, .muestra-lienzo.quieta .g { opacity: 1 !important; }
+
+/* Plan 8: frases para publicar (pestaña Entregas). */
+.frases { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.frase-item { display: flex; flex-direction: column; gap: 6px; padding: 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg-2); }
+.frase-cabeza { display: flex; align-items: center; gap: 8px; color: var(--text-2); font-size: 12px; }
+.frase-item textarea { resize: vertical; font: 500 13px/1.45 var(--font-ui); }
+.frase-vers { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 12px; color: var(--text-2); }
+.frase-vers p { flex-basis: 100%; margin: 0; }

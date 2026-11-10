@@ -261,7 +261,7 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
             )}
           </>
         )}
-        {centro === "entregas" && <Entregas proyectoId={proyecto.id} />}
+        {centro === "entregas" && <Entregas proyectoId={proyecto.id} videoDisponible={proyecto.videoDisponible} alIrA={(t) => { setCentro("transcripcion"); irAVideo(t); }} />}
         {centro === "capitulos" && <Capitulos proyectoId={proyecto.id} inicioRango={proyecto.rango.inicio} />}
         {listo && (
           <div className="centro-vista" hidden={centro !== "vista"}>
