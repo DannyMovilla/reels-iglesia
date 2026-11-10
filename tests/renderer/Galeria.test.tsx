@@ -98,3 +98,14 @@ test("volver a pintar con lo mismo no reinicia las animaciones", () => {
   expect(espia).toHaveBeenCalledTimes(15);
   espia.mockRestore();
 });
+
+test("cada muestra lleva solo el CSS de su estilo", () => {
+  const viral = muestraSub("viral", "#f5c542").css;
+  expect(viral).toContain(".sub.viral");
+  expect(viral).toContain(".sub .w");
+  expect(viral).not.toContain(".sub.karaoke");
+  expect(viral).not.toContain(".sub.pop");
+  const golpe = muestraGancho("golpe", "#f5c542").css;
+  expect(golpe).toContain(".gancho.golpe");
+  expect(golpe).not.toContain(".gancho.marca");
+});

@@ -31,6 +31,16 @@ export function aislarCss(css: string, raiz: string): string {
   });
 }
 
+/** Solo las reglas generales y las del estilo `estilo` (`clase` = "sub" o "gancho"): menos CSS que recalcular por tarjeta. */
+export function soloDe(css: string, clase: string, estilo: string): string {
+  const otro = new RegExp(`\\.${clase}\\.([a-z]+)`, "g");
+  return (css.match(/[^{}]+\{[^{}]*\}/g) ?? []).filter((regla) => {
+    const sel = regla.slice(0, regla.indexOf("{"));
+    const estilos = [...sel.matchAll(otro)].map((m) => m[1]);
+    return estilos.length === 0 || estilos.includes(estilo);
+  }).map((r) => r.trim()).join("\n");
+}
+
 /** Muestra de un estilo de subtítulos: la frase en bloques como los arma el reel, 0,3 s por palabra. */
 export function muestraSub(estilo: EstiloSub, color: string): Muestra {
   const lim = limiteSub(estilo);
@@ -48,7 +58,7 @@ export function muestraSub(estilo: EstiloSub, color: string): Muestra {
   return {
     html: divs.join(""),
     fija: divs[Math.max(0, bloques.findIndex((b) => b.palabras.some((w) => w.clave)))],
-    css: cssSubBase(t) + cssEstilosSub(t),
+    css: soloDe(cssSubBase(t) + cssEstilosSub(t), "sub", estilo),
     pasos: bloques.flatMap((b, i) => pasosBloque(estilo, b, i, color)),
     dur: bloques.at(-1)!.hasta,
     tramos: bloques.map((b, i) => ({ sel: `#b${i}`, desde: b.desde, hasta: b.hasta })),
@@ -61,7 +71,7 @@ export function muestraGancho(estilo: EstiloGancho, color: string): Muestra {
   const clase = estilo === "tarjeta" ? "gancho" : `gancho ${estilo}`;
   return {
     html: `<div id="gancho" class="${clase}" style="top:${ALTO / 2}px">${htmlGancho(estilo, FRASE, palabraEnColor(FRASE, ["prueba"]))}</div>`,
-    css: cssGanchoTarjeta(ANCHO) + cssGancho("9:16", ANCHO, color),
+    css: soloDe(cssGanchoTarjeta(ANCHO) + cssGancho("9:16", ANCHO, color), "gancho", estilo),
     pasos: pasosGancho(estilo, FRASE.split(" ").length, dur),
     dur,
     tramos: [],
