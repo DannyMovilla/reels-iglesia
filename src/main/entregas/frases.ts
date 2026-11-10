@@ -46,6 +46,12 @@ ${lineas}`;
 /** Pedidos en curso (uno por prédica), para poder cancelarlos. */
 const enCurso = new Map<string, AbortController>();
 
+/** Aviso cuando Claude encontró menos de 7 frases («1 frase textual», «3 frases textuales»). */
+export function avisoFrases(n: number): string | undefined {
+  if (n >= MAX_FRASES) return undefined;
+  return n === 1 ? "Claude encontró 1 frase textual." : `Claude encontró ${n} frases textuales.`;
+}
+
 export function cancelarFrases(proyectoId: string): boolean {
   const c = enCurso.get(proyectoId);
   if (!c) return false;
@@ -108,7 +114,8 @@ async function sacar(proyectoId: string, comandoTexto: string | undefined, senal
   const frases = elegirFrases(candidatas, palabrasDe(t), proyecto.rango);
   if (!frases.length) throw new Error("Claude no encontró frases textuales. Prueba de nuevo.");
   await guardarJson(proyectoId, "frases.json", frases);
-  return { frases, ...(frases.length < MAX_FRASES ? { aviso: `Claude encontró ${frases.length} frases textuales.` } : {}) };
+  const aviso = avisoFrases(frases.length);
+  return { frases, ...(aviso ? { aviso } : {}) };
 }
 
 const esFrase = (f: unknown): f is Frase => {

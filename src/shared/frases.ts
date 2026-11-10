@@ -113,10 +113,16 @@ export function fiel(f: Frase): boolean {
   return lcs(a, b) / Math.max(1, a.length, b.length) >= FIDELIDAD;
 }
 
-/** Tamaño de letra de la frase en la imagen: 96 px hasta 8 palabras, baja hasta 56 px con 25. */
+/** Palabras que puede tener una frase para publicar (las que elige Claude). */
+export const MAX_PALABRAS_FRASE = 25;
+/** Una frase editada más larga se corta aquí con «…» para que la imagen no se desborde. */
+export const TOPE_PALABRAS_IMAGEN = 40;
+
+/** Tamaño de letra de la frase en la imagen: 96 px hasta 8 palabras, 56 px con 25 y baja hasta 44 px con 40. */
 export function tamanoFrase(texto: string): number {
   const n = normalizarPalabras(texto).length;
-  return Math.min(96, Math.max(56, Math.round(96 - ((n - 8) * 40) / 17)));
+  if (n <= MAX_PALABRAS_FRASE) return Math.min(96, Math.max(56, Math.round(96 - ((n - 8) * 40) / 17)));
+  return Math.max(44, Math.round(56 - ((n - MAX_PALABRAS_FRASE) * 12) / (TOPE_PALABRAS_IMAGEN - MAX_PALABRAS_FRASE)));
 }
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -141,7 +147,9 @@ export function htmlTarjetaFrase(d: DatosTarjeta): string {
   const { frase, marca } = d;
   const claves = new Set(d.claves.flatMap(normalizarPalabras));
   let coloreada = false;
-  const texto = frase.texto.split(/(\s+)/).map((p) => {
+  const palabras = frase.texto.trim().split(/\s+/);
+  const corto = palabras.length > TOPE_PALABRAS_IMAGEN ? `${palabras.slice(0, TOPE_PALABRAS_IMAGEN).join(" ")}…` : frase.texto;
+  const texto = corto.split(/(\s+)/).map((p) => {
     if (/^\s+$/.test(p)) return p;
     const n = normalizarPalabras(p)[0];
     if (!coloreada && n && claves.has(n)) {

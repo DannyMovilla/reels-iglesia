@@ -145,3 +145,18 @@ test("revisión: un versículo con campos que no son texto se descarta sin rompe
   expect(r).toHaveLength(1);
   expect(r[0].versiculo).toBeUndefined();
 });
+
+test("plan 9: la letra sigue bajando hasta 44 px con 40 palabras y no baja más", () => {
+  expect(tamanoFrase(Array(25).fill("pal").join(" "))).toBe(56);
+  expect(tamanoFrase(Array(40).fill("pal").join(" "))).toBe(44);
+  expect(tamanoFrase(Array(60).fill("pal").join(" "))).toBe(44);
+});
+
+test("plan 9: una frase de 45 palabras sale cortada en 40 con «…»", () => {
+  const marca = { nombre: "Iglesia", color: "#f5c542", invitacion: "", ...MARCA_PLAN3 };
+  const texto = Array.from({ length: 45 }, (_, i) => `p${i + 1}`).join(" ");
+  const html = htmlTarjetaFrase({ marca, claves: [], fondo: { tipo: "marca" }, fuentes: "file:///f", frase: { texto, en: 1, original: texto, fondo: "marca" } });
+  expect(html).toContain("p40…");
+  expect(html).not.toContain("p41");
+  expect(html).toContain("font-size: 44px");
+});

@@ -121,3 +121,46 @@ test("revisión: con frases ya guardadas, sacar otras pide confirmación", async
   await userEvent.click(screen.getByRole("button", { name: "Sí, reemplazar" }));
   expect(api.sacarFrases).toHaveBeenCalledTimes(1);
 });
+
+test("plan 9: Copiar avisa que se copió", async () => {
+  api.leerFrases.mockResolvedValue(frases());
+  Object.defineProperty(navigator, "clipboard", { value: { writeText: vi.fn(async () => {}) }, configurable: true });
+  render(<FrasesPublicar proyectoId="p" />);
+  await screen.findByDisplayValue(A);
+  await userEvent.click(screen.getAllByRole("button", { name: "Copiar" })[0]);
+  expect(await screen.findByRole("status")).toHaveTextContent("Copiada");
+});
+
+test("plan 9: una frase de más de 25 palabras avisa", async () => {
+  api.leerFrases.mockResolvedValue(frases());
+  render(<FrasesPublicar proyectoId="p" />);
+  const campo = await screen.findByDisplayValue(A);
+  fireEvent.change(campo, { target: { value: Array(26).fill("pal").join(" ") } });
+  expect(screen.getByText("Muy larga para la imagen (máximo 25 palabras)")).toBeInTheDocument();
+});
+
+test("plan 9: Guardar imágenes espera a que se guarde lo editado", async () => {
+  api.leerFrases.mockResolvedValue(frases());
+  let soltar: () => void = () => {};
+  api.guardarFrases.mockReturnValue(new Promise<void>((r) => { soltar = r; }));
+  render(<FrasesPublicar proyectoId="p" />);
+  const campo = await screen.findByDisplayValue(A);
+  fireEvent.change(campo, { target: { value: A + " hoy" } });
+  fireEvent.blur(campo);
+  await userEvent.click(screen.getByRole("button", { name: /Guardar imágenes/ }));
+  expect(api.guardarImagenesFrases).not.toHaveBeenCalled();
+  soltar();
+  await vi.waitFor(() => expect(api.guardarImagenesFrases).toHaveBeenCalledWith("p"));
+});
+
+test("plan 9: al volver a Entregas mientras Claude busca, se sigue esperando y llegan las frases", async () => {
+  let soltar: (v: unknown) => void = () => {};
+  api.sacarFrases.mockReturnValue(new Promise((r) => { soltar = r; }));
+  const { unmount } = render(<FrasesPublicar proyectoId="p-volver" />);
+  await userEvent.click(screen.getByRole("button", { name: "Sacar 7 frases" }));
+  unmount();
+  render(<FrasesPublicar proyectoId="p-volver" />);
+  expect(await screen.findByText("Buscando frases…")).toBeInTheDocument();
+  soltar({ frases: frases() });
+  expect(await screen.findByDisplayValue(A)).toBeInTheDocument();
+});

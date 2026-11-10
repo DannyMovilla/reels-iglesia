@@ -2,7 +2,7 @@ import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSy
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { beforeEach, describe, expect, test } from "vitest";
-import { cancelarFrases, guardarFrases, guardarImagenesFrases, leerFrases, promptFrases, sacarFrases } from "../../../src/main/entregas/frases";
+import { avisoFrases, cancelarFrases, guardarFrases, guardarImagenesFrases, leerFrases, promptFrases, sacarFrases } from "../../../src/main/entregas/frases";
 import { crearProyecto, guardarJson } from "../../../src/main/proyectos/almacen";
 import { carpetaProyecto } from "../../../src/main/rutas";
 import type { Frase } from "../../../src/shared/frases";
@@ -137,4 +137,10 @@ describe("guardarImagenesFrases", () => {
     await guardarFrases(id, [{ texto: "x", en: 1, original: "x", fondo: "marca" }, { nada: 1 } as unknown as Frase]);
     expect(await leerFrases(id)).toEqual([{ texto: "x", en: 1, original: "x", fondo: "marca" }]);
   });
+});
+
+test("el aviso dice «1 frase» en singular y «N frases» en plural; con 7 no hay aviso", () => {
+  expect(avisoFrases(1)).toBe("Claude encontró 1 frase textual.");
+  expect(avisoFrases(3)).toBe("Claude encontró 3 frases textuales.");
+  expect(avisoFrases(7)).toBeUndefined();
 });

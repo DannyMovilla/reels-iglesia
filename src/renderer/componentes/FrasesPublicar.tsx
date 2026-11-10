@@ -1,9 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { BookOpen, Copy, Crosshair, ImageDown, LoaderCircle, Quote, RotateCcw, Trash2, TriangleAlert } from "lucide-react";
-import { fiel, type FondoFrase, type Frase } from "@shared/frases";
+import { fiel, MAX_PALABRAS_FRASE, normalizarPalabras, type FondoFrase, type Frase } from "@shared/frases";
 import { PINTURAS } from "@shared/reel/pinturas";
 import { formatoTiempo } from "@shared/validar";
 import { limpiarError } from "./Entregas";
+import { enCurso, lanzar } from "../enCurso";
+
+type Resultado = { frases: Frase[]; aviso?: string };
 
 const FONDOS: [FondoFrase, string][] = [["marca", "Marca"], ["momento", "Foto del momento"], ["pintura", "Pintura"]];
 
@@ -21,17 +24,25 @@ export function FrasesPublicar({ proyectoId, alIrA, videoDisponible = true }: { 
   const [listo, setListo] = useState<{ texto: string; avisos: string[] } | null>(null);
   /** Con frases ya guardadas, sacar otras las reemplaza: se pide confirmación. */
   const [confirmar, setConfirmar] = useState(false);
+  /** Frase recién copiada (para el aviso «Copiada»). */
+  const [copiada, setCopiada] = useState<number | null>(null);
+  /** El último guardado de las frases: «Guardar imágenes» lo espera para pintar lo que se ve. */
+  const guardado = useRef<Promise<unknown>>(Promise.resolve());
+  const clave = `frases:${proyectoId}`;
 
   useEffect(() => {
     let vivo = true;
     // Las pruebas de otras entregas no simulan leerFrases.
     void api.leerFrases?.(proyectoId).then((f) => { if (vivo && Array.isArray(f)) setFrases(f); }).catch(() => {});
+    // Si Claude seguía buscando cuando se cambió de pestaña, se vuelve a esperar esa misma búsqueda.
+    const pendiente = enCurso<Resultado>(clave);
+    if (pendiente) void esperar(pendiente.promesa, () => vivo);
     return () => { vivo = false; };
-  }, [api, proyectoId]);
+  }, [api, proyectoId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const guardar = (nuevas: Frase[]) => {
     setFrases(nuevas);
-    void api.guardarFrases(proyectoId, nuevas).catch((e) => setError(limpiarError(e)));
+    guardado.current = api.guardarFrases(proyectoId, nuevas).catch((e) => setError(limpiarError(e)));
   };
   const cambiar = (i: number, parcial: Partial<Frase>, persistir = true) => {
     const nuevas = frases.map((f, j) => (j === i ? { ...f, ...parcial } : f));
@@ -39,21 +50,27 @@ export function FrasesPublicar({ proyectoId, alIrA, videoDisponible = true }: { 
     else setFrases(nuevas);
   };
 
-  const sacar = async () => {
-    setConfirmar(false);
+  /** Espera una búsqueda de frases (nueva o que ya estaba en curso) y muestra su resultado. */
+  const esperar = async (promesa: Promise<Resultado>, vivo: () => boolean = () => true) => {
     setBuscando(true);
-    setError(null);
-    setAviso(null);
-    setListo(null);
     try {
-      const r = await api.sacarFrases(proyectoId);
+      const r = await promesa;
+      if (!vivo()) return;
       setFrases(r.frases);
       setAviso(r.aviso ?? null);
     } catch (e) {
-      setError(limpiarError(e));
+      if (vivo()) setError(limpiarError(e));
     } finally {
-      setBuscando(false);
+      if (vivo()) setBuscando(false);
     }
+  };
+
+  const sacar = async () => {
+    setConfirmar(false);
+    setError(null);
+    setAviso(null);
+    setListo(null);
+    await esperar(lanzar(clave, () => api.sacarFrases(proyectoId) as Promise<Resultado>));
   };
 
   const pintar = async () => {
@@ -61,6 +78,7 @@ export function FrasesPublicar({ proyectoId, alIrA, videoDisponible = true }: { 
     setError(null);
     setListo(null);
     try {
+      await guardado.current;
       const r = await api.guardarImagenesFrases(proyectoId);
       const n = r.archivos.filter((a) => a.endsWith(".png")).length;
       setListo({ texto: `Listo: ${n} ${n === 1 ? "imagen" : "imágenes"} en exportados/frases`, avisos: r.avisos });
@@ -102,6 +120,7 @@ export function FrasesPublicar({ proyectoId, alIrA, videoDisponible = true }: { 
               <div className="frase-cabeza"><span className="mono">{formatoTiempo(f.en)}</span></div>
               <textarea className="entrada" rows={3} aria-label={`Frase ${i + 1}`} value={f.texto}
                 onChange={(e) => cambiar(i, { texto: e.target.value }, false)} onBlur={() => guardar(frases)} />
+              {normalizarPalabras(f.texto).length > MAX_PALABRAS_FRASE && <p className="aviso-chico"><TriangleAlert size={13} aria-hidden="true" />Muy larga para la imagen (máximo {MAX_PALABRAS_FRASE} palabras)</p>}
               {!fiel(f) && <p className="aviso-chico"><TriangleAlert size={13} aria-hidden="true" />Ya no es lo que dijo el predicador</p>}
               {f.versiculo && (
                 <div className="frase-vers">
@@ -125,7 +144,8 @@ export function FrasesPublicar({ proyectoId, alIrA, videoDisponible = true }: { 
                 </select>
               )}
               <div className="fila">
-                <button type="button" className="btn pequeno fantasma" onClick={() => void navigator.clipboard?.writeText(f.texto)}><Copy size={13} aria-hidden="true" />Copiar</button>
+                <button type="button" className="btn pequeno fantasma" onClick={() => void navigator.clipboard?.writeText(f.texto).then(() => { setCopiada(i); setTimeout(() => setCopiada((x) => (x === i ? null : x)), 1800); })}><Copy size={13} aria-hidden="true" />Copiar</button>
+                {copiada === i && <span className="ok-texto" role="status">Copiada</span>}
                 {alIrA && <button type="button" className="btn pequeno fantasma" onClick={() => alIrA(f.en)}><Crosshair size={13} aria-hidden="true" />Ir al momento</button>}
                 <button type="button" className="btn pequeno fantasma" onClick={() => guardar(frases.filter((_, j) => j !== i))}><Trash2 size={13} aria-hidden="true" />Quitar</button>
               </div>
