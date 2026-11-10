@@ -99,8 +99,12 @@ export function animarBloque(estilo: EstiloSub, b: Bloque, i: number, color: str
   return pasosBloque(estilo, b, i, color).map(aJs);
 }
 
-/** CSS de los estilos (tamaño base en px, ya ajustado a s/m/l). */
-export function cssEstilosSub(t: number): string {
+/**
+ * CSS de los estilos (tamaño base en px, ya ajustado a s/m/l). Con `estilo`, solo lleva el de ese preset (un clip con
+ * un estilo de siempre no carga el CSS de los 8 nuevos); sin él, lleva todos (la galería).
+ */
+export function cssEstilosSub(t: number, estilo?: EstiloSub): string {
+  const presets = (Object.keys(PRESETS_SUB) as EstiloNuevo[]).filter((id) => estilo === undefined || id === estilo);
   return `
 .sub.resaltado { font: 800 ${t}px/1.35 Montserrat, sans-serif; letter-spacing: 0.02em; }
 .sub.resaltado .w { position: relative; padding: 4px 12px 6px; text-shadow: 0 4px 14px rgba(0,0,0,.55); }
@@ -113,6 +117,6 @@ export function cssEstilosSub(t: number): string {
 .sub.impacto .w { position: absolute; left: 0; right: 0; opacity: 0; -webkit-text-stroke: ${Math.round(t * 0.16)}px #0b0b0b; paint-order: stroke fill; text-shadow: 0 8px 22px rgba(0,0,0,.5); }
 .sub.neon { font: 800 ${t}px/1.15 Montserrat, sans-serif; text-shadow: 0 0 10px rgba(255,255,255,.55), 0 0 24px rgba(255,255,255,.25), 0 4px 14px rgba(0,0,0,.6); }
 .sub.neon .clave { font-size: 1.2em; text-shadow: 0 0 12px var(--marca), 0 0 30px var(--marca), 0 4px 14px rgba(0,0,0,.6); }
-${(Object.keys(PRESETS_SUB) as EstiloNuevo[]).map((id) => cssPreset(id, t)).join("\n")}
+${presets.map((id) => cssPreset(id, t)).join("\n")}
 `;
 }

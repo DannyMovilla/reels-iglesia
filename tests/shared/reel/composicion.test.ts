@@ -373,3 +373,23 @@ describe("plan 8: estilos de gancho", () => {
     expect(r.html).toContain("recursos/efectos/pop.wav");
   });
 });
+
+describe("plan 9: CSS solo del estilo usado y gancho desconocido", () => {
+  test("un clip con Pop no lleva el CSS de los estilos nuevos", () => {
+    const html = construirComposicion(entrada("9:16", clip({ subtitulos: { activos: true, estilo: "pop", tamano: "m", altura: 0.74 } }))).html;
+    expect(html).not.toContain(".sub.viral");
+    expect(html).not.toContain(".sub.cajamarca");
+  });
+
+  test("un clip con Viral lleva solo el CSS de Viral", () => {
+    const html = construirComposicion(entrada("9:16", clip({ subtitulos: { activos: true, estilo: "viral", tamano: "m", altura: 0.74 } }))).html;
+    expect(html).toContain(".sub.viral");
+    expect(html).not.toContain(".sub.rebote");
+  });
+
+  test("un estiloGancho desconocido se trata como tarjeta", () => {
+    const raro = construirComposicion(entrada("9:16", clip({ estiloGancho: "raro" as ClipSpec["estiloGancho"] }))).html;
+    const tarjeta = construirComposicion(entrada("9:16", clip({ estiloGancho: "tarjeta" }))).html;
+    expect(raro).toBe(tarjeta);
+  });
+});

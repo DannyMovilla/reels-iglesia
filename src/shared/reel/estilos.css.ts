@@ -1,4 +1,5 @@
 import { cssEstilosSub } from "./estilos-sub";
+import type { EstiloSub } from "../tipos";
 
 /** CSS de la composición del reel (HyperFrames). Las fuentes vienen de la carpeta local de recursos. */
 export function cssComposicion(p: { ancho: number; alto: number; color: string; fuentes: string; tamanoSub: number; estiloSub: string }): string {
@@ -47,7 +48,7 @@ ${cssGanchoTarjeta(p.ancho)}${cssSubBase(p.tamanoSub)}.vers { position: absolute
 .cierre .seguir { display: flex; align-items: center; gap: 14px; margin-top: 18px; padding: 16px 34px 16px 18px; border-radius: 999px; background: #fff; color: #111; font: 600 38px Figtree, sans-serif; }
 .cierre .seguir b { font-weight: 800; }
 .cierre .seguir .mas { width: 52px; height: 52px; border-radius: 50%; background: var(--marca); color: #111; display: grid; place-items: center; font: 800 40px/1 Figtree, sans-serif; }
-${cssEstilosSub(p.tamanoSub)}
+${cssEstilosSub(p.tamanoSub, p.estiloSub as EstiloSub)}
 `;
 }
 

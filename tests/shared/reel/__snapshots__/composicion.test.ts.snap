@@ -75,29 +75,7 @@ html, body { width: 1080px; height: 1080px; overflow: hidden; background: #000; 
 .sub.impacto .w { position: absolute; left: 0; right: 0; opacity: 0; -webkit-text-stroke: 11px #0b0b0b; paint-order: stroke fill; text-shadow: 0 8px 22px rgba(0,0,0,.5); }
 .sub.neon { font: 800 70px/1.15 Montserrat, sans-serif; text-shadow: 0 0 10px rgba(255,255,255,.55), 0 0 24px rgba(255,255,255,.25), 0 4px 14px rgba(0,0,0,.6); }
 .sub.neon .clave { font-size: 1.2em; text-shadow: 0 0 12px var(--marca), 0 0 30px var(--marca), 0 4px 14px rgba(0,0,0,.6); }
-.sub.viral { font: 900 70px/1.22 Montserrat, sans-serif; letter-spacing: 0.01em; }
-.sub.viral .w { -webkit-text-stroke: 12px #0b0b0b; paint-order: stroke fill; text-shadow: 0 6px 18px rgba(0,0,0,.5); }
-.sub.una { font: 900 70px/1.22 Montserrat, sans-serif; letter-spacing: 0.01em; }
-.sub.una .w { -webkit-text-stroke: 12px #0b0b0b; paint-order: stroke fill; text-shadow: 0 6px 18px rgba(0,0,0,.5); }
-.sub.una .w { opacity: 0; }
-.sub.cajamarca { font: 900 70px/1.22 Montserrat, sans-serif; letter-spacing: 0.01em; }
-.sub.cajamarca .w { -webkit-text-stroke: 12px #0b0b0b; paint-order: stroke fill; text-shadow: 0 6px 18px rgba(0,0,0,.5); }
-.sub.cajamarca .w { padding: 0 0.18em; border-radius: 14px; }
-.sub.subrayado { font: 800 70px/1.22 Montserrat, sans-serif; letter-spacing: 0.01em; }
-.sub.subrayado .w { text-shadow: 0 4px 18px rgba(0,0,0,.7); }
-.sub.subrayado .w { position: relative; }
-.sub.subrayado .barra { position: absolute; left: 4px; right: 4px; bottom: -4px; height: 8px; border-radius: 6px; background: var(--marca); opacity: 0; transform: scaleX(0); transform-origin: 0% 50%; }
-.sub.dostonos { font: 900 70px/1.22 Montserrat, sans-serif; letter-spacing: 0.01em; }
-.sub.dostonos .w { -webkit-text-stroke: 12px #0b0b0b; paint-order: stroke fill; text-shadow: 0 6px 18px rgba(0,0,0,.5); }
-.sub.dostonos .clave { font-size: 1.25em; }
-.sub.rebote { font: 900 70px/1.22 Montserrat, sans-serif; letter-spacing: 0.01em; }
-.sub.rebote .w { -webkit-text-stroke: 12px #0b0b0b; paint-order: stroke fill; text-shadow: 0 6px 18px rgba(0,0,0,.5); }
-.sub.rebote .w { opacity: 0; }
-.sub.brillo { font: 800 70px/1.22 Montserrat, sans-serif; letter-spacing: 0.01em; }
-.sub.brillo .w { text-shadow: 0 4px 18px rgba(0,0,0,.7); }
-.sub.brillo .clave { font-size: 1.25em; }
-.sub.elegante { font: 800 70px/1.22 Montserrat, sans-serif; letter-spacing: 0.01em; }
-.sub.elegante .w { text-shadow: 0 4px 18px rgba(0,0,0,.7); }
+
 
 </style>
 </head>
@@ -361,29 +339,7 @@ html, body { width: 1080px; height: 1350px; overflow: hidden; background: #000; 
 .sub.impacto .w { position: absolute; left: 0; right: 0; opacity: 0; -webkit-text-stroke: 11px #0b0b0b; paint-order: stroke fill; text-shadow: 0 8px 22px rgba(0,0,0,.5); }
 .sub.neon { font: 800 70px/1.15 Montserrat, sans-serif; text-shadow: 0 0 10px rgba(255,255,255,.55), 0 0 24px rgba(255,255,255,.25), 0 4px 14px rgba(0,0,0,.6); }
 .sub.neon .clave { font-size: 1.2em; text-shadow: 0 0 12px var(--marca), 0 0 30px var(--marca), 0 4px 14px rgba(0,0,0,.6); }
-.sub.viral { font: 900 70px/1.22 Montserrat, sans-serif; letter-spacing: 0.01em; }
-.sub.viral .w { -webkit-text-stroke: 12px #0b0b0b; paint-order: stroke fill; text-shadow: 0 6px 18px rgba(0,0,0,.5); }
-.sub.una { font: 900 70px/1.22 Montserrat, sans-serif; letter-spacing: 0.01em; }
-.sub.una .w { -webkit-text-stroke: 12px #0b0b0b; paint-order: stroke fill; text-shadow: 0 6px 18px rgba(0,0,0,.5); }
-.sub.una .w { opacity: 0; }
-.sub.cajamarca { font: 900 70px/1.22 Montserrat, sans-serif; letter-spacing: 0.01em; }
-.sub.cajamarca .w { -webkit-text-stroke: 12px #0b0b0b; paint-order: stroke fill; text-shadow: 0 6px 18px rgba(0,0,0,.5); }
-.sub.cajamarca .w { padding: 0 0.18em; border-radius: 14px; }
-.sub.subrayado { font: 800 70px/1.22 Montserrat, sans-serif; letter-spacing: 0.01em; }
-.sub.subrayado .w { text-shadow: 0 4px 18px rgba(0,0,0,.7); }
-.sub.subrayado .w { position: relative; }
-.sub.subrayado .barra { position: absolute; left: 4px; right: 4px; bottom: -4px; height: 8px; border-radius: 6px; background: var(--marca); opacity: 0; transform: scaleX(0); transform-origin: 0% 50%; }
-.sub.dostonos { font: 900 70px/1.22 Montserrat, sans-serif; letter-spacing: 0.01em; }
-.sub.dostonos .w { -webkit-text-stroke: 12px #0b0b0b; paint-order: stroke fill; text-shadow: 0 6px 18px rgba(0,0,0,.5); }
-.sub.dostonos .clave { font-size: 1.25em; }
-.sub.rebote { font: 900 70px/1.22 Montserrat, sans-serif; letter-spacing: 0.01em; }
-.sub.rebote .w { -webkit-text-stroke: 12px #0b0b0b; paint-order: stroke fill; text-shadow: 0 6px 18px rgba(0,0,0,.5); }
-.sub.rebote .w { opacity: 0; }
-.sub.brillo { font: 800 70px/1.22 Montserrat, sans-serif; letter-spacing: 0.01em; }
-.sub.brillo .w { text-shadow: 0 4px 18px rgba(0,0,0,.7); }
-.sub.brillo .clave { font-size: 1.25em; }
-.sub.elegante { font: 800 70px/1.22 Montserrat, sans-serif; letter-spacing: 0.01em; }
-.sub.elegante .w { text-shadow: 0 4px 18px rgba(0,0,0,.7); }
+
 
 </style>
 </head>
@@ -647,29 +603,7 @@ html, body { width: 1080px; height: 1920px; overflow: hidden; background: #000; 
 .sub.impacto .w { position: absolute; left: 0; right: 0; opacity: 0; -webkit-text-stroke: 11px #0b0b0b; paint-order: stroke fill; text-shadow: 0 8px 22px rgba(0,0,0,.5); }
 .sub.neon { font: 800 70px/1.15 Montserrat, sans-serif; text-shadow: 0 0 10px rgba(255,255,255,.55), 0 0 24px rgba(255,255,255,.25), 0 4px 14px rgba(0,0,0,.6); }
 .sub.neon .clave { font-size: 1.2em; text-shadow: 0 0 12px var(--marca), 0 0 30px var(--marca), 0 4px 14px rgba(0,0,0,.6); }
-.sub.viral { font: 900 70px/1.22 Montserrat, sans-serif; letter-spacing: 0.01em; }
-.sub.viral .w { -webkit-text-stroke: 12px #0b0b0b; paint-order: stroke fill; text-shadow: 0 6px 18px rgba(0,0,0,.5); }
-.sub.una { font: 900 70px/1.22 Montserrat, sans-serif; letter-spacing: 0.01em; }
-.sub.una .w { -webkit-text-stroke: 12px #0b0b0b; paint-order: stroke fill; text-shadow: 0 6px 18px rgba(0,0,0,.5); }
-.sub.una .w { opacity: 0; }
-.sub.cajamarca { font: 900 70px/1.22 Montserrat, sans-serif; letter-spacing: 0.01em; }
-.sub.cajamarca .w { -webkit-text-stroke: 12px #0b0b0b; paint-order: stroke fill; text-shadow: 0 6px 18px rgba(0,0,0,.5); }
-.sub.cajamarca .w { padding: 0 0.18em; border-radius: 14px; }
-.sub.subrayado { font: 800 70px/1.22 Montserrat, sans-serif; letter-spacing: 0.01em; }
-.sub.subrayado .w { text-shadow: 0 4px 18px rgba(0,0,0,.7); }
-.sub.subrayado .w { position: relative; }
-.sub.subrayado .barra { position: absolute; left: 4px; right: 4px; bottom: -4px; height: 8px; border-radius: 6px; background: var(--marca); opacity: 0; transform: scaleX(0); transform-origin: 0% 50%; }
-.sub.dostonos { font: 900 70px/1.22 Montserrat, sans-serif; letter-spacing: 0.01em; }
-.sub.dostonos .w { -webkit-text-stroke: 12px #0b0b0b; paint-order: stroke fill; text-shadow: 0 6px 18px rgba(0,0,0,.5); }
-.sub.dostonos .clave { font-size: 1.25em; }
-.sub.rebote { font: 900 70px/1.22 Montserrat, sans-serif; letter-spacing: 0.01em; }
-.sub.rebote .w { -webkit-text-stroke: 12px #0b0b0b; paint-order: stroke fill; text-shadow: 0 6px 18px rgba(0,0,0,.5); }
-.sub.rebote .w { opacity: 0; }
-.sub.brillo { font: 800 70px/1.22 Montserrat, sans-serif; letter-spacing: 0.01em; }
-.sub.brillo .w { text-shadow: 0 4px 18px rgba(0,0,0,.7); }
-.sub.brillo .clave { font-size: 1.25em; }
-.sub.elegante { font: 800 70px/1.22 Montserrat, sans-serif; letter-spacing: 0.01em; }
-.sub.elegante .w { text-shadow: 0 4px 18px rgba(0,0,0,.7); }
+
 
 </style>
 </head>

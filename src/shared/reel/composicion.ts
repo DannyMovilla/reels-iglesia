@@ -12,7 +12,7 @@ import { ventanaVersiculo } from "./versiculo";
 import { curvaMusica, tramosDeVoz } from "./musica";
 import { animarBloque, htmlBloque } from "./estilos-sub";
 import { PRESETS_SUB, type EstiloNuevo } from "./presets-sub";
-import { MEDIO_GANCHO_ESTILO, cssGancho, medidaGancho, htmlGancho, palabraEnColor, pasosGancho, type EstiloGancho } from "./gancho";
+import { ESTILOS_GANCHO, MEDIO_GANCHO_ESTILO, cssGancho, medidaGancho, htmlGancho, palabraEnColor, pasosGancho, type EstiloGancho } from "./gancho";
 import { aJs } from "./pasos";
 
 
@@ -133,7 +133,8 @@ export function construirComposicion(e: EntradaComposicion): { html: string; dur
   // La cara en el cuadro de salida (con zoom y desplazamiento de cámara); su alto ≈ 1,2 × su ancho.
   const cara = { centro: (pos(0.5, caraY).y + caraY * vh) / H, alto: ((pista?.caraAncho ?? 0.06) * vw * 1.2) / H };
   // Sin el campo, la tarjeta de siempre (un clip de antes del plan 8 sale igual).
-  const estiloG: EstiloGancho = c.estiloGancho ?? "tarjeta";
+  // Un estilo desconocido (clip editado a mano) se trata como la tarjeta de siempre.
+  const estiloG: EstiloGancho = c.estiloGancho && ESTILOS_GANCHO.includes(c.estiloGancho) ? c.estiloGancho : "tarjeta";
   // Los ganchos grandes miden según su texto (la letra baja hasta entrar en 3 líneas); la tarjeta, como siempre.
   const medida = medidaGancho(estiloG, c.gancho, formato, W);
   const medio = estiloG === "tarjeta" ? MEDIO_GANCHO_ESTILO.tarjeta[formato] : medida.alto / 2 / H;
