@@ -44,15 +44,17 @@ function ubicar(frase: string, palabras: Palabra[], en: number): { valor: number
   const f = normalizarPalabras(frase);
   if (!f.length) return { valor: 0, inicio: en };
   const ts = palabras.map((w) => ({ s: w.s, n: normalizarPalabras(w.t) })).flatMap((w) => w.n.map((n) => ({ s: w.s, n })));
-  let mejor = { valor: 0, inicio: en };
+  let mejor = { valor: 0, inicio: en, empieza: false };
   for (let i = 0; i < ts.length; i++) {
     if (ts[i].s < en - VENTANA) continue;
     if (ts[i].s > en + VENTANA) break;
     const valor = lcs(f, ts.slice(i, i + f.length + 3).map((w) => w.n)) / f.length;
-    if (valor > mejor.valor) mejor = { valor, inicio: ts[i].s };
-    if (valor === 1) break;
+    // A igual coincidencia gana la ventana que empieza en la primera palabra de la frase (su minuto exacto).
+    const empieza = ts[i].n === f[0];
+    if (valor > mejor.valor || (valor === mejor.valor && empieza && !mejor.empieza)) mejor = { valor, inicio: ts[i].s, empieza };
+    if (valor === 1 && empieza) break;
   }
-  return mejor;
+  return { valor: mejor.valor, inicio: mejor.inicio };
 }
 
 /** 0–1: qué parte de la frase aparece, en orden, en la transcripción a ±60 s de `en`. */
