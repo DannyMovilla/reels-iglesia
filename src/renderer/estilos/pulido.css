@@ -315,3 +315,11 @@ select.entrada, .orden select, .selector-zona select {
 .ia-cuerpo { grid-template-columns: minmax(300px, 1fr) minmax(420px, 500px); }
 .ia-panel .inspector { flex: 1; min-height: 0; }
 .ia-panel .riel-categorias { background: var(--bg-1); }
+
+/* Prédicas: tarjetas con un cuadro del video */
+.proyecto { padding: 0 0 16px; overflow: hidden; gap: 6px; }
+.proyecto > :not(.portada) { margin: 0 18px; }
+.proyecto .portada { display: grid; place-items: center; aspect-ratio: 16 / 9; margin-bottom: 8px; overflow: hidden; background: var(--bg-3); color: var(--text-3); }
+.proyecto .portada video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.proyecto .duracion { color: var(--text-2); font-size: 12.5px; }
+.proyecto .estado { margin-top: 4px; }

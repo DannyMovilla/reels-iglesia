@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { CircleAlert, CircleCheck, LoaderCircle, MicVocal, Plus } from "lucide-react";
+import { CircleAlert, CircleCheck, Clapperboard, LoaderCircle, MicVocal, Plus } from "lucide-react";
 import type { EstadoProyecto, Proyecto } from "@shared/tipos";
 
 const ESTADO: Record<EstadoProyecto, string> = {
@@ -15,6 +15,18 @@ const ESTADO: Record<EstadoProyecto, string> = {
 interface Props {
   alAbrir(id: string): void;
   alNueva(): void;
+}
+
+/** Un cuadro del video, 20 s después de que empieza la prédica (o un fondo liso si el video no está). */
+function Portada({ p }: { p: Proyecto }) {
+  const [sinVideo, setSinVideo] = useState(false);
+  const url = window.reels!.urlVideo?.(p.id);
+  if (sinVideo || !url) return <span className="portada portada-vacia" aria-hidden="true"><Clapperboard size={26} /></span>;
+  return (
+    <span className="portada" aria-hidden="true">
+      <video src={`${url}#t=${Math.round(p.rango.inicio + 20)}`} preload="metadata" muted playsInline onError={() => setSinVideo(true)} />
+    </span>
+  );
 }
 
 export function Predicas({ alAbrir, alNueva }: Props) {
@@ -43,8 +55,10 @@ export function Predicas({ alAbrir, alNueva }: Props) {
         {proyectos?.map((p) => (
           <li key={p.id}>
             <button type="button" className="proyecto" onClick={() => alAbrir(p.id)}>
+              <Portada p={p} />
               <b>{p.nombre}</b>
               <span className="mono">{new Date(p.creado).toLocaleDateString("es", { day: "numeric", month: "long", year: "numeric" })}</span>
+              <span className="duracion">Prédica de {Math.round((p.rango.fin - p.rango.inicio) / 60)} min</span>
               <span className={`estado ${p.estado}`}>
                 {p.estado === "listo" ? <CircleCheck size={14} aria-hidden="true" /> : p.estado === "error" ? <CircleAlert size={14} aria-hidden="true" /> : <LoaderCircle size={14} className="girar" aria-hidden="true" />}
                 {ESTADO[p.estado]}
