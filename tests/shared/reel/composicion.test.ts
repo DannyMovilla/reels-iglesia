@@ -393,3 +393,34 @@ describe("plan 9: CSS solo del estilo usado y gancho desconocido", () => {
     expect(raro).toBe(tarjeta);
   });
 });
+
+describe("plan 9: el logo de la marca no tapa los subtítulos en 4:5 y 1:1", () => {
+  const marcaEn = (formato: Formato, tamano: string = "l") => {
+    const c = clip({ subtitulos: { activos: true, estilo: "pop", tamano: tamano as "l", altura: 0.74 } });
+    const html = construirComposicion({
+      ...entrada(formato, c), marca: { ...entrada().marca, marcaReel: { modo: "logo", tamano: 1.5 }, logo: "C:/datos/marca/logo.png" },
+      recursos: { ...entrada().recursos, logo: "recursos/logo.png" },
+    }).html;
+    const doc = dom(html);
+    const alto = Number(/height:(\d+)px/.exec(doc.querySelector("#marca img")!.getAttribute("style")!)![1]);
+    return { alto, html };
+  };
+
+  test("en 1:1 con marca al 150 % el logo se achica, pero nunca a menos de 40 px", () => {
+    const { alto } = marcaEn("1:1");
+    expect(alto).toBeLessThan(135);
+    expect(alto).toBeGreaterThanOrEqual(40);
+  });
+
+  test("en 4:5 el logo cabe entre los subtítulos y el borde de abajo", () => {
+    const { alto } = marcaEn("4:5", "m");
+    // Espacio libre: alto del cuadro − 70 (margen de la marca) − (centro + medio alto de la franja de subtítulos) − 16.
+    const altoSub = Math.round(TAMANOS.pop.m * 1.25 * 2 + 20);
+    const libre = 1350 - 70 - (0.8 * 1350 + altoSub / 2) - 16;
+    expect(alto).toBeLessThanOrEqual(Math.max(40, Math.floor(libre)));
+  });
+
+  test("en 9:16 la marca no cambia", () => {
+    expect(marcaEn("9:16").alto).toBe(135);
+  });
+});

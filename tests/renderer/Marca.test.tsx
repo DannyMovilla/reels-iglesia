@@ -95,3 +95,13 @@ test("plan 7: la fuente de la iglesia se puede quitar", async () => {
   await userEvent.click(await screen.findByRole("button", { name: "Quitar fuente" }));
   await vi.waitFor(() => expect((a.guardarMarca.mock.calls.at(-1) as unknown as [TMarca])[0].fuente).toBeUndefined(), { timeout: 2000 });
 });
+
+test("plan 9: si el archivo del logo no está, lo dice y la muestra usa el nombre", async () => {
+  api({ leerMarca: vi.fn(async () => ({ ...structuredClone(marca), logo: "C:/datos/marca/logo.png", marcaReel: { modo: "logo", tamano: 1 } })) });
+  render(<Marca />);
+  const muestra = await screen.findByLabelText("Muestra de la marca durante el reel");
+  fireEvent.error(muestra.querySelector("img")!);
+  expect(await screen.findByText("No encuentro el archivo del logo: elige otro")).toBeInTheDocument();
+  expect(muestra.querySelector("img")).toBeNull();
+  expect(muestra).toHaveTextContent("Mi iglesia");
+});

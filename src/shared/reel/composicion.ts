@@ -190,7 +190,9 @@ export function construirComposicion(e: EntradaComposicion): { html: string; dur
     if (hasta - desde >= 1.2) agregarRotulo(el, js, nombrePredicador, desde, hasta - desde, dentroDeZona(franjaLibre, ALTO_ROTULO, formato));
   }
 
-  const marcaReel = htmlMarcaReel(marca, e.recursos.logo, 0, finVideo);
+  // En 4:5 y 1:1 los subtítulos quedan cerca del borde: el logo de la marca se achica para no tocarlos.
+  const altoMarca = formato !== "9:16" && c.subtitulos.activos ? H - 70 - (topSub + altoSub / 2) - 16 : undefined;
+  const marcaReel = htmlMarcaReel(marca, e.recursos.logo, 0, finVideo, altoMarca);
   if (marcaReel) el.push(marcaReel);
   el.push(`<div id="prog" class="clip prog" data-start="0" data-duration="${n(finVideo)}"></div>`);
   js.push(`tl.fromTo("#prog", { scaleX: 0 }, { scaleX: 1, duration: ${n(finVideo)}, ease: "none" }, 0);`);
@@ -230,10 +232,13 @@ export function agregarEfecto(el: string[], carpeta: string, nombre: keyof typeo
  * La marca abajo durante el reel: el nombre, el logo o los dos (según la marca; sin elección, el nombre).
  * «Logo» sin logo cargado se ve como texto. Devuelve "" si no hay nada que mostrar.
  */
-export function htmlMarcaReel(marca: Marca, logoSrc: string | undefined, inicio: number, dur: number): string {
+export function htmlMarcaReel(marca: Marca, logoSrc: string | undefined, inicio: number, dur: number, altoMax?: number): string {
   const modo = marca.marcaReel?.modo ?? "texto";
-  const escala = Math.min(1.5, Math.max(0.5, marca.marcaReel?.tamano ?? 1));
+  const pedida = Math.min(1.5, Math.max(0.5, marca.marcaReel?.tamano ?? 1));
   const conLogo = modo !== "texto" && !!logoSrc;
+  // Con logo y `altoMax` (espacio libre bajo los subtítulos), el logo no pasa de ese alto y nunca baja de 40 px;
+  // la marca de solo texto queda como siempre.
+  const escala = altoMax === undefined || !conLogo ? pedida : Math.min(pedida, Math.max(40, Math.floor(altoMax)) / 90);
   const conTexto = !conLogo || modo === "ambos";
   const nombre = marca.nombre.trim();
   if (!conLogo && !nombre) return "";

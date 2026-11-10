@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import "@hyperframes/player";
-import { ImagePlus, Type, X } from "lucide-react";
+import { ImagePlus, TriangleAlert, Type, X } from "lucide-react";
 import { construirMuestraMarca } from "@shared/reel/composicion";
 import { MULETILLAS_POR_DEFECTO } from "@shared/reel/cortes-voz";
 import { Segmentos } from "../componentes/Inspector";
@@ -168,7 +168,10 @@ function Muletillas({ lista, alCambiar }: { lista: string[]; alCambiar(l: string
 /** Qué se ve abajo durante el reel: el nombre, el logo o los dos, con su tamaño y una muestra. */
 function MarcaDuranteReel({ marca, alCambiar }: { marca: TMarca; alCambiar(m: NonNullable<TMarca["marcaReel"]>): void }) {
   const actual = marca.marcaReel ?? { modo: "texto" as const, tamano: 1 };
-  const conLogo = actual.modo !== "texto" && !!marca.logo;
+  /** El archivo del logo ya no está (se borró o se movió): se avisa y la muestra usa el nombre. */
+  const [roto, setRoto] = useState<string | null>(null);
+  const logoRoto = !!marca.logo && roto === marca.logo;
+  const conLogo = actual.modo !== "texto" && !!marca.logo && !logoRoto;
   const conTexto = !conLogo || actual.modo === "ambos";
   const logoVista = urlLogoVista(marca.logo);
   return (
@@ -177,11 +180,13 @@ function MarcaDuranteReel({ marca, alCambiar }: { marca: TMarca; alCambiar(m: No
         opciones={[["texto", "Texto"], ["logo", "Logo"], ["ambos", "Logo y texto"]] as ["texto" | "logo" | "ambos", string][]}
         alCambiar={(modo) => alCambiar({ ...actual, modo })} />
       {actual.modo !== "texto" && !marca.logo && <span className="ayuda">Todavía no hay logo: se verá el nombre hasta que elijas uno.</span>}
+      {logoRoto && <p className="aviso-chico" role="alert"><TriangleAlert size={13} aria-hidden="true" />No encuentro el archivo del logo: elige otro</p>}
       <span className="campo-cabeza">Tamaño de la marca <span className="mono">{Math.round(actual.tamano * 100)} %</span></span>
       <input type="range" aria-label="Tamaño de la marca" min={50} max={150} step={5} value={Math.round(actual.tamano * 100)}
         onChange={(e) => alCambiar({ ...actual, tamano: Number(e.target.value) / 100 })} />
       <div className="muestra-marca" aria-label="Muestra de la marca durante el reel">
-        {conLogo && logoVista && <img src={window.reels?.urlMarca?.(marca.logo!) ?? logoVista} alt="" style={{ height: Math.round(28 * actual.tamano) }} />}
+        {conLogo && logoVista && <img src={window.reels?.urlMarca?.(marca.logo!) ?? logoVista} alt="" style={{ height: Math.round(28 * actual.tamano) }}
+          onError={() => setRoto(marca.logo ?? null)} />}
         {conTexto && <span style={{ fontSize: Math.round(14 * actual.tamano) }}>{marca.nombre}</span>}
       </div>
     </div>
