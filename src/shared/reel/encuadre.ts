@@ -59,8 +59,8 @@ const MEDIO_GANCHO: Record<Formato, number> = { "9:16": 0.055, "4:5": 0.075, "1:
  * arriba o debajo de la cabeza (pelo ≈ 0,9 alto de cara por encima del centro, mentón ≈ 0,7 por debajo),
  * sin bajar a la zona de los subtítulos.
  */
-export function posicionGancho(cara: CaraEnCuadro, formato: Formato): number {
-  const m = MEDIO_GANCHO[formato];
+export function posicionGancho(cara: CaraEnCuadro, formato: Formato, medio: number = MEDIO_GANCHO[formato]): number {
+  const m = medio;
   const cabezaArriba = cara.centro - cara.alto * 0.9 - 0.03;
   const cabezaAbajo = cara.centro + cara.alto * 0.7 + 0.03;
   const tam = (f: [number, number]) => f[1] - f[0];

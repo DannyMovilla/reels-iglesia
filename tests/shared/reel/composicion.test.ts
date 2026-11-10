@@ -337,3 +337,34 @@ describe("plan 8: un clip de antes sale igual", () => {
     expect(construirComposicion(entrada(f)).html).toMatchSnapshot();
   });
 });
+
+describe("plan 8: estilos de gancho", () => {
+  const topDe = (html: string, sel: string) => Number(/top:([\d.]+)px/.exec((dom(html).querySelector(sel) as HTMLElement).getAttribute("style")!)![1]);
+
+  test("tarjeta escrita a mano da la misma composición que sin el campo", () => {
+    expect(construirComposicion(entrada("9:16", clip({ estiloGancho: "tarjeta" }))).html).toBe(construirComposicion(entrada("9:16")).html);
+  });
+
+  test("gigante: clase propia, palabra clave en color y CSS del estilo", () => {
+    const r = construirComposicion(entrada("9:16", clip({ estiloGancho: "gigante", gancho: "Tu quebranto abre el cielo", palabrasClave: ["quebranto"] })));
+    const g = dom(r.html).querySelector("#gancho")!;
+    expect(g.getAttribute("class")).toBe("clip gancho gigante");
+    expect(g.querySelector("#g1")!.getAttribute("class")).toBe("g color");
+    expect(r.html).toContain(".gancho.gigante");
+  });
+
+  test("gancho de 60 caracteres gigante en 1:1 no se cruza con los subtítulos", () => {
+    const largo = "Dios no ha terminado contigo aunque hoy sientas que perdiste";
+    expect(largo.length).toBe(60);
+    const r = construirComposicion(entrada("1:1", clip({ estiloGancho: "gigante", gancho: largo, apertura: null })));
+    const subs = [...dom(r.html).querySelectorAll(".sub")] as HTMLElement[];
+    expect(subs.length).toBeGreaterThan(0);
+    const topSub = Number(/top:([\d.]+)px/.exec(subs[0].getAttribute("style")!)![1]);
+    expect(topDe(r.html, "#gancho") + 400 / 2).toBeLessThan(topSub - 70);
+  });
+
+  test("golpe lleva el pop de sonido como siempre", () => {
+    const r = construirComposicion({ ...entrada("9:16", clip({ estiloGancho: "golpe" })), recursos: { gsap: "g.js", fuentes: "f", efectos: "recursos/efectos" } });
+    expect(r.html).toContain("recursos/efectos/pop.wav");
+  });
+});

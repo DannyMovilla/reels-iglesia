@@ -1,6 +1,6 @@
 import { cssFuentesElegidas } from "./fuentes";
 import { colorActivo, htmlFiltroColor, matrizColor } from "./color";
-import { dentroDeZona } from "./zonas";
+import { dentroDeZona, zonaComun } from "./zonas";
 import type { Caras, ClipSpec, EstiloSub, Formato, Marca, Transcripcion } from "../tipos";
 
 export type { Marca };
@@ -12,6 +12,8 @@ import { ventanaVersiculo } from "./versiculo";
 import { curvaMusica, tramosDeVoz } from "./musica";
 import { animarBloque, htmlBloque } from "./estilos-sub";
 import { PRESETS_SUB, type EstiloNuevo } from "./presets-sub";
+import { ALTO_GANCHO_PX, MEDIO_GANCHO_ESTILO, cssGancho, htmlGancho, palabraEnColor, pasosGancho, type EstiloGancho } from "./gancho";
+import { aJs } from "./pasos";
 
 
 export interface EntradaComposicion {
@@ -50,7 +52,7 @@ const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replac
 const n = (x: number) => String(r2(x));
 
 /** Altos aproximados (px) para mantener los textos dentro de la zona segura común. */
-const ALTO_GANCHO = 200, ALTO_VERSICULO = 300, ALTO_ROTULO = 110;
+const ALTO_VERSICULO = 300, ALTO_ROTULO = 110;
 
 /** Fundido de cada lado de un corte de voz (s). */
 export const FUNDIDO = 0.01;
@@ -130,23 +132,29 @@ export function construirComposicion(e: EntradaComposicion): { html: string; dur
   const durGancho = c.gancho.trim() ? (apertura ? apertura.duracion : Math.min(4.5, clip.duracion)) : 0;
   // La cara en el cuadro de salida (con zoom y desplazamiento de cámara); su alto ≈ 1,2 × su ancho.
   const cara = { centro: (pos(0.5, caraY).y + caraY * vh) / H, alto: ((pista?.caraAncho ?? 0.06) * vw * 1.2) / H };
-  const franjaLibre = Math.round(posicionGancho(cara, formato) * H * 10) / 10;
+  // Sin el campo, la tarjeta de siempre (un clip de antes del plan 8 sale igual).
+  const estiloG: EstiloGancho = c.estiloGancho ?? "tarjeta";
+  const franjaLibre = Math.round(posicionGancho(cara, formato, MEDIO_GANCHO_ESTILO[estiloG][formato]) * H * 10) / 10;
+  // Dónde van los subtítulos (centro y alto de su franja).
+  const altoSub = Math.round(TAMANOS[c.subtitulos.estilo][c.subtitulos.tamano] * 1.25 * 2 + 20);
+  const pedidoSub = r2((formato === "9:16" ? c.subtitulos.altura : 0.8) * H);
+  const ajustadoSub = dentroDeZona(pedidoSub, altoSub, formato);
+  // Solo se suben los subtítulos puestos más abajo que la altura de siempre (74 %): los de siempre no se mueven.
+  const topSub = ajustadoSub < pedidoSub ? Math.max(ajustadoSub, Math.min(pedidoSub, r2((formato === "9:16" ? 0.74 : 0.8) * H))) : ajustadoSub;
   if (c.gancho.trim()) {
     const dur = durGancho;
-    const top = dentroDeZona(franjaLibre, ALTO_GANCHO, formato);
-    el.push(`<div id="gancho" class="clip gancho" data-start="0" data-duration="${n(dur)}" style="top:${top}px">${esc(c.gancho)}<i></i></div>`);
-    js.push(`tl.from("#gancho", { opacity: 0, scale: 0.92, duration: 0.35, ease: "back.out(1.7)" }, 0);`);
-    js.push(`tl.to("#gancho", { opacity: 0, duration: 0.3, ease: "power2.in" }, ${n(Math.max(0, dur - 0.3))});`);
+    let top = dentroDeZona(franjaLibre, ALTO_GANCHO_PX[estiloG], formato);
+    // Los ganchos grandes nunca bajan a la franja de los subtítulos: si no caben, suben (aunque tapen algo de la cara).
+    if (estiloG !== "tarjeta" && c.subtitulos.activos) top = Math.max(r2(zonaComun(formato).arriba + ALTO_GANCHO_PX[estiloG] / 2), Math.min(top, r2(topSub - altoSub / 2 - 12 - ALTO_GANCHO_PX[estiloG] / 2)));
+    const clase = estiloG === "tarjeta" ? "clip gancho" : `clip gancho ${estiloG}`;
+    el.push(`<div id="gancho" class="${clase}" data-start="0" data-duration="${n(dur)}" style="top:${top}px">${htmlGancho(estiloG, c.gancho, palabraEnColor(c.gancho, c.palabrasClave))}</div>`);
+    js.push(...pasosGancho(estiloG, c.gancho.trim().split(/\s+/).length, dur).map(aJs));
   }
 
   // Subtítulos palabra por palabra (la regla del versículo ya viene aplicada).
   if (c.subtitulos.activos) {
     const estilo = c.subtitulos.estilo;
-    const altoSub = Math.round(TAMANOS[estilo][c.subtitulos.tamano] * 1.25 * 2 + 20);
-    // Solo se suben los subtítulos puestos más abajo que la altura de siempre (74 %): los de siempre no se mueven.
-    const pedido = r2((formato === "9:16" ? c.subtitulos.altura : 0.8) * H);
-    const ajustado = dentroDeZona(pedido, altoSub, formato);
-    const top = ajustado < pedido ? Math.max(ajustado, Math.min(pedido, r2((formato === "9:16" ? 0.74 : 0.8) * H))) : ajustado;
+    const top = topSub;
     bloquesSubtitulos(c, palabras, partes).forEach((b, i) => {
       el.push(`<div id="b${i}" class="clip sub ${estilo}" data-start="${n(b.desde)}" data-duration="${n(Math.max(0.2, b.hasta - b.desde))}" style="top:${top}px">${htmlBloque(estilo, b, i)}</div>`);
       js.push(...animarBloque(estilo, b, i, marca.color));
@@ -200,6 +208,7 @@ export function construirComposicion(e: EntradaComposicion): { html: string; dur
   }
 
   const css = cssComposicion({ ancho: W, alto: H, color: marca.color, fuentes: e.recursos.fuentes, tamanoSub: TAMANOS[c.subtitulos.estilo][c.subtitulos.tamano], estiloSub: c.subtitulos.estilo })
+    + (estiloG !== "tarjeta" && c.gancho.trim() ? cssGancho(formato, W, marca.color) : "")
     + cssFuentesElegidas(c.fuentes, e.recursos.fuenteIglesia);
   return { html: documento(W, H, duracion, css, e.recursos, e.modo, el, js), duracion, ancho: W, alto: H, avisos };
 }

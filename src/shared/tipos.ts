@@ -171,6 +171,8 @@ export interface ClipSpec {
   oculto?: boolean;
   /** "manual": la persona lo creó desde la transcripción. Sin el campo: lo sugirió Claude. */
   origen?: "claude" | "manual";
+  /** Cómo se ve el gancho; sin el campo, "tarjeta" (la de siempre). */
+  estiloGancho?: import("./reel/gancho").EstiloGancho;
 }
 
 /** Escenas animadas para los reels de «Con IA» (fondos del catálogo de HyperFrames). */
