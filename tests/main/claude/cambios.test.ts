@@ -124,3 +124,20 @@ test("plan 6: un corte de más de 90 s queda en 90 s con aviso", () => {
   expect(r.clip.fin - r.clip.inicio).toBeGreaterThan(85);
   expect(r.avisos).toContain("Lo dejé en 90 segundos, el máximo para un reel.");
 });
+
+describe("plan 8: estilos nuevos en los pedidos", () => {
+  test("estilo de gancho sin importar mayúsculas; uno inventado se ignora con aviso", () => {
+    const r = aplicarCambios(clip, { resumen: "", estilo_gancho: "Gigante", estilo_subtitulos: "viral" }, palabras, rango);
+    expect(r.clip.estiloGancho).toBe("gigante");
+    expect(r.clip.subtitulos.estilo).toBe("viral");
+    const mal = aplicarCambios(clip, { resumen: "", estilo_gancho: "inventado" }, palabras, rango);
+    expect(mal.clip.estiloGancho).toBeUndefined();
+    expect(mal.avisos).toContain("Ese estilo de gancho no existe; dejé el de antes.");
+  });
+
+  test("el prompt manda el estilo de gancho actual y los permitidos", () => {
+    const p = promptCambios(clip, muestra(), "más grande el título", []);
+    expect(p).toContain(`"estilo_gancho":"tarjeta"`);
+    expect(p).toContain("tarjeta, gigante, marca, subrayado, golpe");
+  });
+});

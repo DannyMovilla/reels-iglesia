@@ -112,6 +112,8 @@ export interface EstiloIglesia {
   color?: ColorClip;
   /** Fuentes de títulos y subtítulos; sin el campo, las de siempre. */
   fuentes?: FuentesClip;
+  /** Estilo del gancho; sin el campo, "tarjeta". */
+  gancho?: import("./reel/gancho").EstiloGancho;
 }
 
 export interface Marca {

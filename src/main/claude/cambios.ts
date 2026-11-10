@@ -4,6 +4,7 @@ import { recortarRedes } from "@shared/redes";
 import { ajustarCorte, DURACION_MINIMA } from "@shared/reel/cortes";
 import { ajustarQuitado, duracionConservada } from "@shared/reel/cortes-voz";
 import { ESTILOS_SUB } from "@shared/reel/estilos-sub";
+import { ESTILOS_GANCHO } from "@shared/reel/gancho";
 import { palabrasDe, type Palabra } from "@shared/reel/tiempo";
 import { ANIMOS, type Animo, type ClipSpec, type EstiloSub, type Transcripcion } from "@shared/tipos";
 import { extraerObjeto } from "../ia/claude";
@@ -32,6 +33,7 @@ const CambiosClaude = z.object({
   }).optional().catch(undefined),
   animo: texto,
   estilo_subtitulos: texto,
+  estilo_gancho: texto,
   quitar: z.array(z.object({ desde: z.string(), hasta: z.string() })).optional().catch(undefined),
 });
 export type CambiosClaude = z.infer<typeof CambiosClaude>;
@@ -91,6 +93,11 @@ export function aplicarCambios(clip: ClipSpec, cambios: CambiosClaude, palabras:
   if (animo) c.musica = { ...c.musica, animo: animo as Animo };
   const estilo = cambios.estilo_subtitulos ? ESTILOS_SUB.find((e) => sinTildes(e) === sinTildes(cambios.estilo_subtitulos!)) : undefined;
   if (estilo) c.subtitulos = { ...c.subtitulos, estilo: estilo as EstiloSub };
+  if (limpio(cambios.estilo_gancho)) {
+    const g = ESTILOS_GANCHO.find((e) => sinTildes(e) === sinTildes(cambios.estilo_gancho!));
+    if (g) c.estiloGancho = g;
+    else avisos.push("Ese estilo de gancho no existe; dejé el de antes.");
+  }
 
   if (cambios.quitar?.length) {
     const nuevos = cambios.quitar
@@ -125,7 +132,7 @@ export function promptCambios(c: ClipSpec, t: Transcripcion, pedido: string, his
   const actual = {
     titulo: c.titulo, gancho: c.gancho, inicio: tiempoDecimas(c.inicio), fin: tiempoDecimas(c.fin), duracion_segundos: Math.round(c.fin - c.inicio),
     apertura_frase: c.apertura?.activa ? c.apertura.frase : null, palabras_clave: c.palabrasClave, animo: c.musica.animo,
-    estilo_subtitulos: c.subtitulos.estilo, versiculos: c.versiculos.map((v) => v.ref), redes: c.redes,
+    estilo_subtitulos: c.subtitulos.estilo, estilo_gancho: c.estiloGancho ?? "tarjeta", versiculos: c.versiculos.map((v) => v.ref), redes: c.redes,
   };
   const antes = historial.slice(-3).map((h) => `- La persona pidió: «${h.pedido}». Tú respondiste: «${h.resumen}»`).join("\n");
   return `CAMBIOS DE UN CLIP. Eres el editor de redes sociales de una iglesia cristiana hispana. La persona está editando un reel de una prédica y te pide un cambio.
@@ -139,13 +146,13 @@ Transcripción alrededor del clip, con el segundo en que empieza cada línea (H:
 ${transcripcionCercana(t, c)}
 
 Responde solo con un objeto JSON con lo que cambia (deja fuera lo que no cambia) y un "resumen" de una oración, en español sencillo, de lo que hiciste:
-{"resumen":"…","titulo":"…","gancho":"…","inicio":"0:12:30.4","fin":"0:13:10.2","apertura_frase":"…","palabras_clave":["…"],"animo":"esperanza","estilo_subtitulos":"pop","quitar":[{"desde":"0:12:40.1","hasta":"0:12:42.0"}],"redes":{"instagram":{"texto":"…","hashtags":["#fe"]},"tiktok":{"texto":"…","hashtags":["#fe"]},"facebook":{"texto":"…"},"youtube":{"titulo":"…","texto":"…"}}}
+{"resumen":"…","titulo":"…","gancho":"…","inicio":"0:12:30.4","fin":"0:13:10.2","apertura_frase":"…","palabras_clave":["…"],"animo":"esperanza","estilo_subtitulos":"pop","estilo_gancho":"tarjeta","quitar":[{"desde":"0:12:40.1","hasta":"0:12:42.0"}],"redes":{"instagram":{"texto":"…","hashtags":["#fe"]},"tiktok":{"texto":"…","hashtags":["#fe"]},"facebook":{"texto":"…"},"youtube":{"titulo":"…","texto":"…"}}}
 
 Reglas:
 - "inicio" y "fin" usan los tiempos de la transcripción; el clip debe durar entre 5 y 90 segundos, empezar con una frase fuerte y terminar con la idea cerrada.
 - "quitar": tramos dentro del clip que conviene sacar (una frase que se repite, algo que no se entiende solo).
 - "apertura_frase": una frase que se dice dentro del clip, copiada palabra por palabra.
-- "gancho": máximo 8 palabras. "animo": uno de ${ANIMOS.join(", ")}. "estilo_subtitulos": uno de ${ESTILOS_SUB.join(", ")}.
+- "gancho": máximo 8 palabras. "animo": uno de ${ANIMOS.join(", ")}. "estilo_subtitulos": uno de ${ESTILOS_SUB.join(", ")}. "estilo_gancho": uno de ${ESTILOS_GANCHO.join(", ")}.
 - Nunca agregues ni cambies versículos, y no cambies el sentido de lo que dijo el predicador.
 - Escribe como habla la iglesia, sin sonar a inteligencia artificial.`;
 }

@@ -63,6 +63,7 @@ export function estiloDesdeClip(c: ClipSpec): EstiloIglesia {
     ...(c.voz ? { voz: c.voz } : {}),
     ...(c.color ? { color: { look: c.color.look, intensidad: c.color.intensidad } } : {}),
     ...(c.fuentes ? { fuentes: c.fuentes } : {}),
+    ...(c.estiloGancho ? { gancho: c.estiloGancho } : {}),
   });
 }
 
@@ -81,6 +82,7 @@ export function aplicarEstiloAClip(c: ClipSpec, e: EstiloIglesia): ClipSpec {
     // El look viene del estilo; el balance es del video de este clip.
     ...(e.color ? { color: { ...e.color, ...(c.color?.balance ? { balance: c.color.balance } : {}) } } : {}),
     ...(e.fuentes ? { fuentes: e.fuentes } : {}),
+    ...(e.gancho ? { estiloGancho: e.gancho } : {}),
   });
 }
 
@@ -116,11 +118,12 @@ export function clipManual(inicio: number, fin: number, palabras: Palabra[], est
 }
 
 /**
- * Lo que un clip NUEVO toma del estilo de la iglesia además de lo de siempre: voz, color y fuentes.
+ * Lo que un clip NUEVO toma del estilo de la iglesia además de lo de siempre: voz, color, fuentes y gancho.
  * Un clip ya guardado no los toma al leerse (guardar un estilo no cambia clips viejos sin avisar).
  */
-export function delEstiloParaClipNuevo(estilo: EstiloIglesia): Pick<ClipSpec, "voz" | "color" | "fuentes"> {
+export function delEstiloParaClipNuevo(estilo: EstiloIglesia): Pick<ClipSpec, "voz" | "color" | "fuentes" | "estiloGancho"> {
   return {
+    ...(estilo.gancho ? { estiloGancho: estilo.gancho } : {}),
     ...(estilo.voz ? { voz: estilo.voz } : {}),
     ...(estilo.color ? { color: { look: estilo.color.look, intensidad: estilo.color.intensidad } } : {}),
     ...(estilo.fuentes ? { fuentes: { ...estilo.fuentes } } : {}),

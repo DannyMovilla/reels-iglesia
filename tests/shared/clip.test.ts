@@ -87,3 +87,24 @@ test("revisión plan 6 I2: color y fuentes del estilo no cambian clips ya guarda
   expect(nuevo.color).toEqual({ look: "calido", intensidad: 0.7 });
   expect(nuevo.fuentes).toEqual({ titulos: "montserrat", subtitulos: "figtree" });
 });
+
+test("plan 8: la plantilla de la iglesia lleva el estilo de subtítulo y de gancho nuevos", async () => {
+  const { aplicarEstiloAClip, estiloDesdeClip, clipManual, delEstiloParaClipNuevo } = await import("../../src/shared/clip");
+  const c = completarClip({ ...viejo, subtitulos: { activos: true, estilo: "viral", tamano: "m", altura: 0.74 }, estiloGancho: "gigante" }, ESTILO_POR_DEFECTO);
+  const e = estiloDesdeClip(c);
+  expect(e.subtitulos.estilo).toBe("viral");
+  expect(e.gancho).toBe("gigante");
+  const otro = aplicarEstiloAClip(completarClip(viejo, ESTILO_POR_DEFECTO), e);
+  expect(otro.subtitulos.estilo).toBe("viral");
+  expect(otro.estiloGancho).toBe("gigante");
+  expect(delEstiloParaClipNuevo(e).estiloGancho).toBe("gigante");
+  expect(clipManual(0, 7, [{ s: 0, e: 3, t: "Dios" }, { s: 3, e: 7, t: "es" }], e).estiloGancho).toBe("gigante");
+});
+
+test("plan 8: un estilo de la iglesia sin gancho no agrega estiloGancho", async () => {
+  const { aplicarEstiloAClip, estiloDesdeClip, delEstiloParaClipNuevo } = await import("../../src/shared/clip");
+  const c = completarClip(viejo, ESTILO_POR_DEFECTO);
+  expect(aplicarEstiloAClip(c, ESTILO_POR_DEFECTO).estiloGancho).toBeUndefined();
+  expect(delEstiloParaClipNuevo(ESTILO_POR_DEFECTO).estiloGancho).toBeUndefined();
+  expect(estiloDesdeClip(c)).not.toHaveProperty("gancho");
+});
