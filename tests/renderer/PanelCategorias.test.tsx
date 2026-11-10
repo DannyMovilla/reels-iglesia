@@ -7,6 +7,8 @@ import { Galeria, muestraSub } from "../../src/renderer/componentes/Galeria";
 import { FAMILIAS_SUB } from "../../src/renderer/componentes/familias";
 import { LineaTiempo } from "../../src/renderer/componentes/LineaTiempo";
 import { PanelProceso } from "../../src/renderer/componentes/PanelProceso";
+import { PanelCategorias } from "../../src/renderer/componentes/PanelCategorias";
+import { Type } from "lucide-react";
 import { ESTILOS_SUB, NOMBRE_ESTILO } from "../../src/shared/reel/estilos-sub";
 import type { ClipSpec, EstiloSub, Proyecto } from "../../src/shared/tipos";
 import { PLAN3, SIN_MUSICA } from "../ayuda/plan3";
@@ -139,4 +141,18 @@ test("la pista de la categoría abierta se ve marcada", () => {
   render(<LineaTiempo clip={base} palabras={[]} tiempoActual={0} alBuscar={() => {}} alCambiarCorte={() => {}} alElegirPista={() => {}} categoriaActiva="subtitulos" />);
   expect(screen.getByRole("button", { name: "Subtítulos" })).toHaveAttribute("aria-pressed", "true");
   expect(screen.getByRole("button", { name: "Gancho" })).toHaveAttribute("aria-pressed", "false");
+});
+
+test("PanelCategorias: el aviso se lee como descripción y pinta el punto", () => {
+  render(
+    <PanelCategorias etiqueta="Categorías de prueba" actual="a" alElegir={() => {}}
+      categorias={[{ id: "a", nombre: "A", titulo: "Título A", ayuda: "Ayuda A", Icono: Type }, { id: "b", nombre: "B", titulo: "Título B", ayuda: "Ayuda B", Icono: Type, aviso: "Falta confirmar" }]}>
+      <p>Contenido</p>
+    </PanelCategorias>,
+  );
+  const b = screen.getByRole("tab", { name: "B" });
+  expect(b).toHaveAccessibleDescription("Falta confirmar");
+  expect(b.querySelector(".riel-punto")).not.toBeNull();
+  expect(screen.getByRole("heading", { name: "Título A" })).toBeInTheDocument();
+  expect(screen.getByRole("tablist", { name: "Categorías de prueba" })).toBeInTheDocument();
 });

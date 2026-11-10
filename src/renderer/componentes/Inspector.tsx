@@ -1,10 +1,11 @@
 import { CopiarEstilo } from "./CopiarEstilo";
 import { FUENTES, FUENTES_POR_DEFECTO, type IdFuente } from "@shared/reel/fuentes";
 import { NOMBRE_LOOK, type Look } from "@shared/reel/color";
-import { useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { useRef, useState } from "react";
+import { PanelCategorias, Seccion, type CategoriaRiel } from "./PanelCategorias";
 import {
-  AudioLines, BookOpen, Check, ChevronRight, Copy, Image, LoaderCircle, Palette, Scissors, Send, Sparkles, Subtitles, TrendingUp, TriangleAlert, Type,
-  type LucideIcon,
+  AudioLines, BookOpen, Check, Copy, Image, LoaderCircle, Palette, Scissors, Send, Sparkles, Subtitles, TrendingUp, TriangleAlert, Type,
+
 } from "lucide-react";
 import { ANIMOS, type Animo, type ClipSpec, type EstiloSub, type Formato, type Redes } from "@shared/tipos";
 import { ESTILOS_SUB, NOMBRE_ESTILO } from "@shared/reel/estilos-sub";
@@ -22,14 +23,14 @@ import { NOMBRE_ANIMO } from "../pantallas/Musica";
 /** Categorías del panel de la derecha (una a la vez, elegidas en el riel del borde). */
 export type Categoria = "gancho" | "subtitulos" | "versiculo" | "imagen" | "audio" | "ritmo" | "publicar" | "estilo" | "claude";
 
-const CATEGORIAS: { id: Categoria; nombre: string; titulo: string; ayuda: string; Icono: LucideIcon }[] = [
+const CATEGORIAS: CategoriaRiel<Categoria>[] = [
   { id: "gancho", nombre: "Gancho", titulo: "Gancho", ayuda: "El título del clip y la frase grande de los primeros segundos.", Icono: Type },
   { id: "subtitulos", nombre: "Subtítulos", titulo: "Subtítulos", ayuda: "Cómo se ven las palabras mientras habla el predicador.", Icono: Subtitles },
   { id: "versiculo", nombre: "Versículo", titulo: "Versículo", ayuda: "La cita bíblica que aparece en el clip (RVR1960).", Icono: BookOpen },
   { id: "imagen", nombre: "Imagen", titulo: "Imagen", ayuda: "Color, encuadre, efectos y el principio y final del clip.", Icono: Image },
   { id: "audio", nombre: "Audio", titulo: "Audio", ayuda: "La voz del predicador, la música de fondo y los efectos de sonido.", Icono: AudioLines },
   { id: "ritmo", nombre: "Ritmo", titulo: "Ritmo", ayuda: "Pausas, muletillas y frases repetidas que se quitan del clip.", Icono: Scissors },
-  { id: "publicar", nombre: "Publicar", titulo: "Publicar", ayuda: "Los formatos a exportar y el texto para cada red.", Icono: Send },
+  { id: "publicar", nombre: "Publicar", titulo: "Publicar", ayuda: "Los formatos a exportar y el texto para cada red.", Icono: Send, separado: true },
   { id: "estilo", nombre: "Mi estilo", titulo: "Estilo de la iglesia", ayuda: "Guarda cómo se ve este clip o copia el estilo de un reel que te guste.", Icono: Palette },
   { id: "claude", nombre: "Claude", titulo: "Pedirle a Claude", ayuda: "Cambia el clip escribiendo lo que quieres.", Icono: Sparkles },
 ];
@@ -75,22 +76,7 @@ export function Segmentos<T extends string>({ opciones, valor, etiqueta, alCambi
   );
 }
 
-/** Sección plegable de una categoría: la cabecera muestra cómo está ahora («Tamaño · Medio»). */
-export function Seccion({ titulo, resumen, children, abierta = true }: { titulo: string; resumen?: string; children: ReactNode; abierta?: boolean }) {
-  const [abierto, setAbierto] = useState(abierta);
-  return (
-    <section className="seccion">
-      <h3>
-        <button type="button" className="seccion-cabeza" aria-expanded={abierto} onClick={() => setAbierto((a) => !a)}>
-          <span className="seccion-titulo">{titulo}</span>
-          {resumen && <span className="seccion-resumen">{resumen}</span>}
-          <ChevronRight size={15} className="seccion-flecha" aria-hidden="true" />
-        </button>
-      </h3>
-      {abierto && <div className="seccion-cuerpo">{children}</div>}
-    </section>
-  );
-}
+export { Seccion };
 
 const FORMATOS: [Formato, string, string][] = [["9:16", "Reels · TikTok", "12px 21px"], ["4:5", "Feed IG · FB", "15px 19px"], ["1:1", "Cuadrado", "17px 17px"]];
 const TAMANO: Record<string, string> = { s: "Chico", m: "Medio", l: "Grande" };
@@ -104,36 +90,20 @@ export function Inspector({ clip: c, avisos, alCambiar, alGuardarEstilo, alAplic
   const ultimo = useRef(c);
   ultimo.current = c;
   const [propia, setPropia] = useState<Categoria>("gancho");
-  const cats = CATEGORIAS.filter((k) => k.id !== "claude" || chat);
+  const faltaConfirmar = c.versiculos.some((v) => v.activo && !v.confirmado);
+  const cats = CATEGORIAS.filter((k) => k.id !== "claude" || chat)
+    .map((k) => (k.id === "versiculo" && faltaConfirmar ? { ...k, aviso: "Falta confirmar el texto" } : k));
   const pedida = categoria ?? propia;
   const cat = cats.find((k) => k.id === pedida) ?? cats[0];
   const elegir = (id: Categoria) => { setPropia(id); alCategoria?.(id); };
-  const riel = useRef<HTMLDivElement>(null);
-  const mover = (e: KeyboardEvent, i: number) => {
-    const paso = e.key === "ArrowDown" ? 1 : e.key === "ArrowUp" ? -1 : 0;
-    if (!paso) return;
-    e.preventDefault();
-    const j = (i + paso + cats.length) % cats.length;
-    elegir(cats[j].id);
-    riel.current?.querySelectorAll<HTMLButtonElement>("[role=tab]")[j]?.focus();
-  };
   const cambiar = (parcial: Partial<ClipSpec>) => alCambiar({ ...c, ...parcial });
   const cambiarVersiculo = (i: number, parcial: Partial<ClipSpec["versiculos"][number]>) =>
     cambiar({ versiculos: c.versiculos.map((v, j) => (j === i ? { ...v, ...parcial } : v)) });
-  const faltaConfirmar = c.versiculos.some((v) => v.activo && !v.confirmado);
   const fuentes = c.fuentes ?? FUENTES_POR_DEFECTO;
 
   return (
-    <div className="inspector">
-      <div className="inspector-panel" role="tabpanel" id="panel-categoria" aria-labelledby={`cat-${cat.id}`}>
-        <div className="panel-cabeza">
-          <div className="panel-titulo">
-            <h2>{cat.titulo}</h2>
-            {cat.id === "subtitulos" && <Interruptor activo={c.subtitulos.activos} etiqueta="Mostrar subtítulos" alCambiar={(activos) => cambiar({ subtitulos: { ...c.subtitulos, activos } })} />}
-          </div>
-          <p>{cat.ayuda}</p>
-        </div>
-        <div className="inspector-cuerpo">
+    <PanelCategorias etiqueta="Categorías de ajustes" categorias={cats} actual={cat.id} alElegir={elegir}
+      cabeza={cat.id === "subtitulos" ? <Interruptor activo={c.subtitulos.activos} etiqueta="Mostrar subtítulos" alCambiar={(activos) => cambiar({ subtitulos: { ...c.subtitulos, activos } })} /> : undefined}>
           {avisos.length > 0 && (
             <div className="avisos" role="status">{avisos.map((a) => <p key={a}><TriangleAlert size={14} aria-hidden="true" />{a}</p>)}</div>
           )}
@@ -347,22 +317,7 @@ export function Inspector({ clip: c, avisos, alCambiar, alGuardarEstilo, alAplic
           )}
 
           {cat.id === "claude" && chat && <ChatClip proyectoId={chat.proyectoId} clip={c} historial={chat.historial} alHistorial={chat.alHistorial} alAplicar={alCambiar} />}
-        </div>
-      </div>
-
-      <div className="riel-categorias" role="tablist" aria-label="Categorías de ajustes" aria-orientation="vertical" ref={riel}>
-        {cats.map((k, i) => (
-          <button key={k.id} id={`cat-${k.id}`} type="button" role="tab" aria-selected={k.id === cat.id} aria-controls="panel-categoria"
-            tabIndex={k.id === cat.id ? 0 : -1} className={k.id === "publicar" ? "separado" : undefined}
-            aria-describedby={k.id === "versiculo" && faltaConfirmar ? "falta-confirmar" : undefined}
-            onClick={() => elegir(k.id)} onKeyDown={(e) => mover(e, i)}>
-            {k.id === "versiculo" && faltaConfirmar && <span className="riel-punto" aria-hidden="true" />}
-            <k.Icono size={19} aria-hidden="true" />{k.nombre}
-          </button>
-        ))}
-        <span id="falta-confirmar" hidden>Falta confirmar el texto</span>
-      </div>
-    </div>
+    </PanelCategorias>
   );
 }
 
