@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
 
@@ -65,4 +65,26 @@ test("plan 6: elegir la fuente de la iglesia la guarda en la marca", async () =>
   await userEvent.click(await screen.findByRole("button", { name: /Elegir fuente de la iglesia/ }));
   await vi.waitFor(() => expect(a.guardarMarca).toHaveBeenLastCalledWith(expect.objectContaining({ fuente: "C:/datos/marca/fuente.ttf" })), { timeout: 2000 });
   expect(screen.getByText("fuente.ttf")).toBeInTheDocument();
+});
+
+test("plan 7: marca durante el reel — texto, logo o los dos, con su tamaño y una muestra", async () => {
+  const a = api({ leerMarca: vi.fn(async () => ({ ...structuredClone(marca), logo: "C:/datos/marca/logo.png" })) });
+  render(<Marca />);
+  const grupo = await screen.findByRole("group", { name: "Marca durante el reel" });
+  expect(within(grupo).getByRole("button", { name: "Texto" })).toHaveAttribute("aria-pressed", "true");
+  await userEvent.click(within(grupo).getByRole("button", { name: "Logo y texto" }));
+  await vi.waitFor(() => expect(a.guardarMarca).toHaveBeenLastCalledWith(expect.objectContaining({ marcaReel: { modo: "ambos", tamano: 1 } })), { timeout: 2000 });
+  fireEvent.change(screen.getByLabelText("Tamaño de la marca"), { target: { value: "130" } });
+  await vi.waitFor(() => expect(a.guardarMarca).toHaveBeenLastCalledWith(expect.objectContaining({ marcaReel: { modo: "ambos", tamano: 1.3 } })), { timeout: 2000 });
+  const muestra = screen.getByLabelText("Muestra de la marca durante el reel");
+  expect(muestra.querySelector("img")).not.toBeNull();
+  expect(muestra).toHaveTextContent("Mi iglesia");
+});
+
+test("plan 7: sin logo, «Logo» avisa que se verá el nombre", async () => {
+  api();
+  render(<Marca />);
+  const grupo = await screen.findByRole("group", { name: "Marca durante el reel" });
+  await userEvent.click(within(grupo).getByRole("button", { name: "Logo" }));
+  expect(await screen.findByText("Todavía no hay logo: se verá el nombre hasta que elijas uno.")).toBeInTheDocument();
 });

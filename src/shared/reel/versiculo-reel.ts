@@ -1,6 +1,6 @@
 import { htmlPintura, PINTURAS } from "./pinturas";
 import type { Creacion, Formato, Marca } from "../tipos";
-import { agregarCierre, agregarEfecto, ALTOS, documento, type EntradaComposicion } from "./composicion";
+import { agregarCierre, agregarEfecto, htmlMarcaReel, ALTOS, documento, type EntradaComposicion } from "./composicion";
 import { htmlEscena } from "./escenas";
 import { cssComposicion } from "./estilos.css";
 import { curvaMusica } from "./musica";
@@ -145,6 +145,12 @@ export function construirReelVersiculo(e: EntradaReelVersiculo): { html: string;
   }
 
   // Música (sin voz: entra fuerte y queda pareja; la normalización deja el reel en −14 LUFS)
+  // Marca abajo durante el reel (solo si la iglesia eligió cómo se ve), hasta el cierre.
+  if (marca.marcaReel) {
+    const m = htmlMarcaReel(marca, e.recursos.logo, 0, t.cierre.desde);
+    if (m) el.push(m);
+  }
+
   // Whoosh suave al entrar cada tarjeta y la reflexión.
   if (e.recursos.efectos && c.sonidos !== false) {
     const momentos = [...t.tarjetas.map((x) => x.desde), ...(t.reflexion.hasta > t.reflexion.desde ? [t.reflexion.desde] : [])];

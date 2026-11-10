@@ -3,6 +3,7 @@ import "@hyperframes/player";
 import { ImagePlus, Type, X } from "lucide-react";
 import { construirMuestraMarca } from "@shared/reel/composicion";
 import { MULETILLAS_POR_DEFECTO } from "@shared/reel/cortes-voz";
+import { Segmentos } from "../componentes/Inspector";
 import type { Marca as TMarca } from "@shared/tipos";
 
 type Red = keyof TMarca["redes"];
@@ -105,6 +106,7 @@ export function Marca() {
             <span className="ayuda">Un archivo TTF, OTF, WOFF o WOFF2. Luego elígela en cada clip o en el estilo de la iglesia.</span>
             {errorFuente && <span className="error" role="alert">{errorFuente}</span>}
           </div>
+          <MarcaDuranteReel marca={marca} alCambiar={(marcaReel) => cambiar({ marcaReel })} />
           <label className="campo">
             <span className="campo-cabeza">Tamaño del logo <span className="mono">{Math.round(marca.logoEscala * 100)} %</span></span>
             <input type="range" aria-label="Tamaño del logo" min={50} max={150} step={5} value={Math.round(marca.logoEscala * 100)} onChange={(e) => cambiar({ logoEscala: Number(e.target.value) / 100 })} />
@@ -159,5 +161,28 @@ function Muletillas({ lista, alCambiar }: { lista: string[]; alCambiar(l: string
         <button type="button" className="btn pequeno fantasma" onClick={() => alCambiar([...MULETILLAS_POR_DEFECTO])}>Restablecer</button>
       </div>
     </fieldset>
+  );
+}
+
+/** Qué se ve abajo durante el reel: el nombre, el logo o los dos, con su tamaño y una muestra. */
+function MarcaDuranteReel({ marca, alCambiar }: { marca: TMarca; alCambiar(m: NonNullable<TMarca["marcaReel"]>): void }) {
+  const actual = marca.marcaReel ?? { modo: "texto" as const, tamano: 1 };
+  const conLogo = actual.modo !== "texto" && !!marca.logo;
+  const conTexto = !conLogo || actual.modo === "ambos";
+  const logoVista = urlLogoVista(marca.logo);
+  return (
+    <div className="campo">Marca durante el reel
+      <Segmentos etiqueta="Marca durante el reel" valor={actual.modo}
+        opciones={[["texto", "Texto"], ["logo", "Logo"], ["ambos", "Logo y texto"]] as ["texto" | "logo" | "ambos", string][]}
+        alCambiar={(modo) => alCambiar({ ...actual, modo })} />
+      {actual.modo !== "texto" && !marca.logo && <span className="ayuda">Todavía no hay logo: se verá el nombre hasta que elijas uno.</span>}
+      <span className="campo-cabeza">Tamaño de la marca <span className="mono">{Math.round(actual.tamano * 100)} %</span></span>
+      <input type="range" aria-label="Tamaño de la marca" min={50} max={150} step={5} value={Math.round(actual.tamano * 100)}
+        onChange={(e) => alCambiar({ ...actual, tamano: Number(e.target.value) / 100 })} />
+      <div className="muestra-marca" aria-label="Muestra de la marca durante el reel">
+        {conLogo && logoVista && <img src={window.reels?.urlMarca?.(marca.logo!) ?? logoVista} alt="" style={{ height: Math.round(28 * actual.tamano) }} />}
+        {conTexto && <span style={{ fontSize: Math.round(14 * actual.tamano) }}>{marca.nombre}</span>}
+      </div>
+    </div>
   );
 }

@@ -122,6 +122,8 @@ export interface Marca {
   logoEscala: number;
   redes: { instagram?: string; tiktok?: string; facebook?: string; youtube?: string };
   predicador?: string;
+  /** Qué se ve abajo durante el reel: el nombre, el logo o los dos (sin el campo: el nombre). tamano 0,5–1,5. */
+  marcaReel?: { modo: "texto" | "logo" | "ambos"; tamano: number };
   /** Archivo de la fuente propia de la iglesia (<datos>/marca/fuente.<ext>). */
   fuente?: string;
   estilo: EstiloIglesia;

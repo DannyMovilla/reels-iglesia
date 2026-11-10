@@ -98,6 +98,8 @@ export interface ApiReels {
   /** Prepara (una vez por prédica) el archivo de voz de ese nivel. */
   prepararVoz(proyectoId: string, nivel: NivelVoz): Promise<void>;
   guardarMarca(m: Marca): Promise<void>;
+  /** URL para ver el logo de la marca dentro de la app. */
+  urlMarca(ruta: string): string;
   /** Abre el diálogo para elegir el logo, lo copia a la carpeta de la marca y devuelve su ruta (null si se cancela). */
   elegirLogo(): Promise<string | null>;
   /** Abre el diálogo para elegir la fuente de la iglesia (TTF, OTF, WOFF, WOFF2), la copia y devuelve su ruta (null si se cancela). */

@@ -301,3 +301,33 @@ describe("plan 5: efectos de sonido", () => {
     expect(efectos(construirComposicion(entrada()).html)).toEqual([]);
   });
 });
+
+describe("plan 7: marca durante el reel", () => {
+  const marcaDe = (html: string) => dom(html).querySelector("#marca");
+  const conMarca = (marcaReel?: { modo: "texto" | "logo" | "ambos"; tamano: number }, logo = true) => construirComposicion({
+    ...entrada(), marca: { ...entrada().marca, ...(marcaReel ? { marcaReel } : {}), ...(logo ? { logo: "C:/datos/marca/logo.png" } : {}) },
+    recursos: { ...entrada().recursos, ...(logo ? { logo: "recursos/logo.png" } : {}) },
+  }).html;
+
+  test("marca vieja (sin elección): el nombre como texto, igual que antes", () => {
+    const m = marcaDe(conMarca(undefined))!;
+    expect(m.textContent).toBe("Iglesia Familia");
+    expect(m.querySelector("img")).toBeNull();
+  });
+
+  test("logo: solo la imagen; logo y texto: las dos; el tamaño escala el logo", () => {
+    const logo = marcaDe(conMarca({ modo: "logo", tamano: 1 }))!;
+    expect(logo.querySelector("img")!.getAttribute("src")).toBe("recursos/logo.png");
+    expect(logo.textContent).toBe("");
+    const ambos = marcaDe(conMarca({ modo: "ambos", tamano: 1.5 }))!;
+    expect(ambos.querySelector("img")).not.toBeNull();
+    expect(ambos.textContent).toBe("Iglesia Familia");
+    expect(ambos.querySelector("img")!.getAttribute("style")).toContain("height:135px");
+  });
+
+  test("«Logo» sin logo cargado se ve como texto", () => {
+    const m = marcaDe(conMarca({ modo: "logo", tamano: 1 }, false))!;
+    expect(m.querySelector("img")).toBeNull();
+    expect(m.textContent).toBe("Iglesia Familia");
+  });
+});

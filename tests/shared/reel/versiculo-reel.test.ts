@@ -133,3 +133,12 @@ test("plan 5: whoosh suave en cada tarjeta y en la reflexión; se puede apagar",
   const apagado = construirReelVersiculo({ creacion: { ...c, sonidos: false }, marca, formato: "9:16", recursos: conEfectos, modo: "render" });
   expect(dom(apagado.html).querySelectorAll("audio.efecto")).toHaveLength(0);
 });
+
+test("plan 7: el reel de versículo lleva la marca durante el reel solo si la iglesia la eligió", () => {
+  const sin = construir();
+  expect(dom(sin.html).querySelector("#marca")).toBeNull();
+  const con = construirReelVersiculo({ creacion: creacion(), marca: { ...marca, logo: "C:/x/logo.png", marcaReel: { modo: "ambos", tamano: 1 } }, formato: "9:16", recursos: { ...recursos, logo: "recursos/logo.png" }, modo: "render" });
+  const m = dom(con.html).querySelector("#marca")!;
+  expect(m.querySelector("img")!.getAttribute("src")).toBe("recursos/logo.png");
+  expect(m.textContent).toBe("Iglesia Familia");
+});

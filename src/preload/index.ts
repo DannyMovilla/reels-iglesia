@@ -61,6 +61,7 @@ const api: ApiReels = {
     const r = (await ipcRenderer.invoke("musica:vista", proyectoId, clip, duracion)) as { tipo: string; nombre: string } | null;
     return r ? `${medios}/${r.tipo}/${encodeURIComponent(r.nombre)}` : null;
   },
+  urlMarca: (ruta) => `${medios}/marca/${encodeURIComponent(ruta.split(/[\\/]/).pop() ?? "")}`,
   urlVoz: (id, nivel) => `${medios}/voz/${encodeURIComponent(id)}${nivel && nivel !== "limpia" ? `/${nivel}` : ""}`,
   prepararVoz: (id, nivel) => ipcRenderer.invoke("proyectos:prepararVoz", id, nivel),
   urlExportado: (id, archivo) => `${medios}/exportado/${encodeURIComponent(id)}/${encodeURIComponent(archivo)}`,

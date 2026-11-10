@@ -173,7 +173,8 @@ export function construirComposicion(e: EntradaComposicion): { html: string; dur
     if (hasta - desde >= 1.2) agregarRotulo(el, js, nombrePredicador, desde, hasta - desde, dentroDeZona(franjaLibre, ALTO_ROTULO, formato));
   }
 
-  if (marca.nombre.trim()) el.push(`<div id="marca" class="clip marca" data-start="0" data-duration="${n(finVideo)}">${esc(marca.nombre)}</div>`);
+  const marcaReel = htmlMarcaReel(marca, e.recursos.logo, 0, finVideo);
+  if (marcaReel) el.push(marcaReel);
   el.push(`<div id="prog" class="clip prog" data-start="0" data-duration="${n(finVideo)}"></div>`);
   js.push(`tl.fromTo("#prog", { scaleX: 0 }, { scaleX: 1, duration: ${n(finVideo)}, ease: "none" }, 0);`);
 
@@ -205,6 +206,22 @@ const DURACION_EFECTO: Record<"whoosh" | "whoosh-suave" | "pop", number> = { who
 export function agregarEfecto(el: string[], carpeta: string, nombre: keyof typeof DURACION_EFECTO, t: number, volumen: number): void {
   const inicio = Math.max(0, Math.round(t * 100) / 100);
   el.push(`<audio class="clip efecto" src="${esc(`${carpeta}/${nombre}.wav`)}" data-start="${n(inicio)}" data-duration="${n(DURACION_EFECTO[nombre])}" data-volume="${volumen}"></audio>`);
+}
+
+/**
+ * La marca abajo durante el reel: el nombre, el logo o los dos (según la marca; sin elección, el nombre).
+ * «Logo» sin logo cargado se ve como texto. Devuelve "" si no hay nada que mostrar.
+ */
+export function htmlMarcaReel(marca: Marca, logoSrc: string | undefined, inicio: number, dur: number): string {
+  const modo = marca.marcaReel?.modo ?? "texto";
+  const escala = Math.min(1.5, Math.max(0.5, marca.marcaReel?.tamano ?? 1));
+  const conLogo = modo !== "texto" && !!logoSrc;
+  const conTexto = !conLogo || modo === "ambos";
+  const nombre = marca.nombre.trim();
+  if (!conLogo && !nombre) return "";
+  const img = conLogo ? `<img src="${esc(logoSrc!)}" alt="" style="height:${Math.round(90 * escala)}px">` : "";
+  const texto = conTexto && nombre ? `<span style="font-size:${Math.round(38 * escala)}px">${esc(nombre)}</span>` : "";
+  return `<div id="marca" class="clip marca${conLogo ? " con-logo" : ""}" data-start="${n(inicio)}" data-duration="${n(dur)}">${img}${texto}</div>`;
 }
 
 /** Tarjeta de cierre: logo (sin recortar, tamaño según la marca) o inicial, nombre e invitación. */

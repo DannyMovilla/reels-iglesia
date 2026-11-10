@@ -34,6 +34,8 @@ html, body { width: ${p.ancho}px; height: ${p.alto}px; overflow: hidden; backgro
 .vers b small { font: 600 26px Figtree, sans-serif; color: rgba(255,255,255,.7); margin-left: 12px; }
 .vers p { font: 600 34px/1.35 Figtree, sans-serif; }
 .marca { position: absolute; left: 0; right: 0; bottom: 70px; text-align: center; color: #fff; font: 700 38px Figtree, sans-serif; text-shadow: 0 4px 14px rgba(0,0,0,.6); }
+.marca.con-logo { display: flex; align-items: center; justify-content: center; gap: 18px; }
+.marca img { width: auto; max-width: 60%; object-fit: contain; filter: drop-shadow(0 4px 14px rgba(0,0,0,.55)); }
 .prog { position: absolute; left: 0; right: 0; bottom: 0; height: 12px; background: var(--marca); transform-origin: left center; }
 .cierre { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 26px;
   background: radial-gradient(circle at 50% 40%, #2a2340 0%, #0b0b14 70%); color: #fff; text-align: center; }
