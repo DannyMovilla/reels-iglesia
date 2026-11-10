@@ -52,6 +52,7 @@ test("crear un reel nuevo desde un tema: Claude lo escribe y se abre el editor",
   await userEvent.click(screen.getByRole("button", { name: "Crear con Claude" }));
   expect(a.crearCreacion).toHaveBeenCalledWith({ tipo: "tema", texto: "esperanza en la prueba" });
   expect(a.escribirCreacion).toHaveBeenCalledWith("c1");
+  await userEvent.click(await screen.findByRole("tab", { name: "Texto" }));
   expect(await screen.findByLabelText("Gancho")).toHaveValue("No camines a oscuras");
 });
 
@@ -75,7 +76,7 @@ test("el editor: confirmar RVR1960 habilita exportar; fondo de escena, foto o de
   await userEvent.click(screen.getByRole("button", { name: "Confirmar texto" }));
   expect(exportar).toBeEnabled();
 
-  await userEvent.click(screen.getByRole("tab", { name: "Estilo" }));
+  await userEvent.click(screen.getByRole("tab", { name: "Fondo" }));
   const fondo = screen.getByRole("group", { name: "Fondo" });
   expect(within(fondo).getAllByRole("button").map((b) => b.textContent)).toEqual(["Escena animada", "Pintura clásica", "Degradado", "Foto o video"]);
   expect(within(screen.getByLabelText("Escena")).getAllByRole("option").map((o) => o.textContent)).toEqual(["Luz", "Amanecer", "Aurora", "Nubes", "Atardecer", "Destello"]);
@@ -95,6 +96,7 @@ test("revisión I3: si Claude no escribió el versículo, se le puede volver a p
   await userEvent.click(await screen.findByRole("button", { name: /Juan 8:12/ }));
   await userEvent.click(await screen.findByRole("button", { name: "Pedir a Claude otra vez" }));
   expect(a.escribirCreacion).toHaveBeenCalledWith("c1");
+  await userEvent.click(await screen.findByRole("tab", { name: "Texto" }));
   expect(await screen.findByLabelText("Gancho")).toHaveValue("No camines a oscuras");
 });
 
@@ -106,4 +108,40 @@ test("revisión: si no se puede crear el reel, se explica y el botón vuelve", a
   await userEvent.click(screen.getByRole("button", { name: "Crear con Claude" }));
   expect(await screen.findByRole("alert")).toHaveTextContent("EPERM");
   expect(screen.getByRole("button", { name: "Crear con Claude" })).toBeEnabled();
+});
+
+test("el riel de Con IA tiene Texto, Versículo, Fondo, Audio y Publicar", async () => {
+  api();
+  render(<ConIA />);
+  await userEvent.click(await screen.findByRole("button", { name: /Juan 8:12/ }));
+  const riel = await screen.findByRole("tablist", { name: "Ajustes del reel" });
+  expect(within(riel).getAllByRole("tab").map((t) => t.textContent)).toEqual(["Texto", "Versículo", "Fondo", "Audio", "Publicar"]);
+  await userEvent.click(screen.getByRole("tab", { name: "Audio" }));
+  expect(screen.getByRole("group", { name: "Música" })).toBeInTheDocument();
+  await userEvent.click(screen.getByRole("tab", { name: "Publicar" }));
+  expect(screen.getByRole("checkbox", { name: "9:16" })).toBeChecked();
+});
+
+test("Con IA abre en Versículo si falta confirmar y en Texto si ya está confirmado", async () => {
+  api();
+  const { unmount } = render(<ConIA />);
+  await userEvent.click(await screen.findByRole("button", { name: /Juan 8:12/ }));
+  expect(await screen.findByRole("tab", { name: "Versículo" })).toHaveAttribute("aria-selected", "true");
+  expect(screen.getByRole("tab", { name: "Versículo" })).toHaveAccessibleDescription("Falta confirmar el texto");
+  unmount();
+  const lista = { ...structuredClone(base), versiculo: { ...base.versiculo, confirmado: true } };
+  api({ listarCreaciones: vi.fn(async () => [lista]), leerCreacion: vi.fn(async () => structuredClone(lista)) });
+  render(<ConIA />);
+  await userEvent.click(await screen.findByRole("button", { name: /Juan 8:12/ }));
+  expect(await screen.findByRole("tab", { name: "Texto" })).toHaveAttribute("aria-selected", "true");
+  expect(screen.getByRole("tab", { name: "Versículo" })).not.toHaveAccessibleDescription();
+});
+
+test("revisión: sin referencia ni texto abre en Versículo con «Pedir a Claude otra vez» y Exportar apagado", async () => {
+  const vacia = { ...structuredClone(base), versiculo: { ref: "", texto: "", confirmado: false } };
+  api({ listarCreaciones: vi.fn(async () => [vacia]), leerCreacion: vi.fn(async () => structuredClone(vacia)) });
+  render(<ConIA />);
+  await userEvent.click(await screen.findByRole("button", { name: /Juan 8:12|No camines/ }));
+  expect(await screen.findByRole("button", { name: "Pedir a Claude otra vez" })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "Exportar" })).toBeDisabled();
 });

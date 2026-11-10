@@ -310,3 +310,8 @@ select.entrada, .orden select, .selector-zona select {
 .centro-cabeza .centro-titulo { flex: 1 1 auto; }
 .centro-cabeza .centro-pestanas { flex: none; }
 .centro-cabeza .centro-pestanas svg { display: none; }
+
+/* Con IA con el mismo riel de categorías que el editor de prédicas */
+.ia-cuerpo { grid-template-columns: minmax(300px, 1fr) minmax(420px, 500px); }
+.ia-panel .inspector { flex: 1; min-height: 0; }
+.ia-panel .riel-categorias { background: var(--bg-1); }

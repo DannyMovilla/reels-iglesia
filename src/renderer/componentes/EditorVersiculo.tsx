@@ -1,8 +1,9 @@
 import { PINTURAS } from "@shared/reel/pinturas";
 import { SelectorZona, ZonaSegura, type RedZona } from "./ZonaSegura";
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import "@hyperframes/player";
-import { ArrowLeft, Check, Download, ImagePlus, Send, TriangleAlert, Type, FileText } from "lucide-react";
+import { ArrowLeft, AudioLines, BookOpen, Check, Download, Image, ImagePlus, Send, TriangleAlert, Type } from "lucide-react";
 import { ALTOS } from "@shared/reel/composicion";
 import { ESCENAS } from "@shared/reel/escenas";
 import { construirReelVersiculo } from "@shared/reel/versiculo-reel";
@@ -11,15 +12,27 @@ import { urlLogoVista } from "../pantallas/Marca";
 import { NOMBRE_ANIMO } from "../pantallas/Musica";
 import { ColaExportacion } from "./ColaExportacion";
 import { Interruptor, Publicar, Segmentos } from "./Inspector";
+import { PanelCategorias, type CategoriaRiel } from "./PanelCategorias";
 
-type Pestana = "contenido" | "estilo" | "publicar";
+/** Categorías del panel de Con IA (las mismas ideas que el editor de prédicas). */
+type CatIA = "texto" | "versiculo" | "fondo" | "audio" | "publicar";
+const CATEGORIAS_IA: CategoriaRiel<CatIA>[] = [
+  { id: "texto", nombre: "Texto", titulo: "Texto", ayuda: "El gancho de los primeros segundos y la reflexión del final.", Icono: Type },
+  { id: "versiculo", nombre: "Versículo", titulo: "Versículo", ayuda: "La referencia y el texto Reina-Valera 1960, que hay que confirmar.", Icono: BookOpen },
+  { id: "fondo", nombre: "Fondo", titulo: "Fondo", ayuda: "Lo que se ve detrás del texto: escena, pintura, degradado o tu foto o video.", Icono: Image },
+  { id: "audio", nombre: "Audio", titulo: "Audio", ayuda: "La música de fondo y los efectos de sonido.", Icono: AudioLines },
+  { id: "publicar", nombre: "Publicar", titulo: "Publicar", ayuda: "Los formatos a exportar y el texto para cada red.", Icono: Send, separado: true },
+];
 let version = 0;
 
 /** Editor del reel de un versículo: vista previa en vivo a la izquierda, datos a la derecha. */
 export function EditorVersiculo({ creacion, error, alVolver }: { creacion: Creacion; error: string | null; alVolver(): void }) {
   const [c, setC] = useState(creacion);
   const [marca, setMarca] = useState<Marca | null>(null);
-  const [pestana, setPestana] = useState<Pestana>("contenido");
+  const [cat, setCat] = useState<CatIA>(creacion.versiculo.confirmado ? "texto" : "versiculo");
+  /** Hueco de la barra de arriba para «Exportar» (sin la barra, el botón queda en el panel). */
+  const [barra, setBarra] = useState<HTMLElement | null>(null);
+  useEffect(() => setBarra(document.getElementById("barra-acciones")), []);
   const [formato, setFormato] = useState<Formato>("9:16");
   const [zona, setZona] = useState<RedZona>("instagram");
   const [src, setSrc] = useState<string | null>(null);
@@ -89,9 +102,16 @@ export function EditorVersiculo({ creacion, error, alVolver }: { creacion: Creac
     if (ruta) cambiar({ fondo: { tipo: /\.(mp4|mov|m4v|webm)$/i.test(ruta) ? "video" : "imagen", archivo: ruta } });
   };
   const alto = ALTOS[formato];
+  const botonExportar = (
+    <button type="button" className="btn primario" disabled={sinConfirmar || c.formatos.length === 0} onClick={() => void exportar()}
+      title={sinConfirmar ? "Confirma el texto RVR1960 para poder exportar" : undefined}>
+      <Download size={15} aria-hidden="true" />Exportar
+    </button>
+  );
 
   return (
     <div className="editor-ia">
+      {barra && createPortal(botonExportar, barra)}
       <div className="ia-cabeza">
         <button type="button" className="btn fantasma pequeno" onClick={() => void guardarYa().then(alVolver)}><ArrowLeft size={14} aria-hidden="true" />Con IA</button>
         <h1>{c.versiculo.ref || c.entrada.texto}</h1>
@@ -112,13 +132,15 @@ export function EditorVersiculo({ creacion, error, alVolver }: { creacion: Creac
         </div>
 
         <div className="ia-panel">
-          <div className="pestanas" role="tablist">
-            {([["contenido", "Contenido", FileText], ["estilo", "Estilo", Type], ["publicar", "Publicar", Send]] as const).map(([id, texto, Icono]) => (
-              <button key={id} type="button" role="tab" aria-selected={pestana === id} onClick={() => setPestana(id)}><Icono size={14} aria-hidden="true" />{texto}</button>
-            ))}
-          </div>
-          <div className="ia-campos">
-            {pestana === "contenido" && (
+          <PanelCategorias<CatIA> etiqueta="Ajustes del reel" actual={cat} alElegir={setCat}
+            categorias={CATEGORIAS_IA.map((k) => (k.id === "versiculo" && !c.versiculo.confirmado ? { ...k, aviso: "Falta confirmar el texto" } : k))}>
+            {cat === "texto" && (
+              <>
+                <label className="campo">Gancho<input className="entrada" value={c.gancho} onChange={(e) => cambiar({ gancho: e.target.value })} /></label>
+                <label className="campo">Reflexión<textarea className="entrada" rows={3} value={c.reflexion} onChange={(e) => cambiar({ reflexion: e.target.value })} /></label>
+              </>
+            )}
+            {cat === "versiculo" && (
               <>
                 {!c.versiculo.texto.trim() && (
                   <div className="confirmar">
@@ -129,7 +151,6 @@ export function EditorVersiculo({ creacion, error, alVolver }: { creacion: Creac
                     {errorPedir && <p className="error" role="alert">{errorPedir}</p>}
                   </div>
                 )}
-                <label className="campo">Gancho<input className="entrada" value={c.gancho} onChange={(e) => cambiar({ gancho: e.target.value })} /></label>
                 <label className="campo">Referencia<input className="entrada" value={c.versiculo.ref} placeholder="Juan 8:12"
                   onChange={(e) => cambiar({ versiculo: { ...c.versiculo, ref: e.target.value, confirmado: false } })} /></label>
                 <label className="campo">Texto (Reina-Valera 1960)
@@ -145,11 +166,9 @@ export function EditorVersiculo({ creacion, error, alVolver }: { creacion: Creac
                       onClick={() => cambiar({ versiculo: { ...c.versiculo, confirmado: true } })}>Confirmar texto</button>
                   </div>
                 )}
-                <label className="campo">Reflexión<textarea className="entrada" rows={3} value={c.reflexion} onChange={(e) => cambiar({ reflexion: e.target.value })} /></label>
               </>
             )}
-
-            {pestana === "estilo" && (
+            {cat === "fondo" && (
               <>
                 <Segmentos etiqueta="Fondo" valor={c.fondo.tipo === "video" ? "imagen" : c.fondo.tipo}
                   opciones={[["escena", "Escena animada"], ["pintura", "Pintura clásica"], ["degradado", "Degradado"], ["imagen", "Foto o video"]]}
@@ -180,6 +199,10 @@ export function EditorVersiculo({ creacion, error, alVolver }: { creacion: Creac
                     {c.fondo.archivo && <span className="ayuda">{c.fondo.archivo.split(/[\\/]/).pop()}</span>}
                   </div>
                 )}
+              </>
+            )}
+            {cat === "audio" && (
+              <>
                 <Segmentos etiqueta="Música" valor={c.musica.modo} opciones={[["auto", "Automática"], ["pad", "Pad"], ["ninguna", "Sin música"]]}
                   alCambiar={(modo) => cambiar({ musica: { ...c.musica, modo } })} />
                 {c.musica.modo !== "ninguna" && (
@@ -190,6 +213,10 @@ export function EditorVersiculo({ creacion, error, alVolver }: { creacion: Creac
                   </label>
                 )}
                 <div className="fila"><Interruptor activo={c.sonidos !== false} etiqueta="Efectos de sonido" alCambiar={(sonidos) => cambiar({ sonidos })} /> Efectos de sonido (whoosh suave entre tarjetas)</div>
+              </>
+            )}
+            {cat === "publicar" && (
+              <>
                 <div className="campo">Formatos a exportar
                   <div className="fila">
                     {(["9:16", "4:5", "1:1"] as Formato[]).map((f) => (
@@ -198,17 +225,14 @@ export function EditorVersiculo({ creacion, error, alVolver }: { creacion: Creac
                     ))}
                   </div>
                 </div>
+                <Publicar redes={c.redes} alCambiar={(redes) => cambiar({ redes })} />
               </>
             )}
-
-            {pestana === "publicar" && <Publicar redes={c.redes} alCambiar={(redes) => cambiar({ redes })} />}
-          </div>
+          </PanelCategorias>
 
           <div className="ia-pie">
             {sinConfirmar && <p className="aviso-chico"><TriangleAlert size={13} aria-hidden="true" />Confirma el texto RVR1960 para poder exportar.</p>}
-            <button type="button" className="btn primario" disabled={sinConfirmar || c.formatos.length === 0} onClick={() => void exportar()}>
-              <Download size={15} aria-hidden="true" />Exportar
-            </button>
+            {!barra && botonExportar}
             <ColaExportacion proyectoId={`ia:${c.id}`}
               tareas={tareas.filter((t) => t.proyectoId === `ia:${c.id}` && (t.creada >= abierto || t.estado === "pendiente" || t.estado === "corriendo"))}
               alCancelar={(id) => void window.reels!.cancelar(id)} alAbrirCarpeta={() => void window.reels!.abrirCarpetaExportados(`ia:${c.id}`)} />

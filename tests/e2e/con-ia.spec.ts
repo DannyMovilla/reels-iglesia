@@ -17,8 +17,10 @@ test("Con IA: Claude escribe el reel de un versículo, se confirma y se exporta"
   await v.getByRole("button", { name: "Nuevo reel de versículo" }).click();
   await v.getByLabel("Versículo", { exact: true }).fill("Juan 8:12");
   await v.getByRole("button", { name: "Crear con Claude" }).click();
+  await v.getByRole("tab", { name: "Texto" }).click({ timeout: 60_000 });
   await expect(v.getByLabel("Gancho")).toHaveValue("No tienes que caminar a oscuras", { timeout: 60_000 });
   await expect(v.getByRole("button", { name: "Exportar" })).toBeDisabled();
+  await v.getByRole("tab", { name: "Versículo" }).click();
   await v.getByRole("button", { name: "Confirmar texto" }).click();
   // Vista previa en vivo: el reproductor queda listo con la escena.
   let listo = false;
@@ -27,7 +29,7 @@ test("Con IA: Claude escribe el reel de un versículo, se confirma y se exporta"
     if (!listo) await v.waitForTimeout(200);
   }
   expect(listo).toBe(true);
-  await v.getByRole("tab", { name: "Estilo" }).click();
+  await v.getByRole("tab", { name: "Publicar" }).click();
   await v.getByRole("checkbox", { name: "4:5" }).uncheck();
   await v.waitForTimeout(700);
   await v.getByRole("button", { name: "Exportar" }).click();
