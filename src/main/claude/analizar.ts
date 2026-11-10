@@ -40,11 +40,12 @@ export function partirComando(c: string): [string, string[]] {
   return [partes[0], partes.slice(1)];
 }
 
-export async function preguntar(comando: [string, string[]], prompt: string, senal: AbortSignal, tiempo: AbortSignal): Promise<string> {
+/** Una consulta a `claude -p` (con la suscripción). `extra`: argumentos más, p. ej. ["--allowedTools", "Read"]. */
+export async function preguntar(comando: [string, string[]], prompt: string, senal: AbortSignal, tiempo: AbortSignal, extra: string[] = []): Promise<string> {
   const [exe, args] = comando;
   let r;
   try {
-    r = await ejecutarConProgreso(exe, [...args, "-p", "--output-format", "json"], { entrada: prompt, senal: AbortSignal.any([senal, tiempo]) });
+    r = await ejecutarConProgreso(exe, [...args, ...extra, "-p", "--output-format", "json"], { entrada: prompt, senal: AbortSignal.any([senal, tiempo]) });
   } catch (e) {
     if ((e as NodeJS.ErrnoException).code === "ENOENT") throw new Error(ERROR_SIN_CLAUDE);
     throw e;

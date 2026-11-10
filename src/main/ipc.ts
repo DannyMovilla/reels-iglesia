@@ -18,6 +18,7 @@ import { guardarPdf } from "./entregas/pdf";
 import { guardarMp3 } from "./entregas/mp3";
 import { traducirSrt } from "./entregas/traducir";
 import { medirBalance } from "./procesos/color";
+import { analizarReferencia } from "./estilo/referencia";
 import { archivoVoz } from "./procesos/audio";
 import { asegurarVoz } from "./exportar/tarea";
 import { palabrasDe } from "@shared/reel/tiempo";
@@ -128,6 +129,11 @@ export function registrarIpc(deps: DepsIpc): void {
   ipcMain.handle("proyectos:prepararVoz", async (_e, id: string, nivel: NivelVoz) => {
     if (!["ligera", "limpia", "podcast"].includes(nivel)) throw new Error("Ese nivel de voz no existe.");
     await asegurarVoz(await leerProyecto(id), nivel);
+  });
+  ipcMain.handle("estilo:copiar", async (_e, clip: ClipSpec) => {
+    const r = await dialog.showOpenDialog({ title: "Elegir un reel de referencia", properties: ["openFile"], filters: [{ name: "Videos", extensions: ["mp4", "mov", "m4v", "webm"] }] });
+    if (r.canceled || !r.filePaths[0]) return null;
+    return analizarReferencia(r.filePaths[0], clip, { comando: process.env.REELS_CLAUDE_COMANDO });
   });
   ipcMain.handle("proyectos:medirColor", async (_e, id: string, inicio: number, fin: number) => {
     const p = await leerProyecto(id);

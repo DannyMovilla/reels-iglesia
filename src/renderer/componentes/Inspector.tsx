@@ -1,3 +1,4 @@
+import { CopiarEstilo } from "./CopiarEstilo";
 import { FUENTES, FUENTES_POR_DEFECTO, type IdFuente } from "@shared/reel/fuentes";
 import { NOMBRE_LOOK, type Look } from "@shared/reel/color";
 import { useState } from "react";
@@ -165,6 +166,7 @@ export function Inspector({ clip: c, avisos, alCambiar, alGuardarEstilo, alAplic
               <div className="fila"><Interruptor activo={c.cortes.muletillas} etiqueta="Quitar muletillas" alCambiar={(muletillas) => cambiar({ cortes: { ...c.cortes, muletillas } })} /> Quitar muletillas («eh», «em»)</div>
               {palabras && <Repeticiones clip={c} palabras={palabras} alCambiar={(quitados) => cambiar({ cortes: { ...c.cortes, quitados } })} />}
             </div>
+            <CopiarEstilo clip={c} alAplicar={alCambiar} alGuardarEstilo={alGuardarEstilo ? (n) => { alCambiar(n); alGuardarEstilo(n); } : undefined} />
             <div className="grupo"><h3>Fuentes</h3>
               {(["titulos", "subtitulos"] as const).map((k) => (
                 <label key={k} className="campo">{k === "titulos" ? "Fuente de títulos" : "Fuente de subtítulos"}

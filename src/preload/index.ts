@@ -25,6 +25,7 @@ const api: ApiReels = {
   leerCaras: (id) => ipcRenderer.invoke("proyectos:caras", id),
   guardarClip: (id, clip) => ipcRenderer.invoke("proyectos:guardarClip", id, clip),
   crearClip: (id, inicio, fin) => ipcRenderer.invoke("proyectos:crearClip", id, inicio, fin),
+  copiarEstilo: (clip) => ipcRenderer.invoke("estilo:copiar", clip),
   medirColor: (id, inicio, fin) => ipcRenderer.invoke("proyectos:medirColor", id, inicio, fin),
   crearSrt: (id, opciones) => ipcRenderer.invoke("entregas:srt", id, opciones),
   crearPdf: (id) => ipcRenderer.invoke("entregas:pdf", id),

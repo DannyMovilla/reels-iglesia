@@ -350,3 +350,8 @@
 .pintura-op { display: flex; flex-direction: column; gap: 2px; text-align: left; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg-1); color: var(--text-2); font: 500 12px var(--font-ui); cursor: pointer; }
 .pintura-op b { color: var(--text); font-weight: 600; }
 .pintura-op[aria-checked="true"] { border-color: var(--luz); background: var(--bg-3); }
+
+/* Plan 6: copiar el estilo de un reel. */
+.propuesta { display: flex; flex-direction: column; gap: 6px; padding: 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg-1); font-size: 13px; }
+.propuesta p { margin: 0; }
+.propuesta ul { margin: 0; padding-left: 18px; color: var(--text-2); }

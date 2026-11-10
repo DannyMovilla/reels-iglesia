@@ -1,4 +1,5 @@
 import type { Correccion } from "./correcciones";
+import type { EstiloReferencia } from "./estilo-referencia";
 import type { Capitulos } from "./capitulos";
 import type { Pista } from "./reel/pistas";
 import type { NivelVoz } from "./tipos";
@@ -63,6 +64,8 @@ export interface ApiReels {
   alProgresoEntregas(cb: (texto: string) => void): () => void;
   /** Balance de blancos (ganancias R, G, B) del video de la prédica en ese tramo. */
   medirColor(proyectoId: string, inicio: number, fin: number): Promise<[number, number, number]>;
+  /** Abre el diálogo para elegir un reel de referencia y le pide a Claude un estilo parecido (null si se cancela). */
+  copiarEstilo(clip: ClipSpec): Promise<{ estilo: EstiloReferencia; avisos: string[] } | null>;
   /** Crea un clip a mano con ese tramo del video (ajustado a palabras) y lo agrega a clips.json. */
   crearClip(proyectoId: string, inicio: number, fin: number): Promise<ClipSpec>;
   leerMarca(): Promise<Marca>;

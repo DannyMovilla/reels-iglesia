@@ -22,6 +22,15 @@ process.stdin.on("end", () => {
     console.log(JSON.stringify({ type: "result", is_error: false, result: "Aquí está:\n```json\n" + JSON.stringify(r) + "\n```" }));
     return;
   }
+  if (entrada.includes("ESTILO DE UN REEL")) {
+    // Comprueba que pidieron permiso para leer los cuadros y que los cuadros existen.
+    const lee = process.argv.includes("--allowedTools") && process.argv.includes("Read");
+    const cuadros = [...entrada.matchAll(/^- (.+cuadro-\d+\.jpg)$/gm)].map((m) => m[1]);
+    const r = { subtitulos: "karaoke", tamano: "L", altura: 0.7, fuente_titulos: "montserrat", fuente_subtitulos: "inventada", animo: "victoria", intensidad: "fuerte", look: "cine",
+      explicacion: lee && cuadros.length && cuadros.every((c) => existsSync(c)) ? `Miré ${cuadros.length} cuadros.` : "No pude mirar los cuadros." };
+    console.log(JSON.stringify({ type: "result", is_error: false, result: JSON.stringify(r) }));
+    return;
+  }
   if (entrada.includes("TRADUCCIÓN DE SUBTÍTULOS")) {
     // Devuelve cada bloque con el código del idioma delante; "traduccion-corta" se come el último.
     const idioma = /idioma: (\w+)/.exec(entrada)?.[1] ?? "xx";
