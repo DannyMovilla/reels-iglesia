@@ -32,6 +32,11 @@ const api: ApiReels = {
   crearMp3: (id, nivel) => ipcRenderer.invoke("entregas:mp3", id, nivel),
   cancelarTraduccion: (id) => ipcRenderer.invoke("entregas:cancelarTraduccion", id),
   traducirSrt: (id, idiomas, opciones) => ipcRenderer.invoke("entregas:traducir", id, idiomas, opciones),
+  sacarFrases: (id) => ipcRenderer.invoke("entregas:frases", id),
+  cancelarFrases: (id) => ipcRenderer.invoke("entregas:cancelarFrases", id),
+  leerFrases: (id) => ipcRenderer.invoke("entregas:leerFrases", id),
+  guardarFrases: (id, frases) => ipcRenderer.invoke("entregas:guardarFrases", id, frases),
+  guardarImagenesFrases: (id) => ipcRenderer.invoke("entregas:imagenesFrases", id),
   alProgresoEntregas: (cb) => {
     const f = (_e: unknown, texto: string) => cb(texto);
     ipcRenderer.on("entregas:progreso", f);

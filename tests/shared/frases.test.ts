@@ -129,3 +129,9 @@ describe("tarjeta", () => {
     expect(foto).toContain("blur(");
   });
 });
+
+test("la palabra clave de Claude se guarda solo si está en la frase", () => {
+  const r = elegirFrases([{ texto: A, en: "0:39", clave: "gloria" }, { texto: D, en: "1:06", clave: "inventada" }], palabras, rango);
+  expect(r[0].clave).toBe("gloria");
+  expect(r[1].clave).toBeUndefined();
+});

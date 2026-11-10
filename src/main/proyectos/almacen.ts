@@ -7,7 +7,7 @@ import type { ClipSpec, Marca, Proyecto, Transcripcion, VideoOrigen } from "@sha
 import { validarRango } from "@shared/validar";
 import { carpetaDatos, carpetaProyecto, carpetaProyectos } from "../rutas";
 
-export type ArchivoProyecto = "transcripcion.json" | "caras.json" | "clips.json" | "correcciones.json" | "capitulos.json";
+export type ArchivoProyecto = "transcripcion.json" | "caras.json" | "clips.json" | "correcciones.json" | "capitulos.json" | "frases.json";
 
 function slug(texto: string): string {
   return (

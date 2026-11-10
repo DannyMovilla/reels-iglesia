@@ -1,3 +1,4 @@
+import type { Frase } from "./frases";
 import type { Correccion } from "./correcciones";
 import type { EstiloReferencia } from "./estilo-referencia";
 import type { Capitulos } from "./capitulos";
@@ -62,6 +63,14 @@ export interface ApiReels {
   traducirSrt(proyectoId: string, idiomas: string[], opciones: { completo: boolean }): Promise<string[]>;
   /** Cancela la traducción en curso de la prédica. */
   cancelarTraduccion(proyectoId: string): Promise<boolean>;
+  /** Pide a Claude las frases de la prédica (como mucho 7, textuales) y las guarda. */
+  sacarFrases(proyectoId: string): Promise<{ frases: Frase[]; aviso?: string }>;
+  /** Cancela el pedido de frases en curso. */
+  cancelarFrases(proyectoId: string): Promise<boolean>;
+  leerFrases(proyectoId: string): Promise<Frase[]>;
+  guardarFrases(proyectoId: string, frases: Frase[]): Promise<void>;
+  /** Pinta las frases en PNG (exportados/frases) y escribe el .txt; devuelve los archivos y avisos. */
+  guardarImagenesFrases(proyectoId: string): Promise<{ archivos: string[]; avisos: string[] }>;
   /** Avisos de progreso de las entregas largas (traducción). */
   alProgresoEntregas(cb: (texto: string) => void): () => void;
   /** Balance de blancos (ganancias R, G, B) del video de la prédica en ese tramo. */

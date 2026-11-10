@@ -1,3 +1,5 @@
+import { cancelarFrases, guardarFrases, guardarImagenesFrases, leerFrases, sacarFrases } from "./entregas/frases";
+import type { Frase } from "@shared/frases";
 import { existsSync } from "node:fs";
 import { mkdir, stat } from "node:fs/promises";
 import { basename, join } from "node:path";
@@ -147,6 +149,11 @@ export function registrarIpc(deps: DepsIpc): void {
   ipcMain.handle("entregas:traducir", (e, id: string, idiomas: string[], o?: { completo?: boolean }) =>
     traducirSrt(id, Array.isArray(idiomas) ? idiomas : [], { comando: process.env.REELS_CLAUDE_COMANDO, completo: o?.completo !== false, alProgreso: (t) => e.sender.send("entregas:progreso", t) }));
   ipcMain.handle("entregas:mp3", (_e, id: string, nivel: NivelVoz) => guardarMp3(id, ["ligera", "limpia", "podcast"].includes(nivel) ? nivel : "limpia"));
+  ipcMain.handle("entregas:frases", (_e, id: string) => sacarFrases(id, { comando: process.env.REELS_CLAUDE_COMANDO }));
+  ipcMain.handle("entregas:cancelarFrases", (_e, id: string) => { validarIdProyecto(id); return cancelarFrases(id); });
+  ipcMain.handle("entregas:leerFrases", (_e, id: string) => leerFrases(id));
+  ipcMain.handle("entregas:guardarFrases", (_e, id: string, frases: Frase[]) => guardarFrases(id, frases));
+  ipcMain.handle("entregas:imagenesFrases", (_e, id: string) => guardarImagenesFrases(id));
   ipcMain.handle("entregas:srt", (_e, id: string, o: { completo: boolean }) => guardarSrt(id, { completo: o?.completo !== false }));
   ipcMain.handle("proyectos:capitulos", (_e, id: string) => leerCapitulos(id));
   ipcMain.handle("claude:capitulos", (_e, id: string) => crearCapitulos(id, { comando: process.env.REELS_CLAUDE_COMANDO }));

@@ -55,6 +55,24 @@ process.stdin.on("end", () => {
     console.log(JSON.stringify({ type: "result", is_error: false, result: "```json" + String.fromCharCode(10) + JSON.stringify(bloques) + String.fromCharCode(10) + "```" }));
     return;
   }
+  if (entrada.includes("FRASES DE LA PRÉDICA")) {
+    if (modo === "frases-invalido-luego-ok" && n === 1) {
+      console.log(JSON.stringify({ type: "result", is_error: false, result: "Estas son mis frases favoritas, sin JSON." }));
+      return;
+    }
+    if (modo === "frases-inventadas") {
+      const r = [{ texto: "El amor de Dios nunca falla aunque el mundo se caiga", en: "0:00:10" }];
+      console.log(JSON.stringify({ type: "result", is_error: false, result: JSON.stringify(r) }));
+      return;
+    }
+    if (modo === "frases-lenta") {
+      setTimeout(() => console.log(JSON.stringify({ type: "result", is_error: false, result: "[]" })), 5000);
+      return;
+    }
+    const r = readFileSync(join(aqui, "respuesta-frases.json"), "utf8").trim();
+    console.log(JSON.stringify({ type: "result", is_error: false, result: "Aquí están:" + String.fromCharCode(10) + "```json" + String.fromCharCode(10) + r + String.fromCharCode(10) + "```" }));
+    return;
+  }
   if (entrada.includes("CAPÍTULOS DE UNA PRÉDICA")) {
     const r = readFileSync(join(aqui, "respuesta-capitulos.json"), "utf8").trim();
     console.log(JSON.stringify({ type: "result", is_error: false, result: "```json" + String.fromCharCode(10) + r + String.fromCharCode(10) + "```" }));
