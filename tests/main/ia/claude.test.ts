@@ -43,3 +43,12 @@ test("revisión I4: datos raros de Claude (null, texto en vez de lista) no dan u
   expect(r).toMatchObject({ ref: "Juan 8:12", gancho: "", reflexion: "", palabras_clave: [] });
   expect(r.animo).toBeUndefined();
 });
+
+test("plan 6: Claude puede proponer una pintura; un id desconocido se ignora y el prompt las lista", async () => {
+  const { leerRespuestaVersiculo, promptVersiculo } = await import("../../../src/main/ia/claude");
+  expect(leerRespuestaVersiculo({ ref: "Lucas 15:20", texto: "x", pintura: "prodigo" }).pintura).toBe("prodigo");
+  expect(leerRespuestaVersiculo({ ref: "Lucas 15:20", texto: "x", pintura: "mona-lisa" }).pintura).toBeUndefined();
+  const p = promptVersiculo({ tipo: "versiculo", texto: "Lucas 15:20" });
+  expect(p).toContain("\"pintura\"");
+  expect(p).toContain("prodigo = El regreso del hijo pródigo");
+});

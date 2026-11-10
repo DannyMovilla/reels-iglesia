@@ -1,3 +1,4 @@
+import { PINTURAS } from "@shared/reel/pinturas";
 import { readFile } from "node:fs/promises";
 import { extname, join, normalize, sep } from "node:path";
 import { protocol } from "electron";
@@ -23,7 +24,9 @@ export function registrarComposicion(id: string, html: string): string {
 export const composicionRegistrada = (id: string): string | undefined => composiciones.get(id);
 
 /** Ruta del archivo local para un recurso pedido, o null si no está permitido. */
-export function rutaRecurso(ruta: string, raiz: string, datos?: string, escenas?: string, efectos?: string): string | null {
+export function rutaRecurso(ruta: string, raiz: string, datos?: string, escenas?: string, efectos?: string, pinturas?: string): string | null {
+  const pintura = /^recursos\/pinturas\/([a-z]+)\.jpg$/.exec(ruta);
+  if (pintura) return pinturas && PINTURAS[pintura[1]] ? join(pinturas, `${pintura[1]}.jpg`) : null;
   if (ruta === "recursos/escenas/shaders.iife.js") return escenas ? join(escenas, "shaders.iife.js") : null;
   const efecto = /^recursos\/efectos\/(whoosh|whoosh-suave|pop)\.wav$/.exec(ruta);
   if (efecto) return efectos ? join(efectos, `${efecto[1]}.wav`) : null;
@@ -49,7 +52,7 @@ const CSP = "default-src 'self' reels-comp: http://127.0.0.1:*; script-src 'self
 /** Debe registrarse antes de app.ready. */
 export const esquemaVista = { scheme: "reels-comp", privileges: { standard: true, secure: true, supportFetchAPI: true, stream: true } };
 
-export function servirVista(raiz: string, datos: () => string, escenas?: string, efectos?: string): void {
+export function servirVista(raiz: string, datos: () => string, escenas?: string, efectos?: string, pinturas?: string): void {
   protocol.handle("reels-comp", async (req) => {
     const url = new URL(req.url);
     const ruta = decodeURIComponent(url.pathname).replace(/^\/+/, "");
@@ -58,7 +61,7 @@ export function servirVista(raiz: string, datos: () => string, escenas?: string,
       const html = composiciones.get(url.hostname);
       return html ? new Response(html, { headers: encabezados("text/html; charset=utf-8") }) : new Response("No existe", { status: 404 });
     }
-    const archivo = rutaRecurso(ruta, raiz, datos(), escenas, efectos);
+    const archivo = rutaRecurso(ruta, raiz, datos(), escenas, efectos, pinturas);
     if (!archivo) return new Response("No permitido", { status: 404 });
     try {
       return new Response(await readFile(archivo), { headers: encabezados(TIPOS[extname(archivo)] ?? "application/octet-stream") });

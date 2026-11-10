@@ -77,7 +77,7 @@ test("el editor: confirmar RVR1960 habilita exportar; fondo de escena, foto o de
 
   await userEvent.click(screen.getByRole("tab", { name: "Estilo" }));
   const fondo = screen.getByRole("group", { name: "Fondo" });
-  expect(within(fondo).getAllByRole("button").map((b) => b.textContent)).toEqual(["Escena animada", "Degradado", "Foto o video"]);
+  expect(within(fondo).getAllByRole("button").map((b) => b.textContent)).toEqual(["Escena animada", "Pintura clásica", "Degradado", "Foto o video"]);
   expect(within(screen.getByLabelText("Escena")).getAllByRole("option").map((o) => o.textContent)).toEqual(["Luz", "Amanecer", "Aurora", "Nubes", "Atardecer", "Destello"]);
   await userEvent.click(within(fondo).getByRole("button", { name: "Foto o video" }));
   await userEvent.click(screen.getByRole("button", { name: "Elegir foto o video" }));

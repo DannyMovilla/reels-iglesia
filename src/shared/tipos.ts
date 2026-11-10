@@ -184,7 +184,8 @@ export interface Creacion {
   palabrasClave: string[];
   musica: ClipSpec["musica"];
   subtitulos: { estilo: EstiloSub };
-  fondo: { tipo: "escena" | "degradado" | "imagen" | "video"; escena?: Escena; archivo?: string };
+  /** pintura: id de una pintura clásica incluida (src/shared/reel/pinturas.ts). */
+  fondo: { tipo: "escena" | "degradado" | "imagen" | "video" | "pintura"; escena?: Escena; archivo?: string; pintura?: string };
   redes: Redes;
   formatos: Formato[];
   estado: "borrador" | "exportado";

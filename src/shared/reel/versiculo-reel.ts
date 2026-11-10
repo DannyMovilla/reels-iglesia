@@ -1,3 +1,4 @@
+import { htmlPintura, PINTURAS } from "./pinturas";
 import type { Creacion, Formato, Marca } from "../tipos";
 import { agregarCierre, agregarEfecto, ALTOS, documento, type EntradaComposicion } from "./composicion";
 import { htmlEscena } from "./escenas";
@@ -14,7 +15,8 @@ export interface EntradaReelVersiculo {
   marca: Marca;
   formato: Formato;
   /** gsap y fuentes como en la composición de prédicas; `escenas` = ruta de shaders.iife.js. */
-  recursos: EntradaComposicion["recursos"] & { escenas?: string };
+  /** pinturas: carpeta de las pinturas clásicas (recursos/pinturas). */
+  recursos: EntradaComposicion["recursos"] & { escenas?: string; pinturas?: string };
   modo: "vista" | "render";
   /** Archivo del fondo propio dentro de la carpeta del reel (o URL en la vista previa). */
   fondoSrc?: string;
@@ -89,9 +91,14 @@ export function construirReelVersiculo(e: EntradaReelVersiculo): { html: string;
   const js: string[] = [];
   const scripts: string[] = [];
 
-  // Fondo
-  if (c.fondo.tipo === "escena" && e.recursos.escenas) {
-    el.push(htmlEscena(c.fondo.escena ?? "luz", marca.color, W, H));
+  // Fondo (una pintura que no existe cae en la escena «luz»).
+  const pintura = c.fondo.tipo === "pintura" && c.fondo.pintura && PINTURAS[c.fondo.pintura] && e.recursos.pinturas ? c.fondo.pintura : null;
+  if (pintura) {
+    const h = htmlPintura(pintura, e.recursos.pinturas!, D);
+    el.push(...h.el);
+    js.push(...h.js);
+  } else if ((c.fondo.tipo === "escena" || c.fondo.tipo === "pintura") && e.recursos.escenas) {
+    el.push(htmlEscena(c.fondo.tipo === "escena" ? (c.fondo.escena ?? "luz") : "luz", marca.color, W, H));
     scripts.push(e.recursos.escenas);
   } else if (c.fondo.tipo === "imagen" && e.fondoSrc) {
     el.push(`<img id="fondo" class="fondo" src="${esc(e.fondoSrc)}" alt="">`, `<div class="velo-fondo"></div>`);
@@ -165,7 +172,7 @@ function cssReelVersiculo(W: number, H: number, color: string): string {
 .degradado i { position: absolute; width: ${Math.round(W * 1.3)}px; height: ${Math.round(W * 1.3)}px; border-radius: 50%; filter: blur(90px); opacity: .55; }
 .degradado .d1 { left: -${Math.round(W * 0.35)}px; top: ${Math.round(H * 0.05)}px; background: ${color}; }
 .degradado .d2 { right: -${Math.round(W * 0.45)}px; bottom: -${Math.round(W * 0.3)}px; background: #3a4fd8; }
-img.fondo, video.fondo { position: absolute; inset: 0; width: ${W}px; height: ${H}px; object-fit: cover; transform-origin: 50% 50%; }
+img.fondo, video.fondo, img.pintura { position: absolute; inset: 0; width: ${W}px; height: ${H}px; object-fit: cover; transform-origin: 50% 50%; }
 .velo-fondo { position: absolute; inset: 0; background: rgba(5,7,14,.55); backdrop-filter: blur(3px); }
 .gancho-ia { position: absolute; left: 70px; right: 70px; top: ${Math.round(H * 0.42)}px; transform: translateY(-50%); text-align: center; color: #fff;
   font: 900 ${grande + 14}px/1.08 Montserrat, sans-serif; text-transform: uppercase; text-shadow: 0 6px 30px rgba(0,0,0,.6); opacity: 0; }

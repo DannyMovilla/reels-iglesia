@@ -21,6 +21,8 @@ export const raizApp = (e: Entorno = entornoActual()): string => (e.empaquetada 
 export const rutaEscenas = (): string => join(raizRecursos(), "resources", "escenas");
 /** Efectos de sonido propios (python/efectos.py), incluidos en la app. */
 export const rutaEfectos = (): string => join(raizRecursos(), "resources", "efectos");
+/** Pinturas clásicas de dominio público incluidas en la app. */
+export const rutaPinturas = (): string => join(raizRecursos(), "resources", "pinturas");
 
 /** Donde están python/ y modelos/: el repositorio en desarrollo; resources/ instalada (extraResources). */
 export const raizRecursos = (e: Entorno = entornoActual()): string => (e.empaquetada ? e.recursos : raizApp(e));

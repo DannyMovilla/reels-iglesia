@@ -23,6 +23,8 @@ extraResources:
     to: resources/escenas
   - from: resources/efectos
     to: resources/efectos
+  - from: resources/pinturas
+    to: resources/pinturas
 win:
   target: nsis
   icon: build/icon.ico

@@ -1,3 +1,4 @@
+import { PINTURAS } from "@shared/reel/pinturas";
 import { SelectorZona, ZonaSegura, type RedZona } from "./ZonaSegura";
 import { useEffect, useRef, useState } from "react";
 import "@hyperframes/player";
@@ -54,7 +55,7 @@ export function EditorVersiculo({ creacion, error, alVolver }: { creacion: Creac
     const espera = setTimeout(async () => {
       const archivo = c.fondo.archivo?.split(/[\\/]/).pop();
       const fondoSrc = (c.fondo.tipo === "imagen" || c.fondo.tipo === "video") && archivo ? window.reels!.urlFondo(c.id, archivo) : undefined;
-      const recursos = { gsap: "recursos/gsap.min.js", fuentes: "recursos/fuentes", runtime: "recursos/hyperframe.runtime.iife.js", logo: urlLogoVista(marca.logo), escenas: "recursos/escenas/shaders.iife.js", efectos: "recursos/efectos" };
+      const recursos = { gsap: "recursos/gsap.min.js", fuentes: "recursos/fuentes", runtime: "recursos/hyperframe.runtime.iife.js", logo: urlLogoVista(marca.logo), escenas: "recursos/escenas/shaders.iife.js", efectos: "recursos/efectos", pinturas: "recursos/pinturas" };
       const borrador = construirReelVersiculo({ creacion: c, marca, formato, recursos, modo: "vista", fondoSrc });
       const musica = await window.reels!.urlMusicaCreacion(c.id, borrador.duracion).catch(() => null);
       const comp = construirReelVersiculo({ creacion: c, marca, formato, recursos, modo: "vista", fondoSrc, fondoDuracion: 600, musica: musica ? { src: musica } : undefined });
@@ -149,8 +150,21 @@ export function EditorVersiculo({ creacion, error, alVolver }: { creacion: Creac
             {pestana === "estilo" && (
               <>
                 <Segmentos etiqueta="Fondo" valor={c.fondo.tipo === "video" ? "imagen" : c.fondo.tipo}
-                  opciones={[["escena", "Escena animada"], ["degradado", "Degradado"], ["imagen", "Foto o video"]]}
-                  alCambiar={(tipo) => cambiar({ fondo: tipo === "escena" ? { tipo, escena: c.fondo.escena ?? "luz" } : tipo === "imagen" ? { ...c.fondo, tipo: c.fondo.archivo && /\.(mp4|mov|m4v|webm)$/i.test(c.fondo.archivo) ? "video" : "imagen" } : { tipo } })} />
+                  opciones={[["escena", "Escena animada"], ["pintura", "Pintura clásica"], ["degradado", "Degradado"], ["imagen", "Foto o video"]]}
+                  alCambiar={(tipo) => cambiar({ fondo: tipo === "escena" ? { tipo, escena: c.fondo.escena ?? "luz" } : tipo === "pintura" ? { tipo, pintura: c.fondo.pintura ?? "prodigo" } : tipo === "imagen" ? { ...c.fondo, tipo: c.fondo.archivo && /\.(mp4|mov|m4v|webm)$/i.test(c.fondo.archivo) ? "video" : "imagen" } : { tipo } })} />
+                {c.fondo.tipo === "pintura" && (
+                  <div className="campo">Pintura
+                    <div className="galeria-pinturas" role="radiogroup" aria-label="Pintura">
+                      {Object.entries(PINTURAS).map(([id, p]) => (
+                        <button key={id} type="button" role="radio" aria-checked={c.fondo.pintura === id} className="pintura-op"
+                          onClick={() => cambiar({ fondo: { tipo: "pintura", pintura: id } })}>
+                          <b>{p.obra}</b><span>{p.autor}, {p.anio}</span>
+                        </button>
+                      ))}
+                    </div>
+                    <span className="ayuda">Obras de dominio público (Wikimedia Commons).</span>
+                  </div>
+                )}
                 {c.fondo.tipo === "escena" && (
                   <label className="campo">Escena
                     <select className="entrada" value={c.fondo.escena ?? "luz"} onChange={(e) => cambiar({ fondo: { tipo: "escena", escena: e.target.value as Escena } })}>

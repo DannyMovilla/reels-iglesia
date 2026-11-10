@@ -54,3 +54,10 @@ test("plan 6: la vista previa entrega la fuente de la iglesia y nada más de la 
   expect(rutaRecurso("marca/fuente.exe", RAIZ, datos)).toBeNull();
   expect(rutaRecurso("marca/marca.json", RAIZ, datos)).toBeNull();
 });
+
+test("plan 6: la vista previa entrega solo las pinturas incluidas", () => {
+  const pinturas = join(RAIZ, "resources", "pinturas");
+  expect(rutaRecurso("recursos/pinturas/prodigo.jpg", RAIZ, undefined, undefined, undefined, pinturas)).toBe(join(pinturas, "prodigo.jpg"));
+  expect(rutaRecurso("recursos/pinturas/otra.jpg", RAIZ, undefined, undefined, undefined, pinturas)).toBeNull();
+  expect(rutaRecurso("recursos/pinturas/../../package.json", RAIZ, undefined, undefined, undefined, pinturas)).toBeNull();
+});

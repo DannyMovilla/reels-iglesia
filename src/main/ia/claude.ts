@@ -1,3 +1,4 @@
+import { PINTURAS } from "@shared/reel/pinturas";
 import { z } from "zod";
 import { recortarRedes } from "@shared/redes";
 import { ANIMOS, type Animo, type Creacion, type Escena } from "@shared/tipos";
@@ -27,6 +28,7 @@ const RespuestaVersiculo = z.object({
   animo: z.preprocess((v) => (typeof v === "string" ? ANIMOS.find((a) => sinTildes(a) === sinTildes(v)) : undefined), z.enum(ANIMOS as unknown as [Animo, ...Animo[]]).optional()).catch(undefined),
   escena: z.preprocess((v) => (typeof v === "string" ? (Object.keys(ESCENAS) as Escena[]).find((e) => sinTildes(e) === sinTildes(v)) : undefined),
     z.enum(Object.keys(ESCENAS) as [Escena, ...Escena[]]).optional()).catch(undefined),
+  pintura: z.preprocess((v) => (typeof v === "string" && PINTURAS[v.trim()] ? v.trim() : undefined), z.string().optional()).catch(undefined),
   redes: z.object({
     instagram: conHashtags, tiktok: conHashtags,
     facebook: z.object({ texto: z.string().default("") }),
@@ -43,7 +45,7 @@ export function promptVersiculo(entrada: Creacion["entrada"]): string {
   return `REEL DE VERSÍCULO. Eres el editor de redes sociales de una iglesia cristiana hispana. Prepara un reel vertical corto con ${pedido}.
 
 Responde solo con un objeto JSON con esta forma:
-{"ref":"Juan 8:12","texto":"…","gancho":"…","reflexion":"…","palabras_clave":["…"],"animo":"esperanza","escena":"luz","redes":{"instagram":{"texto":"…","hashtags":["#fe"]},"tiktok":{"texto":"…","hashtags":["#fe"]},"facebook":{"texto":"…"},"youtube":{"titulo":"…","texto":"…"}}}
+{"ref":"Juan 8:12","texto":"…","gancho":"…","reflexion":"…","palabras_clave":["…"],"animo":"esperanza","escena":"luz","pintura":"prodigo","redes":{"instagram":{"texto":"…","hashtags":["#fe"]},"tiktok":{"texto":"…","hashtags":["#fe"]},"facebook":{"texto":"…"},"youtube":{"titulo":"…","texto":"…"}}}
 
 - "ref": la referencia (libro capítulo:versículo o rango corto). Si es un tema, elige el pasaje más claro y conocido; máximo 3 versículos seguidos.
 - "texto": el pasaje completo en la Reina-Valera 1960, palabra por palabra, sin agregar ni quitar nada (la persona lo revisará antes de publicar). Si no estás seguro de que el versículo exista, deja "ref" y "texto" vacíos.
@@ -52,6 +54,7 @@ Responde solo con un objeto JSON con esta forma:
 - "palabras_clave": de 2 a 4 palabras del versículo para resaltarlas.
 - "animo": la música de fondo: uno de ${ANIMOS.join(", ")}.
 - "escena": el fondo animado que mejor va con el versículo: ${(Object.entries(ESCENAS) as [Escena, string][]).map(([k, v]) => `${k} = ${v}`).join("; ")}.
+- "pintura": una pintura clásica para el fondo, la que mejor vaya con el versículo: ${Object.entries(PINTURAS).map(([k, p]) => `${k} = ${p.obra} (${p.autor}: ${p.tema})`).join("; ")}.
 - "redes": texto para Instagram (hasta 2200 caracteres, 3 a 8 hashtags), TikTok (corto, 3 a 5 hashtags), Facebook (hasta 5000, sin hashtags) y YouTube Shorts ("titulo" de hasta 100 caracteres y "texto").
 Escribe como habla la iglesia, cercano y en español sencillo. Que no suene a inteligencia artificial: nada de "no es X, es Y", ni listas de tres por costumbre, ni "sumérgete", "descubre", "transforma tu vida", ni un emoji en cada línea. Termina los textos de redes con una pregunta que invite a comentar.`;
 }
@@ -97,7 +100,8 @@ export async function escribirCreacion(id: string, opciones: { comando?: string;
     reflexion: r.reflexion.trim(),
     palabrasClave: r.palabras_clave.slice(0, 4),
     musica: { ...c.musica, animo: r.animo ?? c.musica.animo },
-    fondo: c.fondo.tipo === "escena" ? { tipo: "escena", escena: r.escena ?? "luz" } : c.fondo,
+    fondo: c.fondo.tipo === "escena" ? { tipo: "escena", escena: r.escena ?? "luz" }
+      : c.fondo.tipo === "pintura" ? { tipo: "pintura", pintura: r.pintura ?? c.fondo.pintura ?? "prodigo" } : c.fondo,
     redes: r.redes ? recortarRedes(r.redes) : c.redes,
   };
   await guardarCreacion(nueva);
