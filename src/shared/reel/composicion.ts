@@ -160,7 +160,7 @@ export function construirComposicion(e: EntradaComposicion): { html: string; dur
     const estilo = c.subtitulos.estilo;
     const top = topSub;
     bloquesSubtitulos(c, palabras, partes).forEach((b, i) => {
-      el.push(`<div id="b${i}" class="clip sub ${estilo}" data-start="${n(b.desde)}" data-duration="${n(Math.max(0.2, b.hasta - b.desde))}" style="top:${top}px">${htmlBloque(estilo, b, i)}</div>`);
+      el.push(`<div id="b${i}" class="clip sub ${estilo}" data-start="${n(b.desde)}" data-duration="${n(Math.max(0.2, b.hasta - b.desde))}" style="top:${top}px">${htmlBloque(estilo, b, i, TAMANOS[estilo][c.subtitulos.tamano])}</div>`);
       js.push(...animarBloque(estilo, b, i, marca.color));
     });
   }

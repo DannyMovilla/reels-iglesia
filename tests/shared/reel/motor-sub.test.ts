@@ -92,3 +92,21 @@ test("rebote respeta la regla del versículo", () => {
   expect(v).not.toBeNull();
   expect(bloquesSubtitulos(c, palabras, partes).some((b) => b.desde >= v.desde && b.desde < v.hasta)).toBe(false);
 });
+
+describe("revisión: una palabra larga no se sale del cuadro", () => {
+  const larga: Bloque = { desde: 1, hasta: 2, palabras: [{ texto: "arrepentimiento", desde: 1, hasta: 2, clave: false }] };
+  const corta: Bloque = { desde: 1, hasta: 2, palabras: [{ texto: "fe", desde: 1, hasta: 2, clave: false }] };
+  const escalaDe = (html: string) => Number(/font-size:([\d.]+)em/.exec(html)?.[1] ?? 1);
+  test("«Una palabra» en tamaño grande achica «ARREPENTIMIENTO» para que entre en 940 px", () => {
+    const px = 134;
+    const e = escalaDe(htmlBloque("una", larga, 0, px));
+    expect(e).toBeLessThan(1);
+    expect("ARREPENTIMIENTO".length * 0.75 * px * e).toBeLessThanOrEqual(940);
+  });
+  test("una palabra corta queda igual", () => {
+    expect(htmlBloque("una", corta, 0, 134)).not.toContain("font-size");
+  });
+  test("los estilos de antes no cambian aunque se pase el tamaño", () => {
+    expect(htmlBloque("pop", larga, 0, 134)).toBe(htmlBloque("pop", larga, 0));
+  });
+});

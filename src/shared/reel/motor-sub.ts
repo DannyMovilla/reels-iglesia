@@ -13,14 +13,24 @@ function claro(hex: string): boolean {
   return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.6;
 }
 
-/** HTML interior del bloque de un preset (las palabras con id b<i>w<j>). */
-export function htmlPreset(id: EstiloNuevo, b: Bloque, i: number): string {
+/** Ancho útil del subtítulo (960 px menos el margen de cada palabra) y ancho medio de una mayúscula de Montserrat 900. */
+const ANCHO_UTIL = 940, ANCHO_LETRA = 0.75;
+
+/**
+ * HTML interior del bloque de un preset (las palabras con id b<i>w<j>). Con `tamano` (px), si la palabra más larga
+ * no entra en el ancho del subtítulo, el bloque se achica lo justo (una palabra no se corta en dos líneas).
+ */
+export function htmlPreset(id: EstiloNuevo, b: Bloque, i: number, tamano?: number): string {
   const p = PRESETS_SUB[id];
-  return b.palabras.map((w, j) => {
+  const html = b.palabras.map((w, j) => {
     const texto = esc(p.mayusculas ? w.texto.toUpperCase() : w.texto);
     const interior = p.activa === "subrayado" ? `<span>${texto}</span><i class="barra"></i>` : texto;
     return `<span id="b${i}w${j}" class="w${w.clave ? " clave" : ""}">${interior}</span>`;
   }).join(" ");
+  if (!tamano) return html;
+  const grande = p.activa === "ninguna" || p.activa === "brillo" ? 1.25 : 1;
+  const ancho = Math.max(...b.palabras.map((w) => w.texto.length * ANCHO_LETRA * tamano * (w.clave ? grande : 1)));
+  return ancho > ANCHO_UTIL ? `<span class="ajuste" style="font-size:${Math.floor((ANCHO_UTIL / ancho) * 100) / 100}em">${html}</span>` : html;
 }
 
 /** Animación del bloque de un preset. Una palabra que empezó antes del bloque se anima al entrar el bloque. */

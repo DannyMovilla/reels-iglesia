@@ -28,9 +28,9 @@ export function esClaro(hex: string): boolean {
   return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.6;
 }
 
-/** HTML interior del bloque (las palabras con id b<i>w<j>). */
-export function htmlBloque(estilo: EstiloSub, b: Bloque, i: number): string {
-  if (esPreset(estilo)) return htmlPreset(estilo, b, i);
+/** HTML interior del bloque (las palabras con id b<i>w<j>). `tamano` (px): los presets achican una palabra que no entra. */
+export function htmlBloque(estilo: EstiloSub, b: Bloque, i: number, tamano?: number): string {
+  if (esPreset(estilo)) return htmlPreset(estilo, b, i, tamano);
   const palabra = (w: Bloque["palabras"][number], j: number) => {
     const texto = esc(estilo === "limpio" ? w.texto : w.texto.toUpperCase());
     const interior = estilo === "resaltado" ? `<i class="fondo"></i><span>${texto}</span>` : texto;

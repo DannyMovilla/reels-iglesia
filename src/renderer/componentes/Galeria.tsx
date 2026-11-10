@@ -54,7 +54,7 @@ export function muestraSub(estilo: EstiloSub, color: string): Muestra {
   }
   bloques.forEach((b, i) => { if (bloques[i + 1]) b.hasta = bloques[i + 1].desde; else b.hasta += 0.4; });
   const t = TAMANOS[estilo].m;
-  const divs = bloques.map((b, i) => `<div id="b${i}" class="sub ${estilo}" style="top:${ALTO / 2}px">${htmlBloque(estilo, b, i)}</div>`);
+  const divs = bloques.map((b, i) => `<div id="b${i}" class="sub ${estilo}" style="top:${ALTO / 2}px">${htmlBloque(estilo, b, i, t)}</div>`);
   return {
     html: divs.join(""),
     fija: divs[Math.max(0, bloques.findIndex((b) => b.palabras.some((w) => w.clave)))],
