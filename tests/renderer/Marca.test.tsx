@@ -113,3 +113,14 @@ test("plan 9: los ajustes van en tres tarjetas", async () => {
   expect(screen.getByRole("heading", { name: "Logo y fuente" })).toBeInTheDocument();
   expect(screen.getByRole("heading", { name: "Durante el reel" })).toBeInTheDocument();
 });
+
+test("revisión plan 9: al elegir otro logo (mismo nombre de archivo) el aviso de logo roto se va", async () => {
+  api({ leerMarca: vi.fn(async () => ({ ...structuredClone(marca), logo: "C:/datos/marca/logo.png", marcaReel: { modo: "logo", tamano: 1 } })) });
+  render(<Marca />);
+  const muestra = await screen.findByLabelText("Muestra de la marca durante el reel");
+  fireEvent.error(muestra.querySelector("img")!);
+  expect(await screen.findByText("No encuentro el archivo del logo: elige otro")).toBeInTheDocument();
+  await userEvent.click(screen.getByRole("button", { name: "Cambiar logo" }));
+  await vi.waitFor(() => expect(screen.queryByText("No encuentro el archivo del logo: elige otro")).toBeNull());
+  expect(screen.getByLabelText("Muestra de la marca durante el reel").querySelector("img")).not.toBeNull();
+});

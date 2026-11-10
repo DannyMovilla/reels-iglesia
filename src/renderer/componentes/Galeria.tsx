@@ -31,6 +31,8 @@ const FRASE = "Tu prueba no es el final";
 /** Antepone `raiz` a cada selector, para que el CSS de la muestra no toque el resto de la app. */
 export function aislarCss(css: string, raiz: string): string {
   return css.replace(/([^{}]+)\{/g, (_, sel: string) => {
+    // Las reglas @ (como @font-face) quedan como están: con prefijo el navegador las descarta.
+    if (sel.trim().startsWith("@")) return `${sel}{`;
     const previo = /^\s*/.exec(sel)![0];
     return `${previo}${sel.split(",").map((s) => `${raiz} ${s.trim()}`).join(", ")} {`;
   });

@@ -19,6 +19,9 @@ export function Marca() {
   const [marca, setMarca] = useState<TMarca | null>(null);
   const [src, setSrc] = useState<string | null>(null);
   const [errorFuente, setErrorFuente] = useState<string | null>(null);
+  /** Sube cada vez que se elige un logo: el archivo se guarda siempre con el mismo nombre (logo.png), así que la
+   * muestra vuelve a cargarlo y olvida el aviso de «logo roto». */
+  const [versionLogo, setVersionLogo] = useState(0);
   const guardando = useRef<ReturnType<typeof setTimeout> | null>(null);
   const reproductor = useRef<(HTMLElement & { seek(t: number): void }) | null>(null);
 
@@ -70,7 +73,10 @@ export function Marca() {
 
   const elegirLogo = async () => {
     const ruta = await window.reels!.elegirLogo();
-    if (ruta) cambiar({ logo: ruta });
+    if (ruta) {
+      cambiar({ logo: ruta });
+      setVersionLogo((v) => v + 1);
+    }
   };
 
   return (
@@ -131,7 +137,7 @@ export function Marca() {
           </section>
           <section className="tarjeta-ajuste" aria-labelledby="m-reel">
             <h2 id="m-reel">Durante el reel</h2>
-            <MarcaDuranteReel marca={marca} alCambiar={(marcaReel) => cambiar({ marcaReel })} />
+            <MarcaDuranteReel key={versionLogo} version={versionLogo} marca={marca} alCambiar={(marcaReel) => cambiar({ marcaReel })} />
           </section>
           <Muletillas lista={marca.estilo.cortes.lista ?? MULETILLAS_POR_DEFECTO}
             alCambiar={(lista) => cambiar({ estilo: { ...marca.estilo, cortes: { ...marca.estilo.cortes, lista } } })} />
@@ -175,7 +181,7 @@ function Muletillas({ lista, alCambiar }: { lista: string[]; alCambiar(l: string
 }
 
 /** Qué se ve abajo durante el reel: el nombre, el logo o los dos, con su tamaño y una muestra. */
-function MarcaDuranteReel({ marca, alCambiar }: { marca: TMarca; alCambiar(m: NonNullable<TMarca["marcaReel"]>): void }) {
+function MarcaDuranteReel({ marca, version, alCambiar }: { marca: TMarca; version: number; alCambiar(m: NonNullable<TMarca["marcaReel"]>): void }) {
   const actual = marca.marcaReel ?? { modo: "texto" as const, tamano: 1 };
   /** El archivo del logo ya no está (se borró o se movió): se avisa y la muestra usa el nombre. */
   const [roto, setRoto] = useState<string | null>(null);
@@ -194,7 +200,7 @@ function MarcaDuranteReel({ marca, alCambiar }: { marca: TMarca; alCambiar(m: No
       <input type="range" aria-label="Tamaño de la marca" min={50} max={150} step={5} value={Math.round(actual.tamano * 100)}
         onChange={(e) => alCambiar({ ...actual, tamano: Number(e.target.value) / 100 })} />
       <div className="muestra-marca" aria-label="Muestra de la marca durante el reel">
-        {conLogo && logoVista && <img src={window.reels?.urlMarca?.(marca.logo!) ?? logoVista} alt="" style={{ height: Math.round(28 * actual.tamano) }}
+        {conLogo && logoVista && <img src={`${window.reels?.urlMarca?.(marca.logo!) ?? logoVista}${version ? `?v=${version}` : ""}`} alt="" style={{ height: Math.round(28 * actual.tamano) }}
           onError={() => setRoto(marca.logo ?? null)} />}
         {conTexto && <span style={{ fontSize: Math.round(14 * actual.tamano) }}>{marca.nombre}</span>}
       </div>

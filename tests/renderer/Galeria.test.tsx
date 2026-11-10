@@ -137,3 +137,10 @@ test("las muestras son franjas bajas: el texto va centrado en un lienzo de 260 p
   expect(muestraSub("viral", "#f5c542").html).toContain("top:130px");
   expect(muestraGancho("gigante", "#f5c542").html).toContain("top:130px");
 });
+
+test("revisión plan 9: @font-face de la fuente de la iglesia no se aísla (si no, el navegador lo descarta)", () => {
+  const css = aislarCss('@font-face { font-family: "Fuente iglesia"; src: url("http://x/fuente.ttf"); }\n.sub, .sub * { font-family: "Fuente iglesia" !important; }', ".muestra-lienzo");
+  expect(css).toContain('@font-face { font-family: "Fuente iglesia";');
+  expect(css).not.toContain(".muestra-lienzo @font-face");
+  expect(css).toContain(".muestra-lienzo .sub, .muestra-lienzo .sub *");
+});
