@@ -42,3 +42,9 @@ reducidas a 1600 px de alto (`resources/pinturas/`):
 - **La cruz en la montaña**, Caspar David Friedrich (1808). Archivo: Caspar David Friedrich - Das Kreuz im Gebirge.jpg — https://commons.wikimedia.org/wiki/File:Caspar_David_Friedrich_-_Das_Kreuz_im_Gebirge.jpg
 - **La transfiguración**, Rafael (1516–1520). Archivo: Transfiguration Raphael.jpg — https://commons.wikimedia.org/wiki/File:Transfiguration_Raphael.jpg
 - **Cristo en casa de Marta y María**, Johannes Vermeer (hacia 1655). Archivo: Johannes (Jan) Vermeer - Christ in the House of Martha and Mary - Google Art Project.jpg — https://commons.wikimedia.org/wiki/File:Johannes_(Jan)_Vermeer_-_Christ_in_the_House_of_Martha_and_Mary_-_Google_Art_Project.jpg
+
+## Fuentes de la app
+
+La interfaz usa Geist y Geist Mono (© Vercel) y Fraunces (© The Fraunces Project Authors), con licencia
+SIL Open Font License 1.1, incluidas desde los paquetes `@fontsource/geist-sans`, `@fontsource/geist-mono` y
+`@fontsource/fraunces`.
