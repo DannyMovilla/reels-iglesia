@@ -331,3 +331,9 @@ describe("plan 7: marca durante el reel", () => {
     expect(m.textContent).toBe("Iglesia Familia");
   });
 });
+
+describe("plan 8: un clip de antes sale igual", () => {
+  test.each(["9:16", "4:5", "1:1"] as const)("composición %s sin estiloGancho", (f) => {
+    expect(construirComposicion(entrada(f)).html).toMatchSnapshot();
+  });
+});
