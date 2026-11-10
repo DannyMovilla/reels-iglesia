@@ -427,3 +427,103 @@ Fuera del plan 6: publicar directo en las redes, generar imágenes o música con
    con permiso de la persona); la app se ve igual sin internet.
 4. **Tema claro:** Ajustes → Apariencia: Oscuro (por defecto), Claro o «Como Windows». Se guarda en la PC y se
    aplica al abrir, sin parpadeo.
+
+## 19. Plan 8 — subtítulos virales, gancho grande y frases para publicar (decidido 2026-11-09)
+
+Ideas tomadas de OpusClip (gancho), Submagic (subtítulos) y Castmagic / Gloo (contenido escrito de la
+prédica). Regla del plan: **nada se suma al análisis de la prédica**; todo es composición del reel o una
+entrega que corre solo cuando se pide. Fuera del plan: PySceneDetect (recorre el video completo y el
+encuadre ya detecta cambios de cámara por el salto de la cara) y ClipsAI (duplica el pipeline y exige
+WhisperX, pyannote y un token de Hugging Face).
+
+**A. Subtítulos virales** (motor combinable)
+1. Los 7 estilos actuales (Pop, Caja, Limpio, Resaltado, Karaoke, Impacto, Neón) no cambian: mismo código,
+   mismo resultado.
+2. Los estilos nuevos son **presets** de un motor (`src/shared/reel/presets-sub.ts` y `motor-sub.ts`). Un
+   preset define: mayúsculas o no; borde negro o sombra; cómo se marca la palabra que se está diciendo
+   (`color`, `escala`, `caja`, `subrayado`, `rebote`, `brillo`); el color de esa marca (`marca` = color de la
+   iglesia, o `amarillo` #FFE14D); y palabras por bloque (1 a 3, con su límite de letras). El motor genera el
+   HTML, el CSS y la animación GSAP con las mismas firmas que hoy (`htmlBloque`, `animarBloque`, `cssEstilosSub`
+   y los límites de `subtitulos.ts`).
+3. Los presets **no eligen fuente**: usan la de subtítulos del clip o de la iglesia (plan 6/7).
+4. Ocho presets nuevos, en la línea de Pop:
+   - **Viral**: borde negro; la palabra dicha en amarillo y 15 % más grande; 2–3 palabras.
+   - **Una palabra**: una palabra gigante a la vez, con rebote.
+   - **Caja de marca**: caja del color de la iglesia detrás de la palabra dicha.
+   - **Subrayado**: barra del color de la iglesia que crece bajo la palabra dicha.
+   - **Dos tonos**: blanco; la palabra clave más grande y en color.
+   - **Rebote**: cada palabra entra con golpe (`back.out`).
+   - **Brillo**: la palabra clave con resplandor del color de la iglesia.
+   - **Elegante**: minúsculas, sin borde, sombra suave.
+5. Se mantienen las reglas de siempre: no hay subtítulos mientras se ve la tarjeta del versículo, se respetan
+   la altura elegida y la zona segura común, y las palabras clave van en color.
+6. **Galería:** en el Inspector, el selector de estilo pasa a ser una grilla de tarjetas. Cada tarjeta anima
+   en bucle una frase de muestra («TU PRUEBA NO ES EL FINAL») con el mismo motor, en el color y la fuente de
+   la iglesia. Con `prefers-reduced-motion` las tarjetas quedan quietas, mostrando la palabra marcada.
+7. Sin emojis en esta versión.
+
+**B. Gancho grande**
+1. Campo nuevo opcional `ClipSpec.estiloGancho`: `tarjeta` (el de hoy), `gigante`, `marca`, `subrayado`,
+   `golpe`. Sin el campo se usa `tarjeta`, así un clip anterior sale idéntico.
+   - **Gigante**: 2–3 líneas en mayúsculas, ~120 px en 9:16, blanco con borde negro, una palabra en color.
+   - **Marca**: texto blanco sobre una franja del color de la iglesia.
+   - **Subrayado**: texto grande con una barra de color que se dibuja bajo la palabra en color.
+   - **Golpe**: cada palabra entra con escala y un sacudón corto (con el «pop» de sonido de hoy).
+2. La palabra en color es la primera del gancho que esté en las palabras clave del clip; si no hay ninguna,
+   la más larga.
+3. El tiempo en pantalla no cambia (durante la apertura o los primeros 4,5 s). La posición sigue usando
+   `posicionGancho`, con un medio alto propio de cada estilo para que no tape la cabeza ni baje a los
+   subtítulos. En 4:5 y 1:1 el tamaño se reduce para que siempre quepa.
+4. El prompt de Claude no cambia (sigue escribiendo `gancho` y 2 alternativos).
+5. El Inspector muestra el estilo del gancho con tarjetas iguales a las de los subtítulos.
+
+**C. Plantilla de la iglesia**
+1. `EstiloIglesia` suma `gancho?: EstiloGancho`. `estiloDesdeClip`, `aplicarEstiloAClip` y los clips nuevos
+   lo llevan, así «Guardar como estilo de la iglesia» y «Aplicar a todos los clips» cubren el subtítulo y el
+   gancho nuevos. Sin el campo se usa `tarjeta`.
+2. Los pedidos de cambios a Claude (`estilo_subtitulos`, y ahora `estilo_gancho`) y «Copiar el estilo de un
+   reel» aceptan los ids nuevos. Un id desconocido se ignora con aviso y nunca rompe el clip.
+
+**D. Frases para publicar** (pestaña Entregas)
+1. Botón «Sacar 7 frases». Hace una consulta a `claude -p` con la transcripción corregida (mismo `preguntar` /
+   `extraerJson` y un reintento si el JSON no valida). Pide 10 candidatas
+   `{ "texto", "en": "H:MM:SS", "versiculo"?: { "ref", "texto" } }`: frases **dichas palabra por palabra**,
+   de 6 a 25 palabras, con una idea completa y sin saludos, avisos ni ofrendas.
+2. **Fidelidad** (`src/shared/frases.ts`, función pura): cada frase se busca en la transcripción normalizada
+   (sin tildes, mayúsculas ni puntuación) cerca de su minuto (±60 s). Si no aparece con al menos 90 % de
+   coincidencia por palabras, se descarta. Quedan como mucho 7, sin repetir idea (no más de 60 % de palabras
+   en común), ordenadas por minuto.
+3. Si una frase trae versículo, va en RVR1960 y queda **sin confirmar**. Sin confirmar no aparece en la
+   imagen ni en el texto exportado. Claude nunca agrega versículos que el predicador no citó.
+4. Se guarda en `frases.json` del proyecto: `{ texto, en, original, fondo, versiculo? }[]`.
+5. En pantalla, cada frase muestra su minuto y los botones «Copiar», «Ir al momento» (abre la transcripción
+   ahí), «Quitar» y el fondo. El texto se puede corregir; si la corrección baja la coincidencia con
+   `original` del 90 %, aparece el aviso «Ya no es lo que dijo el predicador».
+6. **Imágenes** de 1080×1350 con tres fondos a elegir por frase:
+   - **Marca**: degradado del color de la iglesia (por defecto).
+   - **Foto del momento**: un cuadro del video en `en`, sacado con FFmpeg, oscurecido y desenfocado.
+     Con el video no encontrado, esta opción no está disponible.
+   - **Pintura**: una del banco del plan 6.
+   La composición lleva comillas grandes, la frase con tamaño automático según su largo (de 4 a 9 líneas
+   como mucho), la palabra clave en el color de la iglesia, el nombre del predicador si existe, y abajo el
+   logo y/o el nombre según `marcaReel`. Fuentes de títulos de la iglesia, incrustadas.
+7. Se pintan con una ventana oculta de Electron de 1080×1350 (`capturePage` → PNG), igual que el PDF y sin
+   librerías nuevas. Se guardan en `exportados/frases/<prédica>-frase-<n>.png`, más un `<prédica>-frases.txt`
+   con cada frase, su minuto y el predicador.
+8. **Errores:** sin transcripción → «Primero hay que transcribir la prédica»; Claude falla dos veces →
+   mensaje y «Reintentar»; menos de 7 frases fieles → se muestran las que hay con «Claude encontró N frases
+   textuales»; no se lanzan dos pedidos a la vez y se puede cancelar.
+
+**Pruebas**
+- Motor de subtítulos: cada preset genera bloques válidos, respeta el límite de palabras y letras y la
+  regla del versículo; los 7 estilos de antes generan exactamente el mismo HTML/JS que hoy.
+- Gancho: un clip sin `estiloGancho` produce la misma composición que hoy; cada estilo cabe en 9:16, 4:5
+  y 1:1 sin tocar la zona de subtítulos.
+- Plantilla: guardar y aplicar el estilo lleva subtítulo y gancho; un clip exportado no se toca.
+- Frases: fidelidad (exacta, tildes distintas, inventada, recortada, fuera de minuto), sin repetidas,
+  tamaño automático; `frases.ts` con el Claude falso de `tests/fixtures`; una prueba de punta a punta que
+  genera las PNG y verifica 1080×1350.
+- Un render de prueba con HyperFrames por cada estilo nuevo de subtítulo y de gancho.
+
+Fuera del plan 8: emojis en subtítulos, B-roll, frases como mini reels, publicar directo en redes,
+PySceneDetect y ClipsAI.
