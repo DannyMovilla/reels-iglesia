@@ -527,3 +527,45 @@ WhisperX, pyannote y un token de Hugging Face).
 
 Fuera del plan 8: emojis en subtítulos, B-roll, frases como mini reels, publicar directo en redes,
 PySceneDetect y ClipsAI.
+
+## 20. Plan 9 — el rediseño en toda la app y los detalles pendientes (decidido 2026-11-10)
+
+Sigue al rediseño del editor (riel de categorías al borde, secciones plegables con su valor en la cabecera,
+acciones en la barra de arriba). Nada nuevo para Claude ni para el análisis.
+
+**A. El rediseño en el resto de la app**
+1. **Con IA:** el editor del reel de versículo usa el mismo riel que el editor de prédicas, con 5 categorías:
+   **Texto** (gancho y reflexión), **Versículo** (referencia, texto RVR1960 y confirmar), **Fondo** (escena,
+   pintura, degradado o foto/video), **Audio** (música y efectos de sonido) y **Publicar** (formatos y texto de
+   cada red). «Exportar» va en la barra de arriba; si el versículo no está confirmado, el botón está apagado y el
+   riel marca «Versículo» con el punto dorado. Empieza en «Versículo» si falta confirmar, si no en «Texto».
+2. **Prédicas:** cada prédica es una tarjeta con un cuadro del video (de la prédica, no del inicio del culto), su
+   nombre, la fecha, la duración de la prédica y el estado. Sin video, la tarjeta muestra un fondo liso.
+3. **Marca:** los ajustes se agrupan en tarjetas («Tu iglesia», «Logo y fuente», «Durante el reel») y la vista
+   previa del cierre queda fija a la derecha mientras se recorre la página.
+4. **Música:** las pistas se agrupan por ánimo, cada grupo con cuántas pistas tiene; sin pistas, un estado vacío
+   que explica los pads y ofrece «Agregar mis pistas».
+5. **Exportados:** cada grupo dice cuántos archivos tiene; cada reel muestra una etiqueta con su formato (9:16,
+   4:5 o 1:1) cuando el nombre del archivo lo indica.
+6. **Instalador nuevo:** se arma la carpeta empaquetada y el instalador con el rediseño; la prueba de la app
+   instalada pasa.
+
+**B. Los 9 detalles del plan 8**
+1. «1 frase» en singular (y «N frases» en plural) en el aviso de Claude.
+2. «Guardar imágenes» espera a que se guarde la última edición de una frase.
+3. Si se cambia de pestaña mientras Claude busca frases, al volver se sigue viendo «Buscando frases…» y aparecen
+   las frases cuando llegan.
+4. «Copiar» de una frase avisa «Copiada» un momento.
+5. Una frase editada a más de 25 palabras avisa «Muy larga para la imagen (máximo 25 palabras)» y la imagen baja
+   la letra hasta 44 px para que entre (hasta 40 palabras).
+6. La galería de estilos usa la fuente elegida para el clip (incluida la de la iglesia).
+7. Con movimiento reducido, las muestras quietas muestran la palabra dicha marcada.
+8. Un clip que no usa un estilo nuevo no lleva el CSS de los 8 estilos nuevos en su composición.
+9. Un `estiloGancho` desconocido (clip editado a mano) se trata como «tarjeta», sin romper la composición.
+
+**C. Los detalles del plan 7**
+1. La traducción sigue mostrando su progreso y su botón «Cancelar» si se sale de Entregas y se vuelve.
+2. Al cancelar una traducción de varios idiomas, el mensaje dice cuáles quedaron guardados.
+3. Si el archivo del logo ya no existe, Marca lo dice («No encuentro el archivo del logo: elige otro») y la
+   muestra usa el nombre.
+4. En 4:5 y 1:1, el logo de la marca durante el reel se achica para no tocar los subtítulos (mínimo 40 px de alto).
