@@ -12,7 +12,7 @@ import { ventanaVersiculo } from "./versiculo";
 import { curvaMusica, tramosDeVoz } from "./musica";
 import { animarBloque, htmlBloque } from "./estilos-sub";
 import { PRESETS_SUB, type EstiloNuevo } from "./presets-sub";
-import { ALTO_GANCHO_PX, MEDIO_GANCHO_ESTILO, cssGancho, htmlGancho, palabraEnColor, pasosGancho, type EstiloGancho } from "./gancho";
+import { MEDIO_GANCHO_ESTILO, cssGancho, medidaGancho, htmlGancho, palabraEnColor, pasosGancho, type EstiloGancho } from "./gancho";
 import { aJs } from "./pasos";
 
 
@@ -134,7 +134,10 @@ export function construirComposicion(e: EntradaComposicion): { html: string; dur
   const cara = { centro: (pos(0.5, caraY).y + caraY * vh) / H, alto: ((pista?.caraAncho ?? 0.06) * vw * 1.2) / H };
   // Sin el campo, la tarjeta de siempre (un clip de antes del plan 8 sale igual).
   const estiloG: EstiloGancho = c.estiloGancho ?? "tarjeta";
-  const franjaLibre = Math.round(posicionGancho(cara, formato, MEDIO_GANCHO_ESTILO[estiloG][formato]) * H * 10) / 10;
+  // Los ganchos grandes miden según su texto (la letra baja hasta entrar en 3 líneas); la tarjeta, como siempre.
+  const medida = medidaGancho(estiloG, c.gancho, formato, W);
+  const medio = estiloG === "tarjeta" ? MEDIO_GANCHO_ESTILO.tarjeta[formato] : medida.alto / 2 / H;
+  const franjaLibre = Math.round(posicionGancho(cara, formato, medio) * H * 10) / 10;
   // Dónde van los subtítulos (centro y alto de su franja).
   const altoSub = Math.round(TAMANOS[c.subtitulos.estilo][c.subtitulos.tamano] * 1.25 * 2 + 20);
   const pedidoSub = r2((formato === "9:16" ? c.subtitulos.altura : 0.8) * H);
@@ -143,11 +146,12 @@ export function construirComposicion(e: EntradaComposicion): { html: string; dur
   const topSub = ajustadoSub < pedidoSub ? Math.max(ajustadoSub, Math.min(pedidoSub, r2((formato === "9:16" ? 0.74 : 0.8) * H))) : ajustadoSub;
   if (c.gancho.trim()) {
     const dur = durGancho;
-    let top = dentroDeZona(franjaLibre, ALTO_GANCHO_PX[estiloG], formato);
+    let top = dentroDeZona(franjaLibre, medida.alto, formato);
     // Los ganchos grandes nunca bajan a la franja de los subtítulos: si no caben, suben (aunque tapen algo de la cara).
-    if (estiloG !== "tarjeta" && c.subtitulos.activos) top = Math.max(r2(zonaComun(formato).arriba + ALTO_GANCHO_PX[estiloG] / 2), Math.min(top, r2(topSub - altoSub / 2 - 12 - ALTO_GANCHO_PX[estiloG] / 2)));
+    if (estiloG !== "tarjeta" && c.subtitulos.activos) top = Math.max(r2(zonaComun(formato).arriba + medida.alto / 2), Math.min(top, r2(topSub - altoSub / 2 - 12 - medida.alto / 2)));
     const clase = estiloG === "tarjeta" ? "clip gancho" : `clip gancho ${estiloG}`;
-    el.push(`<div id="gancho" class="${clase}" data-start="0" data-duration="${n(dur)}" style="top:${top}px">${htmlGancho(estiloG, c.gancho, palabraEnColor(c.gancho, c.palabrasClave))}</div>`);
+    const tamano = estiloG === "tarjeta" ? "" : `;font-size:${medida.px}px`;
+    el.push(`<div id="gancho" class="${clase}" data-start="0" data-duration="${n(dur)}" style="top:${top}px${tamano}">${htmlGancho(estiloG, c.gancho, palabraEnColor(c.gancho, c.palabrasClave))}</div>`);
     js.push(...pasosGancho(estiloG, c.gancho.trim().split(/\s+/).length, dur).map(aJs));
   }
 

@@ -2,7 +2,8 @@
 import { readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { describe, expect, test } from "vitest";
-import { construirComposicion, type EntradaComposicion } from "../../../src/shared/reel/composicion";
+import { TAMANOS, construirComposicion, type EntradaComposicion } from "../../../src/shared/reel/composicion";
+import { medidaGancho } from "../../../src/shared/reel/gancho";
 import { partesDelReel } from "../../../src/shared/reel/tiempo";
 import { ventanaVersiculo } from "../../../src/shared/reel/versiculo";
 import type { Caras, ClipSpec, Formato, Transcripcion } from "../../../src/shared/tipos";
@@ -353,14 +354,18 @@ describe("plan 8: estilos de gancho", () => {
     expect(r.html).toContain(".gancho.gigante");
   });
 
-  test("gancho de 60 caracteres gigante en 1:1 no se cruza con los subtítulos", () => {
+  test.each(["9:16", "4:5", "1:1"] as const)("gancho de 60 caracteres gigante en %s no se cruza con subtítulos de 2 líneas", (f) => {
     const largo = "Dios no ha terminado contigo aunque hoy sientas que perdiste";
     expect(largo.length).toBe(60);
-    const r = construirComposicion(entrada("1:1", clip({ estiloGancho: "gigante", gancho: largo, apertura: null })));
+    const c = clip({ estiloGancho: "gigante", gancho: largo, apertura: null, subtitulos: { activos: true, estilo: "elegante", tamano: "l", altura: 0.74 } });
+    const r = construirComposicion(entrada(f, c));
     const subs = [...dom(r.html).querySelectorAll(".sub")] as HTMLElement[];
     expect(subs.length).toBeGreaterThan(0);
     const topSub = Number(/top:([\d.]+)px/.exec(subs[0].getAttribute("style")!)![1]);
-    expect(topDe(r.html, "#gancho") + 400 / 2).toBeLessThan(topSub - 70);
+    const altoSub = Math.round(TAMANOS.elegante.l * 1.25 * 2 + 20);
+    const m = medidaGancho("gigante", largo, f, 1080);
+    expect(topDe(r.html, "#gancho") + m.alto / 2).toBeLessThanOrEqual(topSub - altoSub / 2);
+    expect((dom(r.html).querySelector("#gancho") as HTMLElement).getAttribute("style")).toContain(`font-size:${m.px}px`);
   });
 
   test("golpe lleva el pop de sonido como siempre", () => {

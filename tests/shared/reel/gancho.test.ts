@@ -1,6 +1,6 @@
-import { expect, test } from "vitest";
+import { describe, expect, test } from "vitest";
 import { aJs } from "../../../src/shared/reel/pasos";
-import { ALTO_GANCHO_PX, ESTILOS_GANCHO, MEDIO_GANCHO_ESTILO, NOMBRE_GANCHO, cssGancho, htmlGancho, palabraEnColor, pasosGancho } from "../../../src/shared/reel/gancho";
+import { ALTO_GANCHO_PX, ESTILOS_GANCHO, MEDIO_GANCHO_ESTILO, NOMBRE_GANCHO, cssGancho, htmlGancho, medidaGancho, palabraEnColor, pasosGancho } from "../../../src/shared/reel/gancho";
 
 test("la palabra en color: la primera clave del gancho, si no la más larga", () => {
   expect(palabraEnColor("Tu prueba no es el final", ["prueba"])).toBe(1);
@@ -62,4 +62,28 @@ test("medidas por estilo: tarjeta conserva las de siempre", () => {
 test("revisión: los ganchos con relleno miden el ancho máximo con el relleno incluido", () => {
   const css = cssGancho("9:16", 1080, "#f5c542");
   expect(css).toMatch(/\.gancho\.marca \{[^}]*box-sizing: border-box/);
+});
+
+describe("revisión: el gancho grande baja la letra hasta entrar en 3 líneas", () => {
+  const LARGO = "Dios no ha terminado contigo aunque hoy sientas que perdiste"; // 60 caracteres
+  test("un gancho corto conserva el tamaño del formato", () => {
+    expect(medidaGancho("gigante", "Tu prueba no es el final", "9:16", 1080).px).toBe(120);
+  });
+  test.each(["9:16", "4:5", "1:1"] as const)("60 caracteres en %s: 3 líneas o menos y el alto las cubre", (f) => {
+    for (const e of ["gigante", "golpe", "subrayado", "marca"] as const) {
+      const m = medidaGancho(e, LARGO, f, 1080);
+      expect(m.lineas).toBeLessThanOrEqual(3);
+      expect(m.alto).toBeGreaterThanOrEqual(m.lineas * m.px);
+    }
+  });
+  test("estima como la medición real: 92 px en 1:1 daría 5 líneas, así que baja la letra", () => {
+    expect(medidaGancho("gigante", LARGO, "1:1", 1080).px).toBeLessThan(92);
+  });
+  test("una palabra más ancha que la caja también baja la letra", () => {
+    const m = medidaGancho("gigante", "Arrepentimiento verdaderamente", "9:16", 1080);
+    expect(m.px * 0.68 * "Arrepentimiento".length).toBeLessThanOrEqual(960);
+  });
+  test("la tarjeta no cambia", () => {
+    expect(medidaGancho("tarjeta", LARGO, "9:16", 1080)).toEqual({ px: 60, alto: 200, lineas: 0 });
+  });
 });

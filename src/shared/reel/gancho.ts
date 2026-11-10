@@ -105,3 +105,45 @@ export function cssGancho(formato: Formato, ancho: number, color: string): strin
 .gancho.subrayado .barra { position: absolute; left: 0; right: 0; bottom: -6px; height: ${Math.round(f * 0.1)}px; border-radius: 6px; background: var(--marca); transform: scaleX(0); transform-origin: 0% 50%; z-index: -1; }
 `;
 }
+
+/** Ancho medio de una letra mayúscula de Figtree 900 (en em) y del espacio, medidos con la fuente real. */
+const ANCHO_LETRA = 0.68, ANCHO_ESPACIO = 0.28;
+/** Tamaño de partida, alto de línea y relleno vertical de cada estilo grande. */
+const FORMA: Record<Exclude<EstiloGancho, "tarjeta">, { escala: number; linea: number; relleno: number; lateral: number }> = {
+  gigante: { escala: 1, linea: 1.05, relleno: 16, lateral: 0 },
+  golpe: { escala: 1, linea: 1.05, relleno: 16, lateral: 0 },
+  subrayado: { escala: 0.85, linea: 1.1, relleno: 24, lateral: 0 },
+  marca: { escala: 0.72, linea: 1.1, relleno: 50, lateral: 80 },
+};
+const MAX_LINEAS = 3, MIN_PX = 44;
+
+/** Líneas que ocupa el texto en mayúsculas con ese tamaño, cortando entre palabras (null si una palabra no cabe). */
+function lineasDe(palabras: string[], px: number, ancho: number): number | null {
+  let lineas = 0, actual = 0;
+  for (const w of palabras) {
+    const a = w.length * ANCHO_LETRA * px;
+    if (a > ancho) return null;
+    if (actual && actual + ANCHO_ESPACIO * px + a <= ancho) actual += ANCHO_ESPACIO * px + a;
+    else { lineas++; actual = a; }
+  }
+  return lineas;
+}
+
+/**
+ * Tamaño de letra y alto (px) del gancho grande: parte del tamaño del formato y baja de a 4 px hasta que entra en
+ * 3 líneas sin cortar palabras. La tarjeta de siempre no cambia.
+ */
+export function medidaGancho(estilo: EstiloGancho, texto: string, formato: Formato, ancho: number): { px: number; alto: number; lineas: number } {
+  if (estilo === "tarjeta") return { px: 60, alto: ALTO_GANCHO_PX.tarjeta, lineas: 0 };
+  const forma = FORMA[estilo];
+  const caja = ancho - 120 - forma.lateral;
+  const palabras = palabrasDe(texto);
+  let px = Math.round(TAMANO_GIGANTE[formato] * forma.escala);
+  let lineas = lineasDe(palabras, px, caja);
+  while ((lineas === null || lineas > MAX_LINEAS) && px > MIN_PX) {
+    px -= 4;
+    lineas = lineasDe(palabras, px, caja);
+  }
+  const n = Math.max(1, lineas ?? MAX_LINEAS);
+  return { px, alto: Math.ceil(n * px * forma.linea + forma.relleno), lineas: n };
+}
