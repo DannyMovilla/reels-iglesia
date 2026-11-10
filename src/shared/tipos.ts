@@ -79,7 +79,8 @@ export interface Tarea {
 
 export type Animo = "reflexivo" | "esperanza" | "victoria" | "adoracion" | "tension";
 export const ANIMOS: readonly Animo[] = ["reflexivo", "esperanza", "victoria", "adoracion", "tension"];
-export type EstiloSub = "pop" | "caja" | "limpio" | "resaltado" | "karaoke" | "impacto" | "neon";
+export type EstiloSub = "pop" | "caja" | "limpio" | "resaltado" | "karaoke" | "impacto" | "neon"
+  | "viral" | "una" | "cajamarca" | "subrayado" | "dostonos" | "rebote" | "brillo" | "elegante";
 export type Intensidad = "suave" | "normal" | "fuerte";
 /** Color del video: look, intensidad 0–1 y balance de blancos (ganancias R, G, B) medido del video. */
 export interface FuentesClip { titulos: import("./reel/fuentes").IdFuente; subtitulos: import("./reel/fuentes").IdFuente }

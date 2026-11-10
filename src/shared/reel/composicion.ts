@@ -11,6 +11,7 @@ import { palabrasDe, partesDelReel, r2 } from "./tiempo";
 import { ventanaVersiculo } from "./versiculo";
 import { curvaMusica, tramosDeVoz } from "./musica";
 import { animarBloque, htmlBloque } from "./estilos-sub";
+import { PRESETS_SUB, type EstiloNuevo } from "./presets-sub";
 
 
 export interface EntradaComposicion {
@@ -38,8 +39,11 @@ export interface EntradaComposicion {
 export const ALTOS: Record<Formato, number> = { "9:16": 1920, "4:5": 1350, "1:1": 1080 };
 const ANCHO = 1080;
 const POP = { s: 58, m: 70, l: 84 } as const;
-const TAMANOS: Record<EstiloSub, { s: number; m: number; l: number }> = {
+/** Tamaño de letra de los subtítulos por estilo (los presets: Pop × su escala). */
+export const TAMANOS: Record<EstiloSub, { s: number; m: number; l: number }> = {
   pop: POP, caja: { s: 64, m: 78, l: 94 }, limpio: { s: 50, m: 60, l: 72 }, resaltado: POP, karaoke: POP, impacto: POP, neon: POP,
+  ...(Object.fromEntries(Object.entries(PRESETS_SUB).map(([id, p]) => [id,
+    { s: Math.round(POP.s * p.escala), m: Math.round(POP.m * p.escala), l: Math.round(POP.l * p.escala) }])) as Record<EstiloNuevo, { s: number; m: number; l: number }>),
 };
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");

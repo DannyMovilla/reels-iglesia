@@ -1,13 +1,19 @@
 import type { EstiloSub } from "../tipos";
 import type { Bloque } from "./subtitulos";
+import { aJs, type PasoAnim } from "./pasos";
+import { PRESETS_SUB, esPreset, type EstiloNuevo } from "./presets-sub";
+import { cssPreset, htmlPreset, pasosPreset } from "./motor-sub";
 
 /**
- * Estilos de subtítulos. Los cuatro últimos están adaptados de bloques del catálogo de HyperFrames
+ * Estilos de subtítulos. Resaltado, Karaoke, Impacto y Neón están adaptados de bloques del catálogo de HyperFrames
  * (Apache 2.0, ver NOTICE.md): caption-highlight, caption-pill-karaoke, caption-kinetic-slam y caption-neon-accent,
- * con el color de la marca, fuentes locales y la regla del versículo.
+ * con el color de la marca, fuentes locales y la regla del versículo. Los del plan 8 (Viral en adelante) los arma
+ * el motor de presets (motor-sub.ts).
  */
 export const NOMBRE_ESTILO: Record<EstiloSub, string> = {
   pop: "Pop", caja: "Caja", limpio: "Limpio", resaltado: "Resaltado", karaoke: "Karaoke", impacto: "Impacto", neon: "Neón",
+  viral: "Viral", una: "Una palabra", cajamarca: "Caja de marca", subrayado: "Subrayado", dostonos: "Dos tonos",
+  rebote: "Rebote", brillo: "Brillo", elegante: "Elegante",
 };
 export const ESTILOS_SUB = Object.keys(NOMBRE_ESTILO) as EstiloSub[];
 
@@ -24,6 +30,7 @@ export function esClaro(hex: string): boolean {
 
 /** HTML interior del bloque (las palabras con id b<i>w<j>). */
 export function htmlBloque(estilo: EstiloSub, b: Bloque, i: number): string {
+  if (esPreset(estilo)) return htmlPreset(estilo, b, i);
   const palabra = (w: Bloque["palabras"][number], j: number) => {
     const texto = esc(estilo === "limpio" ? w.texto : w.texto.toUpperCase());
     const interior = estilo === "resaltado" ? `<i class="fondo"></i><span>${texto}</span>` : texto;
@@ -33,56 +40,63 @@ export function htmlBloque(estilo: EstiloSub, b: Bloque, i: number): string {
   return estilo === "karaoke" ? `<span class="pildora">${palabras}</span>` : palabras;
 }
 
-/** Animación GSAP del bloque y de cada palabra (tiempos de reel). */
-export function animarBloque(estilo: EstiloSub, b: Bloque, i: number, color: string): string[] {
-  const js: string[] = [];
-  const id = `"#b${i}"`;
+/** Animación del bloque y de cada palabra (tiempos de reel), como datos. */
+export function pasosBloque(estilo: EstiloSub, b: Bloque, i: number, color: string): PasoAnim[] {
+  if (esPreset(estilo)) return pasosPreset(estilo, b, i, color);
+  const pasos: PasoAnim[] = [];
+  const id = `#b${i}`;
   const claro = esClaro(color);
   if (estilo === "neon") {
-    js.push(`tl.fromTo(${id}, { opacity: 0, scale: 0.65 }, { opacity: 1, scale: 1, duration: 0.22, ease: "power3.out", immediateRender: false }, ${r2(b.desde)});`);
+    pasos.push({ metodo: "fromTo", sel: id, de: { opacity: 0, scale: 0.65 }, a: { opacity: 1, scale: 1, duration: 0.22, ease: "power3.out", immediateRender: false }, t: r2(b.desde) });
     const ciclos = Math.max(1, Math.floor((b.hasta - b.desde) / 0.5));
-    js.push(`tl.to(${id}, { x: 3, y: 3, duration: 0.25, ease: "sine.inOut", yoyo: true, repeat: ${ciclos * 2 - 1} }, ${r2(b.desde)});`);
-    return js;
+    pasos.push({ metodo: "to", sel: id, a: { x: 3, y: 3, duration: 0.25, ease: "sine.inOut", yoyo: true, repeat: ciclos * 2 - 1 }, t: r2(b.desde) });
+    return pasos;
   }
-  if (estilo !== "impacto") js.push(`tl.from(${id}, { opacity: 0, y: 16, duration: 0.12 }, ${r2(b.desde)});`);
+  if (estilo !== "impacto") pasos.push({ metodo: "from", sel: id, a: { opacity: 0, y: 16, duration: 0.12 }, t: r2(b.desde) });
   b.palabras.forEach((w, j) => {
     if (w.desde < b.desde) return;
-    const sel = `"#b${i}w${j}"`;
+    const sel = `#b${i}w${j}`;
     const desde = r2(w.desde), fin = r2(w.hasta + 0.05);
     switch (estilo) {
       case "caja":
-        js.push(`tl.set(${sel}, { backgroundColor: "${color}", color: "${claro ? "#111111" : "#ffffff"}" }, ${desde});`);
-        js.push(`tl.set(${sel}, { backgroundColor: "rgba(0,0,0,0)", color: "${w.clave ? color : "#ffffff"}" }, ${fin});`);
+        pasos.push({ metodo: "set", sel, a: { backgroundColor: color, color: claro ? "#111111" : "#ffffff" }, t: desde });
+        pasos.push({ metodo: "set", sel, a: { backgroundColor: "rgba(0,0,0,0)", color: w.clave ? color : "#ffffff" }, t: fin });
         break;
       case "resaltado": {
-        const fondo = `"#b${i}w${j} .fondo"`;
-        js.push(`tl.to(${fondo}, { opacity: 1, scaleX: 1, duration: 0.15, ease: "power2.out" }, ${desde});`);
-        js.push(`tl.set(${sel}, { color: "${claro ? "#111111" : "#ffffff"}" }, ${desde});`);
-        js.push(`tl.to(${fondo}, { opacity: 0, duration: 0.1, ease: "power2.in" }, ${fin});`);
-        js.push(`tl.set(${sel}, { color: "${w.clave ? color : "#ffffff"}" }, ${fin});`);
+        const fondo = `#b${i}w${j} .fondo`;
+        pasos.push({ metodo: "to", sel: fondo, a: { opacity: 1, scaleX: 1, duration: 0.15, ease: "power2.out" }, t: desde });
+        pasos.push({ metodo: "set", sel, a: { color: claro ? "#111111" : "#ffffff" }, t: desde });
+        pasos.push({ metodo: "to", sel: fondo, a: { opacity: 0, duration: 0.1, ease: "power2.in" }, t: fin });
+        pasos.push({ metodo: "set", sel, a: { color: w.clave ? color : "#ffffff" }, t: fin });
         break;
       }
       case "karaoke":
-        js.push(`tl.to(${sel}, { color: "${w.clave ? color : "#1c1e1d"}", duration: 0.1, ease: "none" }, ${r2(Math.max(b.desde, w.desde - 0.05))});`);
+        pasos.push({ metodo: "to", sel, a: { color: w.clave ? color : "#1c1e1d", duration: 0.1, ease: "none" }, t: r2(Math.max(b.desde, w.desde - 0.05)) });
         break;
       case "impacto": {
         const siguiente = b.palabras[j + 1]?.desde ?? b.hasta;
-        const entradas = [
-          `{ y: -120, opacity: 0 }, { y: 0, opacity: 1, duration: 0.22, ease: "back.out(1.7)", immediateRender: false }`,
-          `{ x: -300, opacity: 0 }, { x: 0, opacity: 1, duration: 0.2, ease: "expo.out", immediateRender: false }`,
-          `{ x: 300, opacity: 0 }, { x: 0, opacity: 1, duration: 0.2, ease: "expo.out", immediateRender: false }`,
-          `{ scale: 0.4, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.24, ease: "back.out(2.2)", immediateRender: false }`,
+        const entradas: [PasoAnim["de"], PasoAnim["a"]][] = [
+          [{ y: -120, opacity: 0 }, { y: 0, opacity: 1, duration: 0.22, ease: "back.out(1.7)", immediateRender: false }],
+          [{ x: -300, opacity: 0 }, { x: 0, opacity: 1, duration: 0.2, ease: "expo.out", immediateRender: false }],
+          [{ x: 300, opacity: 0 }, { x: 0, opacity: 1, duration: 0.2, ease: "expo.out", immediateRender: false }],
+          [{ scale: 0.4, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.24, ease: "back.out(2.2)", immediateRender: false }],
         ];
-        js.push(`tl.fromTo(${sel}, ${entradas[j % 4]}, ${desde});`);
-        js.push(`tl.to(${sel}, { opacity: 0, duration: 0.08, ease: "power2.in" }, ${r2(Math.max(w.desde + 0.15, siguiente - 0.02))});`);
+        const [de, a] = entradas[j % 4];
+        pasos.push({ metodo: "fromTo", sel, de, a, t: desde });
+        pasos.push({ metodo: "to", sel, a: { opacity: 0, duration: 0.08, ease: "power2.in" }, t: r2(Math.max(w.desde + 0.15, siguiente - 0.02)) });
         break;
       }
       default: // pop y limpio
-        js.push(`tl.fromTo(${sel}, { scale: ${estilo === "pop" ? 1.18 : 1.06}, color: "${color}" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, ${desde});`);
-        if (!w.clave) js.push(`tl.to(${sel}, { color: "#ffffff", duration: 0.05 }, ${fin});`);
+        pasos.push({ metodo: "fromTo", sel, de: { scale: estilo === "pop" ? 1.18 : 1.06, color }, a: { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, t: desde });
+        if (!w.clave) pasos.push({ metodo: "to", sel, a: { color: "#ffffff", duration: 0.05 }, t: fin });
     }
   });
-  return js;
+  return pasos;
+}
+
+/** Animación GSAP del bloque y de cada palabra, como JS de la composición. */
+export function animarBloque(estilo: EstiloSub, b: Bloque, i: number, color: string): string[] {
+  return pasosBloque(estilo, b, i, color).map(aJs);
 }
 
 /** CSS de los estilos (tamaño base en px, ya ajustado a s/m/l). */
@@ -99,5 +113,6 @@ export function cssEstilosSub(t: number): string {
 .sub.impacto .w { position: absolute; left: 0; right: 0; opacity: 0; -webkit-text-stroke: ${Math.round(t * 0.16)}px #0b0b0b; paint-order: stroke fill; text-shadow: 0 8px 22px rgba(0,0,0,.5); }
 .sub.neon { font: 800 ${t}px/1.15 Montserrat, sans-serif; text-shadow: 0 0 10px rgba(255,255,255,.55), 0 0 24px rgba(255,255,255,.25), 0 4px 14px rgba(0,0,0,.6); }
 .sub.neon .clave { font-size: 1.2em; text-shadow: 0 0 12px var(--marca), 0 0 30px var(--marca), 0 4px 14px rgba(0,0,0,.6); }
+${(Object.keys(PRESETS_SUB) as EstiloNuevo[]).map((id) => cssPreset(id, t)).join("\n")}
 `;
 }

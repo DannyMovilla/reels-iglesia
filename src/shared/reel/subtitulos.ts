@@ -1,6 +1,7 @@
 import type { ClipSpec, EstiloSub } from "../tipos";
 import { siguienteConservado, videoAReel, type Palabra, type Parte } from "./tiempo";
 import { type Ventana, ventanaVersiculo } from "./versiculo";
+import { PRESETS_SUB, type EstiloNuevo } from "./presets-sub";
 
 export interface PalabraBloque { texto: string; desde: number; hasta: number; clave: boolean }
 export interface Bloque { desde: number; hasta: number; palabras: PalabraBloque[] }
@@ -8,6 +9,7 @@ export interface Bloque { desde: number; hasta: number; palabras: PalabraBloque[
 const CORTO = { palabras: 3, letras: 16 };
 const LIMITES: Record<EstiloSub, { palabras: number; letras: number }> = {
   pop: CORTO, caja: CORTO, limpio: { palabras: 6, letras: 30 }, resaltado: CORTO, karaoke: CORTO, impacto: CORTO, neon: CORTO,
+  ...(Object.fromEntries(Object.entries(PRESETS_SUB).map(([id, p]) => [id, { palabras: p.palabras, letras: p.letras }])) as Record<EstiloNuevo, { palabras: number; letras: number }>),
 };
 const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9ñ]+/g, "");
 
