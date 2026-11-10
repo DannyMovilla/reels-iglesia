@@ -410,3 +410,20 @@ escribe); «Volver a poner» por tramo; comentarios del código en su lugar.
    propuesta y la aplica a un clip o la guarda como estilo de la iglesia.
 
 Fuera del plan 6: publicar directo en las redes, generar imágenes o música con IA, cuentas de usuario.
+
+## 18. Plan 7 — marca en el reel, detalles, fuentes y tema claro (decidido 2026-11-09)
+
+1. **Marca durante el reel:** en Marca se elige qué se ve abajo durante todo el reel: **Texto** (el nombre,
+   como hoy), **Logo** o **Logo y texto**, y su tamaño. Sin logo cargado, «Logo» se comporta como «Texto».
+   Aplica a los reels de prédica y de «Con IA», en la vista previa y al exportar.
+2. **Los 9 detalles del plan 6:** cancelar una traducción (y no lanzar dos a la vez); cada intento de traducción
+   con su propio tiempo y reintento también si falla la consulta; carátula del MP3 con el logo sobre fondo blanco,
+   cuadrada y aceptando WEBP; `Object.hasOwn` para las pinturas; «Corregir tono amarillo» sin pisar lo cambiado
+   mientras mide; la tarjeta de «Copiar el estilo» dice si activa «acortar pausas» y conserva la fuente de la
+   iglesia; el selector de fuentes muestra la real si falta la fuente de la iglesia y la fuente se puede quitar en
+   Marca; los IPC nuevos validan el id; avisos de referencia sin video o sin volumen medible; sin código muerto en
+   el SRT.
+3. **Fuentes incluidas:** Geist, Geist Mono y Fraunces van dentro de la app (paquetes @fontsource, licencia OFL,
+   con permiso de la persona); la app se ve igual sin internet.
+4. **Tema claro:** Ajustes → Apariencia: Oscuro (por defecto), Claro o «Como Windows». Se guarda en la PC y se
+   aplica al abrir, sin parpadeo.
