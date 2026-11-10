@@ -102,6 +102,7 @@ export function Marca() {
             <div className="fila">
               <button type="button" className="btn" onClick={() => void elegirFuente()}><Type size={16} aria-hidden="true" />{marca.fuente ? "Cambiar fuente de la iglesia" : "Elegir fuente de la iglesia"}</button>
               {marca.fuente && <span className="ayuda mono">{marca.fuente.split(/[\\/]/).pop()}</span>}
+              {marca.fuente && <button type="button" className="btn pequeno fantasma" onClick={() => cambiar({ fuente: undefined })}>Quitar fuente</button>}
             </div>
             <span className="ayuda">Un archivo TTF, OTF, WOFF o WOFF2. Luego elígela en cada clip o en el estilo de la iglesia.</span>
             {errorFuente && <span className="error" role="alert">{errorFuente}</span>}

@@ -25,3 +25,12 @@ test("aplica el estilo sin tocar el contenido del clip", () => {
   expect(r.color).toEqual({ look: "cine", intensidad: 0.7, balance: [0.9, 1, 1.1] });
   for (const k of ["inicio", "fin", "titulo", "gancho", "versiculos", "palabrasClave", "redes", "id"] as const) expect(r[k]).toEqual(clip[k]);
 });
+
+test("plan 7: se conserva la fuente de la iglesia y se informa que se activan las pausas", async () => {
+  const { cambiosExtra } = await import("../../src/shared/estilo-referencia");
+  const conIglesia = { ...clip, fuentes: { titulos: "iglesia" as const, subtitulos: "montserrat" as const } };
+  const r = aplicarReferencia(conIglesia, ref);
+  expect(r.fuentes).toEqual({ titulos: "iglesia", subtitulos: "figtree" });
+  expect(cambiosExtra(conIglesia)).toEqual(["También se activará «Acortar pausas largas».", "Se mantiene la fuente de la iglesia en los títulos."]);
+  expect(cambiosExtra({ ...clip, cortes: { ...clip.cortes, pausas: true } })).toEqual([]);
+});

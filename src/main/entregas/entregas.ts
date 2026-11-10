@@ -6,8 +6,14 @@ import { slugTitulo } from "../exportar/tarea";
 import { leerProyecto, leerTranscripcion } from "../proyectos/almacen";
 import { carpetaProyecto } from "../rutas";
 
+/** Un id de proyecto simple (sin rutas): si no, error. */
+export function validarIdProyecto(id: string): void {
+  if (!/^[\w-]+$/.test(String(id))) throw new Error("Proyecto no válido.");
+}
+
 /** Carpeta de entregas de la prédica (la misma de los reels exportados). */
 export async function carpetaEntregas(proyectoId: string): Promise<string> {
+  validarIdProyecto(proyectoId);
   const dir = join(carpetaProyecto(proyectoId), "exportados");
   await mkdir(dir, { recursive: true });
   return dir;
@@ -23,6 +29,7 @@ export async function baseEntregas(proyectoId: string): Promise<string> {
  * si no, desde el inicio de la prédica. Devuelve el nombre del archivo en exportados/.
  */
 export async function guardarSrt(proyectoId: string, opciones: { completo: boolean }): Promise<string> {
+  validarIdProyecto(proyectoId);
   const t = await leerTranscripcion(proyectoId);
   if (!t?.segmentos.length) throw new Error("No hay transcripción para crear los subtítulos.");
   const nombre = `${await baseEntregas(proyectoId)}.srt`;

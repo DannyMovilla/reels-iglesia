@@ -1,4 +1,4 @@
-import { htmlPintura, PINTURAS } from "./pinturas";
+import { esPintura, htmlPintura } from "./pinturas";
 import type { Creacion, Formato, Marca } from "../tipos";
 import { agregarCierre, agregarEfecto, htmlMarcaReel, ALTOS, documento, type EntradaComposicion } from "./composicion";
 import { htmlEscena } from "./escenas";
@@ -92,7 +92,7 @@ export function construirReelVersiculo(e: EntradaReelVersiculo): { html: string;
   const scripts: string[] = [];
 
   // Fondo (una pintura que no existe cae en la escena «luz»).
-  const pintura = c.fondo.tipo === "pintura" && c.fondo.pintura && PINTURAS[c.fondo.pintura] && e.recursos.pinturas ? c.fondo.pintura : null;
+  const pintura = c.fondo.tipo === "pintura" && esPintura(c.fondo.pintura) && e.recursos.pinturas ? c.fondo.pintura : null;
   if (pintura) {
     const h = htmlPintura(pintura, e.recursos.pinturas!, D);
     el.push(...h.el);

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Check, Copy, LoaderCircle, Wand2 } from "lucide-react";
-import { aplicarReferencia, type EstiloReferencia } from "@shared/estilo-referencia";
+import { aplicarReferencia, cambiosExtra, type EstiloReferencia } from "@shared/estilo-referencia";
 import { NOMBRE_LOOK } from "@shared/reel/color";
 import { NOMBRE_ESTILO } from "@shared/reel/estilos-sub";
 import { FUENTES } from "@shared/reel/fuentes";
@@ -49,7 +49,7 @@ export function CopiarEstilo({ clip, alAplicar, alGuardarEstilo }: { clip: ClipS
             <li>Fuentes: {FUENTES[e.fuenteTitulos].nombre} (títulos) y {FUENTES[e.fuenteSubtitulos].nombre} (subtítulos)</li>
             <li>Música: {NOMBRE_ANIMO[e.animo]} · Cortes: {INTENSIDAD[e.intensidad]} · Color: {NOMBRE_LOOK[e.look]}</li>
           </ul>
-          {propuesta!.avisos.map((a) => <p key={a} className="ayuda">{a}</p>)}
+          {[...cambiosExtra(clip), ...propuesta!.avisos].map((a) => <p key={a} className="ayuda">{a}</p>)}
           <div className="fila">
             <button type="button" className="btn pequeno primario" onClick={() => { alAplicar(aplicarReferencia(clip, e)); setHecho("Listo, el estilo se aplicó a este clip."); }}>
               <Check size={13} aria-hidden="true" />Aplicar a este clip

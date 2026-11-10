@@ -25,24 +25,26 @@ const correr = (exe: string, args: string[]): Promise<{ codigo: number; stdout: 
 export async function medirReferencia(video: string, carpeta?: string): Promise<MedidasReferencia> {
   const avisos: string[] = [];
   const info = await correr("ffprobe", ["-v", "error", "-show_entries", "format=duration:stream=codec_type", "-of", "json", video]);
-  let duracion = 0, conAudio = false;
+  let duracion = 0, conAudio = false, conVideo = false;
   try {
     const j = JSON.parse(info.stdout) as { format?: { duration?: string }; streams?: { codec_type: string }[] };
     duracion = Number(j.format?.duration) || 0;
     conAudio = (j.streams ?? []).some((s) => s.codec_type === "audio");
+    conVideo = (j.streams ?? []).some((s) => s.codec_type === "video");
   } catch {
     /* sin datos */
   }
   if (info.codigo !== 0 || duracion <= 0) throw new Error("No pude leer ese video. Prueba con un MP4 o MOV.");
-  if (duracion < 3) avisos.push("El video dura menos de 3 segundos: no pude medir el ritmo de los cortes.");
+  if (!conVideo) avisos.push("El archivo no tiene video: no pude mirar cuadros ni medir el ritmo.");
+  else if (duracion < 3) avisos.push("El video dura menos de 3 segundos: no pude medir el ritmo de los cortes.");
   const dir = carpeta ?? join(tmpdir(), `reels-referencia-${Date.now()}`);
   await mkdir(dir, { recursive: true });
   const fps = Math.max(0.05, Math.round((6 / Math.max(duracion, 0.5)) * 1000) / 1000);
   await correr("ffmpeg", ["-v", "error", "-y", "-i", video, "-vf", `fps=${fps},scale=-2:720`, "-frames:v", "6", "-q:v", "3", join(dir, "cuadro-%d.jpg")]);
   const cuadros = (await readdir(dir)).filter((f) => /^cuadro-\d+\.jpg$/.test(f)).sort().map((f) => join(dir, f));
-  if (!cuadros.length) avisos.push("No pude sacar cuadros del video.");
+  if (!cuadros.length && conVideo) avisos.push("No pude sacar cuadros del video.");
   let cortesPorMinuto: number | null = null;
-  if (duracion >= 3) {
+  if (conVideo && duracion >= 3) {
     const sc = await correr("ffmpeg", ["-hide_banner", "-nostats", "-i", video, "-an", "-vf", "scdet=threshold=12,metadata=print", "-f", "null", "-"]);
     const cortes = (sc.stderr.match(/lavfi\.scd\.time=/g) ?? []).length;
     cortesPorMinuto = Math.round((cortes / duracion) * 60 * 10) / 10;
@@ -52,6 +54,7 @@ export async function medirReferencia(video: string, carpeta?: string): Promise<
     const r = await correr("ffmpeg", ["-hide_banner", "-nostats", "-i", video, "-vn", "-af", "ebur128", "-f", "null", "-"]);
     const m = /I:\s+(-?[0-9.]+) LUFS/.exec(r.stderr.slice(r.stderr.lastIndexOf("Summary:")));
     lufs = m ? Number(m[1]) : null;
+    if (lufs === null) avisos.push("No pude medir el volumen del video.");
   } else avisos.push("El video no tiene audio: no pude medir el volumen.");
   return { duracion: Math.round(duracion * 10) / 10, cortesPorMinuto, lufs, cuadros, avisos };
 }

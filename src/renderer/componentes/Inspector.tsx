@@ -1,7 +1,7 @@
 import { CopiarEstilo } from "./CopiarEstilo";
 import { FUENTES, FUENTES_POR_DEFECTO, type IdFuente } from "@shared/reel/fuentes";
 import { NOMBRE_LOOK, type Look } from "@shared/reel/color";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { BookOpen, Check, Contrast, Copy, FileText, Flag, LoaderCircle, Send, Sparkles, TrendingUp, TriangleAlert, Type } from "lucide-react";
 import { ANIMOS, type Animo, type ClipSpec, type EstiloSub, type Formato, type Redes } from "@shared/tipos";
 import { ESTILOS_SUB, NOMBRE_ESTILO } from "@shared/reel/estilos-sub";
@@ -54,6 +54,9 @@ export function Segmentos<T extends string>({ opciones, valor, etiqueta, alCambi
 const FORMATOS: [Formato, string, string][] = [["9:16", "Reels · TikTok", "12px 21px"], ["4:5", "Feed IG · FB", "15px 19px"], ["1:1", "Cuadrado", "17px 17px"]];
 
 export function Inspector({ clip: c, avisos, alCambiar, alGuardarEstilo, alAplicarEstilo, pistas, palabras, chat, preparandoVoz, alMedirColor, fuenteIglesia }: Props) {
+  // El clip de ahora (las mediciones que tardan se aplican sobre lo último que eligió la persona).
+  const ultimo = useRef(c);
+  ultimo.current = c;
   const [pestana, setPestana] = useState<Pestana>("clip");
   const cambiar = (parcial: Partial<ClipSpec>) => alCambiar({ ...c, ...parcial });
   const cambiarVersiculo = (i: number, parcial: Partial<ClipSpec["versiculos"][number]>) =>
@@ -173,12 +176,15 @@ export function Inspector({ clip: c, avisos, alCambiar, alGuardarEstilo, alAplic
                   <select className="entrada" aria-label={k === "titulos" ? "Fuente de títulos" : "Fuente de subtítulos"}
                     value={(c.fuentes ?? FUENTES_POR_DEFECTO)[k]}
                     onChange={(e) => cambiar({ fuentes: { ...(c.fuentes ?? FUENTES_POR_DEFECTO), [k]: e.target.value as IdFuente } })}>
-                    {(Object.keys(FUENTES) as IdFuente[]).filter((id) => id !== "iglesia" || fuenteIglesia).map((id) => <option key={id} value={id}>{FUENTES[id].nombre}</option>)}
+                    {(Object.keys(FUENTES) as IdFuente[]).filter((id) => id !== "iglesia" || fuenteIglesia || (c.fuentes ?? FUENTES_POR_DEFECTO)[k] === "iglesia").map((id) => (
+                      <option key={id} value={id}>{id === "iglesia" && !fuenteIglesia ? `La de la iglesia (falta el archivo: se usa ${FUENTES[FUENTES_POR_DEFECTO[k]].nombre})` : FUENTES[id].nombre}</option>
+                    ))}
                   </select>
                 </label>
               ))}
             </div>
-            <ColorGrupo clip={c} alCambiar={(color) => cambiar({ color })} alMedir={alMedirColor} />
+            <ColorGrupo clip={c} alCambiar={(color) => cambiar({ color })} alMedir={alMedirColor}
+              alBalance={(id, balance) => { const ahora = ultimo.current; if (ahora.id === id) alCambiar({ ...ahora, color: { ...(ahora.color ?? { look: "natural", intensidad: 0.7 }), balance } }); }} />
             <div className="grupo"><h3>Voz</h3>
               <Segmentos etiqueta="Nivel de voz" valor={c.voz ?? "limpia"} opciones={[["ligera", "Ligera"], ["limpia", "Limpia"], ["podcast", "Podcast"]]}
                 alCambiar={(voz) => cambiar({ voz })} />
@@ -349,7 +355,10 @@ function Repeticiones({ clip: c, palabras, alCambiar }: { clip: ClipSpec; palabr
 }
 
 /** Corrección de color del video: look, intensidad y balance de blancos medido del video. */
-function ColorGrupo({ clip: c, alCambiar, alMedir }: { clip: ClipSpec; alCambiar(color: ClipSpec["color"]): void; alMedir?(): Promise<[number, number, number]> }) {
+function ColorGrupo({ clip: c, alCambiar, alMedir, alBalance }: {
+  clip: ClipSpec; alCambiar(color: ClipSpec["color"]): void; alMedir?(): Promise<[number, number, number]>;
+  alBalance(id: string, balance: [number, number, number]): void;
+}) {
   const color = c.color ?? { look: "natural" as Look, intensidad: 0.7 };
   const [midiendo, setMidiendo] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -358,7 +367,8 @@ function ColorGrupo({ clip: c, alCambiar, alMedir }: { clip: ClipSpec; alCambiar
     setMidiendo(true);
     setError(null);
     try {
-      alCambiar({ ...color, balance: await alMedir() });
+      const id = c.id;
+      alBalance(id, await alMedir());
     } catch (e) {
       setError((e instanceof Error ? e.message : String(e)).replace(/^Error invoking remote method '[^']+': (Error: )?/, ""));
     } finally {

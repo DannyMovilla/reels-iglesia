@@ -14,9 +14,15 @@ test("MP3 a −16 LUFS, 128 kbps, con etiquetas ID3 y sin carátula", () => {
   ]);
 });
 
-test("con el logo como carátula", () => {
-  const a = argsMp3({ ...base, caratula: "C:/datos/marca/logo.png" });
-  expect(a.slice(3, 7)).toEqual(["-i", "C:/datos/p/voz.m4a", "-i", "C:/datos/marca/logo.png"]);
+test("con el logo como carátula: cuadrada, sobre fondo blanco (sin negro donde era transparente)", async () => {
+  const { argsCaratula } = await import("../../../src/main/entregas/mp3");
+  const c = argsCaratula("C:/datos/marca/logo.webp", "C:/tmp/c.jpg");
+  const filtro = c[c.indexOf("-filter_complex") + 1];
+  expect(filtro).toContain("color=c=white:s=600x600");
+  expect(filtro).toContain("force_original_aspect_ratio=decrease");
+  expect(filtro).toContain("overlay=(W-w)/2:(H-h)/2");
+  const a = argsMp3({ ...base, caratula: "C:/tmp/c.jpg" });
+  expect(a.slice(3, 7)).toEqual(["-i", "C:/datos/p/voz.m4a", "-i", "C:/tmp/c.jpg"]);
   expect(a).toEqual(expect.arrayContaining(["-map", "1:v", "-c:v", "mjpeg", "-disposition:v", "attached_pic"]));
   expect(a.join(" ")).toContain("-metadata:s:v title=Album cover");
 });

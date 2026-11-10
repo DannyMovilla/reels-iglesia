@@ -13,7 +13,7 @@ import { ejecutarConProgreso } from "../procesos/lineas";
 import { duracionVideo as duracionVideoReal, hayNvenc } from "../procesos/video";
 import { leerMarca } from "../proyectos/almacen";
 import { rutaEscenas, rutaPinturas } from "../rutas";
-import { PINTURAS } from "@shared/reel/pinturas";
+import { esPintura, PINTURAS } from "@shared/reel/pinturas";
 import { carpetaCreacion, guardarCreacion, leerCreacion } from "./almacen";
 
 export interface DepsExportarIa {
@@ -56,7 +56,7 @@ export function crearEjecutorExportarIa(deps: DepsExportarIa = {}): Ejecutor {
       if (c.fondo.tipo === "video") fondoDuracion = await duracionVideo(c.fondo.archivo).catch(() => undefined);
     }
     if (c.fondo.tipo === "escena" || c.fondo.tipo === "pintura") extra["recursos/escenas/shaders.iife.js"] = join(rutaEscenas(), "shaders.iife.js");
-    if (c.fondo.tipo === "pintura" && c.fondo.pintura && PINTURAS[c.fondo.pintura]) extra[`recursos/pinturas/${c.fondo.pintura}.jpg`] = join(rutaPinturas(), `${c.fondo.pintura}.jpg`);
+    if (c.fondo.tipo === "pintura" && esPintura(c.fondo.pintura)) extra[`recursos/pinturas/${c.fondo.pintura}.jpg`] = join(rutaPinturas(), `${c.fondo.pintura}.jpg`);
 
     const marca = await leerMarca();
     const logo = marca.logo && existsSync(marca.logo) ? `recursos/logo${extname(marca.logo).toLowerCase()}` : undefined;

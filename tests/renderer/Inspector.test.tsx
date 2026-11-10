@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { describe, vi } from "vitest";
@@ -256,4 +256,28 @@ test("plan 6: fuente de títulos y de subtítulos (la de la iglesia solo si la m
   rerender(<Inspector clip={base} avisos={[]} alCambiar={alCambiar} fuenteIglesia />);
   await userEvent.selectOptions(screen.getByLabelText("Fuente de subtítulos"), "iglesia");
   expect(alCambiar.mock.calls.at(-1)![0].fuentes).toEqual({ titulos: "figtree", subtitulos: "iglesia" });
+});
+
+test("plan 7: cambiar el look mientras se mide el tono no se pierde", async () => {
+  let responder: (v: [number, number, number]) => void = () => {};
+  const alMedirColor = vi.fn(() => new Promise<[number, number, number]>((r) => { responder = r; }));
+  const ultimo: { c?: ClipSpec } = {};
+  function ConColor() {
+    const [c, setC] = useState(base);
+    ultimo.c = c;
+    return <Inspector clip={c} avisos={[]} alCambiar={setC} alMedirColor={alMedirColor} />;
+  }
+  render(<ConColor />);
+  await userEvent.click(screen.getByRole("tab", { name: /Estilo/ }));
+  await userEvent.click(screen.getByRole("button", { name: "Corregir tono amarillo" }));
+  await userEvent.click(within(screen.getByRole("group", { name: "Look de color" })).getByRole("button", { name: "Frío" }));
+  await act(async () => responder([0.9, 1, 1.2]));
+  expect(ultimo.c!.color).toEqual({ look: "frio", intensidad: 0.7, balance: [0.9, 1, 1.2] });
+});
+
+test("plan 7: si el clip usa la fuente de la iglesia y el archivo falta, el selector lo dice", async () => {
+  render(<Inspector clip={{ ...base, fuentes: { titulos: "iglesia", subtitulos: "montserrat" } }} avisos={[]} alCambiar={() => {}} />);
+  await userEvent.click(screen.getByRole("tab", { name: /Estilo/ }));
+  expect(screen.getByLabelText("Fuente de títulos")).toHaveValue("iglesia");
+  expect(screen.getByRole("option", { name: "La de la iglesia (falta el archivo: se usa Figtree)" })).toBeInTheDocument();
 });

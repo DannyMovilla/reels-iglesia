@@ -111,6 +111,7 @@ export function Entregas({ proyectoId }: { proyectoId: string }) {
           <button type="button" className="btn" disabled={!idiomas.length || traduccion.trabajando} onClick={() => void traducir()}>
             {traduccion.trabajando && <LoaderCircle size={15} className="girar" aria-hidden="true" />}Traducir
           </button>
+          {traduccion.trabajando && <button type="button" className="btn pequeno fantasma" onClick={() => void window.reels!.cancelarTraduccion(proyectoId)}>Cancelar</button>}
           {progreso && <span className="ayuda" role="status">{progreso}</span>}
         </div>
         <Resultado listo={traduccion.listo} error={traduccion.error} />

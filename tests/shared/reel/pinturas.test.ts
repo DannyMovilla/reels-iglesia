@@ -46,3 +46,12 @@ test("una pintura que no existe cae en la escena «luz»", () => {
   const r = construirReelVersiculo({ creacion: creacion({ tipo: "pintura", pintura: "no-existe" }), marca, formato: "9:16", recursos, modo: "render" });
   expect(new DOMParser().parseFromString(r.html, "text/html").querySelector("canvas[data-shader]")).not.toBeNull();
 });
+
+test("plan 7: «constructor» u otra clave heredada no cuenta como pintura", async () => {
+  const { esPintura } = await import("../../../src/shared/reel/pinturas");
+  expect(esPintura("prodigo")).toBe(true);
+  expect(esPintura("constructor")).toBe(false);
+  expect(esPintura("toString")).toBe(false);
+  const r = construirReelVersiculo({ creacion: creacion({ tipo: "pintura", pintura: "constructor" }), marca, formato: "9:16", recursos, modo: "render" });
+  expect(new DOMParser().parseFromString(r.html, "text/html").querySelector("canvas[data-shader]")).not.toBeNull();
+});

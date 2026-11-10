@@ -65,3 +65,11 @@ test("revisión I3: a Claude se le da la carpeta de los cuadros; si no los pudo 
   expect(ciego.avisos).toContain("Claude no pudo mirar los cuadros: la propuesta se basa solo en el ritmo y el volumen.");
   process.env.FALSO_CLAUDE_MODO = "ok";
 }, 60_000);
+
+test("plan 7: un archivo sin video avisa en vez de decir «0 cortes por minuto»", async () => {
+  const ruta = join(dir, "solo-audio.mp4");
+  execFileSync("ffmpeg", ["-v", "error", "-y", "-f", "lavfi", "-i", "sine=f=330:d=5", "-c:a", "aac", ruta]);
+  const m = await medirReferencia(ruta, join(dir, "c9"));
+  expect(m.cortesPorMinuto).toBeNull();
+  expect(m.avisos).toContain("El archivo no tiene video: no pude mirar cuadros ni medir el ritmo.");
+}, 60_000);

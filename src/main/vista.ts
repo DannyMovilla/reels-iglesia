@@ -1,4 +1,4 @@
-import { PINTURAS } from "@shared/reel/pinturas";
+import { esPintura, PINTURAS } from "@shared/reel/pinturas";
 import { readFile } from "node:fs/promises";
 import { extname, join, normalize, sep } from "node:path";
 import { protocol } from "electron";
@@ -26,7 +26,7 @@ export const composicionRegistrada = (id: string): string | undefined => composi
 /** Ruta del archivo local para un recurso pedido, o null si no está permitido. */
 export function rutaRecurso(ruta: string, raiz: string, datos?: string, escenas?: string, efectos?: string, pinturas?: string): string | null {
   const pintura = /^recursos\/pinturas\/([a-z]+)\.jpg$/.exec(ruta);
-  if (pintura) return pinturas && PINTURAS[pintura[1]] ? join(pinturas, `${pintura[1]}.jpg`) : null;
+  if (pintura) return pinturas && esPintura(pintura[1]) ? join(pinturas, `${pintura[1]}.jpg`) : null;
   if (ruta === "recursos/escenas/shaders.iife.js") return escenas ? join(escenas, "shaders.iife.js") : null;
   const efecto = /^recursos\/efectos\/(whoosh|whoosh-suave|pop)\.wav$/.exec(ruta);
   if (efecto) return efectos ? join(efectos, `${efecto[1]}.wav`) : null;

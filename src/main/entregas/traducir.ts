@@ -5,7 +5,7 @@ import { bloquesSrt, partirLineas, REGLAS_SRT, textoSrt, type BloqueSrt } from "
 import { extraerJson, partirComando, preguntar } from "../claude/analizar";
 import { leerTranscripcion } from "../proyectos/almacen";
 import { resolverComandoClaude } from "../sistema/claude-cmd";
-import { baseEntregas, carpetaEntregas } from "./entregas";
+import { baseEntregas, carpetaEntregas, validarIdProyecto } from "./entregas";
 
 /** Idiomas a los que se pueden traducir los subtítulos. */
 export const IDIOMAS: Record<string, string> = { en: "inglés", pt: "portugués", fr: "francés", it: "italiano", de: "alemán", ko: "coreano", zh: "chino" };
@@ -60,15 +60,54 @@ const acomodar = (t: string): string => {
  * y escribe exportados/<slug>.<idioma>.srt con los tiempos del video completo o, con `completo: false`, de la prédica.
  * Si una parte sigue mal tras el reintento, ese idioma no se guarda y se avisa.
  */
+/** Traducciones en curso (una por prédica), para poder cancelarlas. */
+const enCurso = new Map<string, AbortController>();
+
+/** Cancela la traducción en curso de esa prédica; false si no había ninguna. */
+export function cancelarTraduccion(proyectoId: string): boolean {
+  const c = enCurso.get(proyectoId);
+  if (!c) return false;
+  c.abort();
+  return true;
+}
+
 export async function traducirSrt(
   proyectoId: string, idiomas: string[],
   opciones: { comando?: string; senal?: AbortSignal; alProgreso?: (texto: string) => void; completo?: boolean } = {},
 ): Promise<string[]> {
-  if (!idiomas.length || idiomas.some((i) => !IDIOMAS[i])) throw new Error("Ese idioma no está disponible.");
+  if (!idiomas.length || idiomas.some((i) => !Object.hasOwn(IDIOMAS, i))) throw new Error("Ese idioma no está disponible.");
+  validarIdProyecto(proyectoId);
+  if (enCurso.has(proyectoId)) throw new Error("Ya se está traduciendo esta prédica.");
+  const control = new AbortController();
+  enCurso.set(proyectoId, control);
+  try {
+    return await traducir(proyectoId, idiomas, { ...opciones, senal: opciones.senal ? AbortSignal.any([opciones.senal, control.signal]) : control.signal });
+  } catch (e) {
+    if (control.signal.aborted) throw new Error("Se canceló la traducción.");
+    throw e;
+  } finally {
+    enCurso.delete(proyectoId);
+  }
+}
+
+/** Una consulta de una parte; si la consulta falla (no por cancelar) cuenta como respuesta inválida. */
+async function consultar(comando: [string, string[]], prompt: string, senal: AbortSignal): Promise<string> {
+  try {
+    return await preguntar(comando, prompt, senal, AbortSignal.timeout(DIEZ_MINUTOS));
+  } catch (e) {
+    if (senal.aborted) throw e;
+    return "";
+  }
+}
+
+async function traducir(
+  proyectoId: string, idiomas: string[],
+  opciones: { comando?: string; senal: AbortSignal; alProgreso?: (texto: string) => void; completo?: boolean },
+): Promise<string[]> {
   const t = await leerTranscripcion(proyectoId);
   if (!t?.segmentos.length) throw new Error("No hay transcripción para traducir.");
   const comando = opciones.comando ? partirComando(opciones.comando) : resolverComandoClaude();
-  const senal = opciones.senal ?? new AbortController().signal;
+  const senal = opciones.senal;
   const bloques = bloquesSrt(palabrasDe(t));
   const partes: BloqueSrt[][] = [];
   for (let i = 0; i < bloques.length; i += POR_PARTE) partes.push(bloques.slice(i, i + POR_PARTE));
@@ -82,12 +121,12 @@ export async function traducirSrt(
       const indice0 = p * POR_PARTE;
       const esperados = partes[p].map((_, i) => indice0 + i + 1);
       const prompt = promptTraduccion(partes[p], idioma, indice0);
-      const tiempo = AbortSignal.timeout(DIEZ_MINUTOS);
-      let textos = leerParte(await preguntar(comando, prompt, senal, tiempo), esperados);
+      // Cada intento con su propio tiempo; si la consulta falla o la respuesta no sirve, un reintento.
+      let textos = leerParte(await consultar(comando, prompt, senal), esperados);
       if (!textos) {
         // El aviso va antes de los bloques: el JSON sigue al final del prompt.
         const otraVez = prompt.replace("Bloques (JSON):", `Tu respuesta anterior no tenía exactamente ${esperados.length} bloques válidos. Responde solo con el arreglo JSON completo.\n\nBloques (JSON):`);
-        textos = leerParte(await preguntar(comando, otraVez, senal, tiempo), esperados);
+        textos = leerParte(await consultar(comando, otraVez, senal), esperados);
       }
       if (!textos) throw new Error(`No pude traducir al ${IDIOMAS[idioma]}. Prueba de nuevo.`);
       traducidos.push(...textos);

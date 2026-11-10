@@ -33,3 +33,21 @@ test("MP3 real: −16 LUFS (±1), pico ≤ −1 dBTP, 128 kbps, etiquetas y car�
   expect(info.streams.some((s: { codec_type: string }) => s.codec_type === "video")).toBe(true); // carátula
   writeFileSync(join(dir, "ok"), "");
 }, 60_000);
+
+test("plan 7: un logo WEBP con transparencia queda como carátula blanca donde era transparente", async () => {
+  const { codificarMp3 } = await import("../../src/main/entregas/mp3");
+  const d = mkdtempSync(join(tmpdir(), "reels-mp3w-"));
+  const voz = join(d, "voz.m4a");
+  execFileSync("ffmpeg", ["-v", "error", "-y", "-f", "lavfi", "-i", "sine=f=220:d=3", "-c:a", "aac", voz]);
+  const logo = join(d, "logo.webp");
+  // Un logo ancho y transparente con un punto rojo en el centro.
+  execFileSync("ffmpeg", ["-v", "error", "-y", "-f", "lavfi", "-i", "color=c=red@0.0:s=400x200,format=rgba", "-vf", "drawbox=x=180:y=80:w=40:h=40:color=red@1:t=fill", "-frames:v", "1", logo]);
+  const salida = join(d, "p.mp3");
+  await codificarMp3({ voz, salida, caratula: logo, titulo: "t", artista: "a", album: "b", anio: "2026" });
+  const portada = join(d, "portada.png");
+  execFileSync("ffmpeg", ["-v", "error", "-y", "-i", salida, "-an", "-frames:v", "1", portada]);
+  const raw = execFileSync("ffmpeg", ["-v", "error", "-i", portada, "-vf", "crop=20:20:0:0", "-pix_fmt", "rgb24", "-f", "rawvideo", "-"]);
+  expect(raw[0]).toBeGreaterThan(230); // esquina blanca, no negra
+  const dims = execFileSync("ffprobe", ["-v", "error", "-show_entries", "stream=width,height", "-of", "csv=p=0:s=x", portada], { encoding: "utf8" }).trim();
+  expect(dims).toBe("600x600");
+}, 60_000);

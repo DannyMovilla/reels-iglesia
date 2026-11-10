@@ -60,6 +60,8 @@ export interface ApiReels {
   crearMp3(proyectoId: string, nivel: NivelVoz): Promise<string>;
   /** Traduce los subtítulos a esos idiomas ("en", "pt"…) con Claude; devuelve los nombres de los .srt. */
   traducirSrt(proyectoId: string, idiomas: string[], opciones: { completo: boolean }): Promise<string[]>;
+  /** Cancela la traducción en curso de la prédica. */
+  cancelarTraduccion(proyectoId: string): Promise<boolean>;
   /** Avisos de progreso de las entregas largas (traducción). */
   alProgresoEntregas(cb: (texto: string) => void): () => void;
   /** Balance de blancos (ganancias R, G, B) del video de la prédica en ese tramo. */

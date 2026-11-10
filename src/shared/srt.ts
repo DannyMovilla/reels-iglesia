@@ -39,9 +39,7 @@ export function bloquesSrt(palabras: Palabra[], reglas: Partial<ReglasSrt> = {})
     if (actual.length) {
       const cabe = partirLineas(texto([...actual, w]), R.maxLinea, R.maxLineas) !== null;
       const largo = w.e - actual[0].s > R.maxDur;
-      // Leer lo que ya hay más esta palabra no debe pedir más tiempo del que dura.
-      const lento = (texto([...actual, w]).length / R.maxCps) > Math.max(R.maxDur, (ws[i + 1]?.s ?? w.e + 1) - actual[0].s);
-      if (!cabe || largo || lento) {
+      if (!cabe || largo) {
         grupos.push(actual);
         actual = [];
       }

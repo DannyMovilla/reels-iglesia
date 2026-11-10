@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { htmlTranscripcion } from "@shared/pdf-transcripcion";
 import { leerCapitulos } from "../claude/capitulos";
 import { leerMarca, leerProyecto, leerTranscripcion } from "../proyectos/almacen";
-import { baseEntregas, carpetaEntregas } from "./entregas";
+import { baseEntregas, carpetaEntregas, validarIdProyecto } from "./entregas";
 
 /** HTML → PDF (A4) con la impresión de Electron, en una ventana oculta. */
 export async function imprimirPdf(html: string): Promise<Buffer> {
@@ -23,6 +23,7 @@ export async function imprimirPdf(html: string): Promise<Buffer> {
 
 /** La transcripción de la prédica en PDF (exportados/<slug>-transcripcion.pdf); devuelve el nombre. */
 export async function guardarPdf(proyectoId: string, imprimir: (html: string) => Promise<Buffer> = imprimirPdf): Promise<string> {
+  validarIdProyecto(proyectoId);
   const transcripcion = await leerTranscripcion(proyectoId);
   if (!transcripcion?.segmentos.length) throw new Error("No hay transcripción para crear el PDF.");
   const [proyecto, marca, capitulos] = await Promise.all([leerProyecto(proyectoId), leerMarca(), leerCapitulos(proyectoId)]);

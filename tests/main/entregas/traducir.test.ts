@@ -80,3 +80,23 @@ test("revisión I4: con «solo la prédica» la traducción usa los mismos tiemp
   const enCompleto = leerSrt(readFileSync(join(carpetaProyecto(id), "exportados", "culto.en.srt"), "utf8"));
   expect(enCompleto[0].desde).toBeCloseTo(100, 2);
 });
+
+test("plan 7: si la consulta falla la primera vez, se reintenta esa parte", async () => {
+  const contador = join(mkdtempSync(join(tmpdir(), "reels-cont-")), "n.txt");
+  process.env.FALSO_CLAUDE_CONTADOR = contador;
+  process.env.FALSO_CLAUDE_MODO = "traduccion-error-primera";
+  expect(await traducirSrt(id, ["en"], { comando })).toEqual(["culto.en.srt"]);
+  delete process.env.FALSO_CLAUDE_CONTADOR;
+});
+
+test("plan 7: una sola traducción a la vez por prédica; cancelar no deja un .srt a medias", async () => {
+  const { cancelarTraduccion } = await import("../../../src/main/entregas/traducir");
+  process.env.FALSO_CLAUDE_MODO = "traduccion-lenta";
+  const primera = traducirSrt(id, ["it"], { comando });
+  await new Promise((r) => setTimeout(r, 300));
+  await expect(traducirSrt(id, ["de"], { comando })).rejects.toThrow("Ya se está traduciendo esta prédica.");
+  expect(cancelarTraduccion(id)).toBe(true);
+  await expect(primera).rejects.toThrow("Se canceló la traducción.");
+  expect(existsSync(join(carpetaProyecto(id), "exportados", "culto.it.srt"))).toBe(false);
+  expect(cancelarTraduccion(id)).toBe(false);
+}, 20_000);

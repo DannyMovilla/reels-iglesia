@@ -1,4 +1,4 @@
-import { PINTURAS } from "@shared/reel/pinturas";
+import { esPintura, PINTURAS } from "@shared/reel/pinturas";
 import { z } from "zod";
 import { recortarRedes } from "@shared/redes";
 import { ANIMOS, type Animo, type Creacion, type Escena } from "@shared/tipos";
@@ -28,7 +28,7 @@ const RespuestaVersiculo = z.object({
   animo: z.preprocess((v) => (typeof v === "string" ? ANIMOS.find((a) => sinTildes(a) === sinTildes(v)) : undefined), z.enum(ANIMOS as unknown as [Animo, ...Animo[]]).optional()).catch(undefined),
   escena: z.preprocess((v) => (typeof v === "string" ? (Object.keys(ESCENAS) as Escena[]).find((e) => sinTildes(e) === sinTildes(v)) : undefined),
     z.enum(Object.keys(ESCENAS) as [Escena, ...Escena[]]).optional()).catch(undefined),
-  pintura: z.preprocess((v) => (typeof v === "string" && PINTURAS[v.trim()] ? v.trim() : undefined), z.string().optional()).catch(undefined),
+  pintura: z.preprocess((v) => (typeof v === "string" && esPintura(v.trim()) ? v.trim() : undefined), z.string().optional()).catch(undefined),
   redes: z.object({
     instagram: conHashtags, tiktok: conHashtags,
     facebook: z.object({ texto: z.string().default("") }),

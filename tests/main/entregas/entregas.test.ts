@@ -50,3 +50,9 @@ test("PDF: arma el HTML con la transcripción corregida y guarda lo que imprime 
   expect(html).toContain("<h1>Culto dominical · 9 nov</h1>");
   expect(readFileSync(join(carpetaProyecto(id), "exportados", nombre), "utf8")).toBe("%PDF-1.7 prueba");
 });
+
+test("plan 7: un id de proyecto raro se rechaza en las entregas", async () => {
+  const { guardarPdf } = await import("../../../src/main/entregas/pdf");
+  await expect(guardarSrt("../otro", { completo: true })).rejects.toThrow("Proyecto no válido.");
+  await expect(guardarPdf("..\\otro", async () => Buffer.from(""))).rejects.toThrow("Proyecto no válido.");
+});

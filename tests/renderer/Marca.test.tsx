@@ -88,3 +88,10 @@ test("plan 7: sin logo, «Logo» avisa que se verá el nombre", async () => {
   await userEvent.click(within(grupo).getByRole("button", { name: "Logo" }));
   expect(await screen.findByText("Todavía no hay logo: se verá el nombre hasta que elijas uno.")).toBeInTheDocument();
 });
+
+test("plan 7: la fuente de la iglesia se puede quitar", async () => {
+  const a = api({ leerMarca: vi.fn(async () => ({ ...structuredClone(marca), fuente: "C:/datos/marca/fuente.ttf" })) });
+  render(<Marca />);
+  await userEvent.click(await screen.findByRole("button", { name: "Quitar fuente" }));
+  await vi.waitFor(() => expect((a.guardarMarca.mock.calls.at(-1) as unknown as [TMarca])[0].fuente).toBeUndefined(), { timeout: 2000 });
+});

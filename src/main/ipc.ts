@@ -13,10 +13,10 @@ import type { Correccion } from "@shared/correcciones";
 import { clipManual } from "@shared/clip";
 import { pedirCambios, type EntradaHistorial } from "./claude/cambios";
 import { crearCapitulos, leerCapitulos } from "./claude/capitulos";
-import { guardarSrt } from "./entregas/entregas";
+import { guardarSrt, validarIdProyecto } from "./entregas/entregas";
 import { guardarPdf } from "./entregas/pdf";
 import { guardarMp3 } from "./entregas/mp3";
-import { traducirSrt } from "./entregas/traducir";
+import { cancelarTraduccion, traducirSrt } from "./entregas/traducir";
 import { medirBalance } from "./procesos/color";
 import { analizarReferencia } from "./estilo/referencia";
 import { archivoVoz } from "./procesos/audio";
@@ -137,11 +137,13 @@ export function registrarIpc(deps: DepsIpc): void {
     return analizarReferencia(r.filePaths[0], clip, { comando: process.env.REELS_CLAUDE_COMANDO });
   });
   ipcMain.handle("proyectos:medirColor", async (_e, id: string, inicio: number, fin: number) => {
+    validarIdProyecto(id);
     const p = await leerProyecto(id);
     if (!p.videoDisponible) throw new Error("No encuentro el video original. Vuelve a ponerlo en su lugar y reintenta.");
     return medirBalance(p.video.ruta, Number(inicio) || 0, Number(fin) || 0);
   });
   ipcMain.handle("entregas:pdf", (_e, id: string) => guardarPdf(id));
+  ipcMain.handle("entregas:cancelarTraduccion", (_e, id: string) => cancelarTraduccion(id));
   ipcMain.handle("entregas:traducir", (e, id: string, idiomas: string[], o?: { completo?: boolean }) =>
     traducirSrt(id, Array.isArray(idiomas) ? idiomas : [], { comando: process.env.REELS_CLAUDE_COMANDO, completo: o?.completo !== false, alProgreso: (t) => e.sender.send("entregas:progreso", t) }));
   ipcMain.handle("entregas:mp3", (_e, id: string, nivel: NivelVoz) => guardarMp3(id, ["ligera", "limpia", "podcast"].includes(nivel) ? nivel : "limpia"));

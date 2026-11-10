@@ -20,6 +20,9 @@ export const PINTURAS: Record<string, Pintura> = {
   marta: { obra: "Cristo en casa de Marta y María", autor: "Johannes Vermeer", anio: "hacia 1655", tema: "escuchar a Jesús, el descanso, lo más importante", fuente: commons("Johannes (Jan) Vermeer - Christ in the House of Martha and Mary - Google Art Project.jpg") },
 };
 
+/** ¿Es una de las pinturas incluidas? (sin aceptar claves heredadas como «constructor»). */
+export const esPintura = (id: string | undefined | null): id is string => !!id && Object.hasOwn(PINTURAS, id);
+
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
 const n = (x: number) => String(Math.round(x * 100) / 100);
 
