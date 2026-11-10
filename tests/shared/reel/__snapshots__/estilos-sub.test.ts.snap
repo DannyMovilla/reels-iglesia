@@ -1,0 +1,198 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`el CSS de los estilos de antes no cambia > impacto 1`] = `
+".sub.impacto { font: 900 109px/1 Montserrat, sans-serif; letter-spacing: 0.03em; height: 112px; }
+.sub.impacto .w { position: absolute; left: 0; right: 0; opacity: 0; -webkit-text-stroke: 11px #0b0b0b; paint-order: stroke fill; text-shadow: 0 8px 22px rgba(0,0,0,.5); }"
+`;
+
+exports[`el CSS de los estilos de antes no cambia > karaoke 1`] = `
+".sub.karaoke { font: 800 57px/1.25 Figtree, sans-serif; }
+.sub.karaoke .pildora { display: inline-block; max-width: 100%; padding: 16px 44px 18px; border-radius: 22px; background: #eceaec; box-shadow: 0 6px 22px rgba(0,0,0,.28); }
+.sub.karaoke .w { color: #a6a6a6; margin: 0 0.12em; }"
+`;
+
+exports[`el CSS de los estilos de antes no cambia > neon 1`] = `
+".sub.neon { font: 800 70px/1.15 Montserrat, sans-serif; text-shadow: 0 0 10px rgba(255,255,255,.55), 0 0 24px rgba(255,255,255,.25), 0 4px 14px rgba(0,0,0,.6); }
+.sub.neon .clave { font-size: 1.2em; text-shadow: 0 0 12px var(--marca), 0 0 30px var(--marca), 0 4px 14px rgba(0,0,0,.6); }"
+`;
+
+exports[`el CSS de los estilos de antes no cambia > resaltado 1`] = `
+".sub.resaltado { font: 800 70px/1.35 Montserrat, sans-serif; letter-spacing: 0.02em; }
+.sub.resaltado .w { position: relative; padding: 4px 12px 6px; text-shadow: 0 4px 14px rgba(0,0,0,.55); }
+.sub.resaltado .w > span { position: relative; z-index: 1; }
+.sub.resaltado .fondo { position: absolute; inset: 0; z-index: 0; background: var(--marca); border-radius: 10px; box-shadow: 0 12px 30px rgba(0,0,0,.32); opacity: 0; transform: scaleX(0); transform-origin: 0% 50%; }"
+`;
+
+exports[`el estilo de antes caja genera lo mismo que antes del plan 8 > #202020 1`] = `
+{
+  "html": "<span id="b3w0" class="w">TU</span> <span id="b3w1" class="w clave">PRUEBA</span> <span id="b3w2" class="w">&lt;FINAL&gt;</span>",
+  "js": [
+    "tl.from("#b3", { opacity: 0, y: 16, duration: 0.12 }, 2.1);",
+    "tl.set("#b3w1", { backgroundColor: "#202020", color: "#ffffff" }, 2.35);",
+    "tl.set("#b3w1", { backgroundColor: "rgba(0,0,0,0)", color: "#202020" }, 2.85);",
+    "tl.set("#b3w2", { backgroundColor: "#202020", color: "#ffffff" }, 2.85);",
+    "tl.set("#b3w2", { backgroundColor: "rgba(0,0,0,0)", color: "#ffffff" }, 3.35);",
+  ],
+}
+`;
+
+exports[`el estilo de antes caja genera lo mismo que antes del plan 8 > #f5c542 1`] = `
+{
+  "html": "<span id="b3w0" class="w">TU</span> <span id="b3w1" class="w clave">PRUEBA</span> <span id="b3w2" class="w">&lt;FINAL&gt;</span>",
+  "js": [
+    "tl.from("#b3", { opacity: 0, y: 16, duration: 0.12 }, 2.1);",
+    "tl.set("#b3w1", { backgroundColor: "#f5c542", color: "#111111" }, 2.35);",
+    "tl.set("#b3w1", { backgroundColor: "rgba(0,0,0,0)", color: "#f5c542" }, 2.85);",
+    "tl.set("#b3w2", { backgroundColor: "#f5c542", color: "#111111" }, 2.85);",
+    "tl.set("#b3w2", { backgroundColor: "rgba(0,0,0,0)", color: "#ffffff" }, 3.35);",
+  ],
+}
+`;
+
+exports[`el estilo de antes impacto genera lo mismo que antes del plan 8 > #202020 1`] = `
+{
+  "html": "<span id="b3w0" class="w">TU</span> <span id="b3w1" class="w clave">PRUEBA</span> <span id="b3w2" class="w">&lt;FINAL&gt;</span>",
+  "js": [
+    "tl.fromTo("#b3w1", { x: -300, opacity: 0 }, { x: 0, opacity: 1, duration: 0.2, ease: "expo.out", immediateRender: false }, 2.35);",
+    "tl.to("#b3w1", { opacity: 0, duration: 0.08, ease: "power2.in" }, 2.83);",
+    "tl.fromTo("#b3w2", { x: 300, opacity: 0 }, { x: 0, opacity: 1, duration: 0.2, ease: "expo.out", immediateRender: false }, 2.85);",
+    "tl.to("#b3w2", { opacity: 0, duration: 0.08, ease: "power2.in" }, 3.38);",
+  ],
+}
+`;
+
+exports[`el estilo de antes impacto genera lo mismo que antes del plan 8 > #f5c542 1`] = `
+{
+  "html": "<span id="b3w0" class="w">TU</span> <span id="b3w1" class="w clave">PRUEBA</span> <span id="b3w2" class="w">&lt;FINAL&gt;</span>",
+  "js": [
+    "tl.fromTo("#b3w1", { x: -300, opacity: 0 }, { x: 0, opacity: 1, duration: 0.2, ease: "expo.out", immediateRender: false }, 2.35);",
+    "tl.to("#b3w1", { opacity: 0, duration: 0.08, ease: "power2.in" }, 2.83);",
+    "tl.fromTo("#b3w2", { x: 300, opacity: 0 }, { x: 0, opacity: 1, duration: 0.2, ease: "expo.out", immediateRender: false }, 2.85);",
+    "tl.to("#b3w2", { opacity: 0, duration: 0.08, ease: "power2.in" }, 3.38);",
+  ],
+}
+`;
+
+exports[`el estilo de antes karaoke genera lo mismo que antes del plan 8 > #202020 1`] = `
+{
+  "html": "<span class="pildora"><span id="b3w0" class="w">TU</span> <span id="b3w1" class="w clave">PRUEBA</span> <span id="b3w2" class="w">&lt;FINAL&gt;</span></span>",
+  "js": [
+    "tl.from("#b3", { opacity: 0, y: 16, duration: 0.12 }, 2.1);",
+    "tl.to("#b3w1", { color: "#202020", duration: 0.1, ease: "none" }, 2.3);",
+    "tl.to("#b3w2", { color: "#1c1e1d", duration: 0.1, ease: "none" }, 2.8);",
+  ],
+}
+`;
+
+exports[`el estilo de antes karaoke genera lo mismo que antes del plan 8 > #f5c542 1`] = `
+{
+  "html": "<span class="pildora"><span id="b3w0" class="w">TU</span> <span id="b3w1" class="w clave">PRUEBA</span> <span id="b3w2" class="w">&lt;FINAL&gt;</span></span>",
+  "js": [
+    "tl.from("#b3", { opacity: 0, y: 16, duration: 0.12 }, 2.1);",
+    "tl.to("#b3w1", { color: "#f5c542", duration: 0.1, ease: "none" }, 2.3);",
+    "tl.to("#b3w2", { color: "#1c1e1d", duration: 0.1, ease: "none" }, 2.8);",
+  ],
+}
+`;
+
+exports[`el estilo de antes limpio genera lo mismo que antes del plan 8 > #202020 1`] = `
+{
+  "html": "<span id="b3w0" class="w">tu</span> <span id="b3w1" class="w clave">prueba</span> <span id="b3w2" class="w">&lt;final&gt;</span>",
+  "js": [
+    "tl.from("#b3", { opacity: 0, y: 16, duration: 0.12 }, 2.1);",
+    "tl.fromTo("#b3w1", { scale: 1.06, color: "#202020" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 2.35);",
+    "tl.fromTo("#b3w2", { scale: 1.06, color: "#202020" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 2.85);",
+    "tl.to("#b3w2", { color: "#ffffff", duration: 0.05 }, 3.35);",
+  ],
+}
+`;
+
+exports[`el estilo de antes limpio genera lo mismo que antes del plan 8 > #f5c542 1`] = `
+{
+  "html": "<span id="b3w0" class="w">tu</span> <span id="b3w1" class="w clave">prueba</span> <span id="b3w2" class="w">&lt;final&gt;</span>",
+  "js": [
+    "tl.from("#b3", { opacity: 0, y: 16, duration: 0.12 }, 2.1);",
+    "tl.fromTo("#b3w1", { scale: 1.06, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 2.35);",
+    "tl.fromTo("#b3w2", { scale: 1.06, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 2.85);",
+    "tl.to("#b3w2", { color: "#ffffff", duration: 0.05 }, 3.35);",
+  ],
+}
+`;
+
+exports[`el estilo de antes neon genera lo mismo que antes del plan 8 > #202020 1`] = `
+{
+  "html": "<span id="b3w0" class="w">TU</span> <span id="b3w1" class="w clave">PRUEBA</span> <span id="b3w2" class="w">&lt;FINAL&gt;</span>",
+  "js": [
+    "tl.fromTo("#b3", { opacity: 0, scale: 0.65 }, { opacity: 1, scale: 1, duration: 0.22, ease: "power3.out", immediateRender: false }, 2.1);",
+    "tl.to("#b3", { x: 3, y: 3, duration: 0.25, ease: "sine.inOut", yoyo: true, repeat: 3 }, 2.1);",
+  ],
+}
+`;
+
+exports[`el estilo de antes neon genera lo mismo que antes del plan 8 > #f5c542 1`] = `
+{
+  "html": "<span id="b3w0" class="w">TU</span> <span id="b3w1" class="w clave">PRUEBA</span> <span id="b3w2" class="w">&lt;FINAL&gt;</span>",
+  "js": [
+    "tl.fromTo("#b3", { opacity: 0, scale: 0.65 }, { opacity: 1, scale: 1, duration: 0.22, ease: "power3.out", immediateRender: false }, 2.1);",
+    "tl.to("#b3", { x: 3, y: 3, duration: 0.25, ease: "sine.inOut", yoyo: true, repeat: 3 }, 2.1);",
+  ],
+}
+`;
+
+exports[`el estilo de antes pop genera lo mismo que antes del plan 8 > #202020 1`] = `
+{
+  "html": "<span id="b3w0" class="w">TU</span> <span id="b3w1" class="w clave">PRUEBA</span> <span id="b3w2" class="w">&lt;FINAL&gt;</span>",
+  "js": [
+    "tl.from("#b3", { opacity: 0, y: 16, duration: 0.12 }, 2.1);",
+    "tl.fromTo("#b3w1", { scale: 1.18, color: "#202020" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 2.35);",
+    "tl.fromTo("#b3w2", { scale: 1.18, color: "#202020" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 2.85);",
+    "tl.to("#b3w2", { color: "#ffffff", duration: 0.05 }, 3.35);",
+  ],
+}
+`;
+
+exports[`el estilo de antes pop genera lo mismo que antes del plan 8 > #f5c542 1`] = `
+{
+  "html": "<span id="b3w0" class="w">TU</span> <span id="b3w1" class="w clave">PRUEBA</span> <span id="b3w2" class="w">&lt;FINAL&gt;</span>",
+  "js": [
+    "tl.from("#b3", { opacity: 0, y: 16, duration: 0.12 }, 2.1);",
+    "tl.fromTo("#b3w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 2.35);",
+    "tl.fromTo("#b3w2", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 2.85);",
+    "tl.to("#b3w2", { color: "#ffffff", duration: 0.05 }, 3.35);",
+  ],
+}
+`;
+
+exports[`el estilo de antes resaltado genera lo mismo que antes del plan 8 > #202020 1`] = `
+{
+  "html": "<span id="b3w0" class="w"><i class="fondo"></i><span>TU</span></span> <span id="b3w1" class="w clave"><i class="fondo"></i><span>PRUEBA</span></span> <span id="b3w2" class="w"><i class="fondo"></i><span>&lt;FINAL&gt;</span></span>",
+  "js": [
+    "tl.from("#b3", { opacity: 0, y: 16, duration: 0.12 }, 2.1);",
+    "tl.to("#b3w1 .fondo", { opacity: 1, scaleX: 1, duration: 0.15, ease: "power2.out" }, 2.35);",
+    "tl.set("#b3w1", { color: "#ffffff" }, 2.35);",
+    "tl.to("#b3w1 .fondo", { opacity: 0, duration: 0.1, ease: "power2.in" }, 2.85);",
+    "tl.set("#b3w1", { color: "#202020" }, 2.85);",
+    "tl.to("#b3w2 .fondo", { opacity: 1, scaleX: 1, duration: 0.15, ease: "power2.out" }, 2.85);",
+    "tl.set("#b3w2", { color: "#ffffff" }, 2.85);",
+    "tl.to("#b3w2 .fondo", { opacity: 0, duration: 0.1, ease: "power2.in" }, 3.35);",
+    "tl.set("#b3w2", { color: "#ffffff" }, 3.35);",
+  ],
+}
+`;
+
+exports[`el estilo de antes resaltado genera lo mismo que antes del plan 8 > #f5c542 1`] = `
+{
+  "html": "<span id="b3w0" class="w"><i class="fondo"></i><span>TU</span></span> <span id="b3w1" class="w clave"><i class="fondo"></i><span>PRUEBA</span></span> <span id="b3w2" class="w"><i class="fondo"></i><span>&lt;FINAL&gt;</span></span>",
+  "js": [
+    "tl.from("#b3", { opacity: 0, y: 16, duration: 0.12 }, 2.1);",
+    "tl.to("#b3w1 .fondo", { opacity: 1, scaleX: 1, duration: 0.15, ease: "power2.out" }, 2.35);",
+    "tl.set("#b3w1", { color: "#111111" }, 2.35);",
+    "tl.to("#b3w1 .fondo", { opacity: 0, duration: 0.1, ease: "power2.in" }, 2.85);",
+    "tl.set("#b3w1", { color: "#f5c542" }, 2.85);",
+    "tl.to("#b3w2 .fondo", { opacity: 1, scaleX: 1, duration: 0.15, ease: "power2.out" }, 2.85);",
+    "tl.set("#b3w2", { color: "#111111" }, 2.85);",
+    "tl.to("#b3w2 .fondo", { opacity: 0, duration: 0.1, ease: "power2.in" }, 3.35);",
+    "tl.set("#b3w2", { color: "#ffffff" }, 3.35);",
+  ],
+}
+`;
