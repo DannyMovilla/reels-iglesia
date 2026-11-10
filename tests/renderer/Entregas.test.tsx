@@ -56,9 +56,19 @@ test("traducir: casillas de idiomas, progreso y archivos listos", async () => {
   await userEvent.click(screen.getByRole("checkbox", { name: "Inglés" }));
   await userEvent.click(screen.getByRole("checkbox", { name: "Portugués" }));
   await userEvent.click(screen.getByRole("button", { name: "Traducir" }));
-  expect(a.traducirSrt).toHaveBeenCalledWith("p", ["en", "pt"]);
+  expect(a.traducirSrt).toHaveBeenCalledWith("p", ["en", "pt"], { completo: true });
   act(() => avisar("Traduciendo al inglés (parte 2 de 4)…"));
   expect(screen.getByText("Traduciendo al inglés (parte 2 de 4)…")).toBeInTheDocument();
   await act(async () => responder(["culto.en.srt", "culto.pt.srt"]));
   expect(await screen.findByText("Listo: culto.en.srt, culto.pt.srt")).toBeInTheDocument();
+});
+
+test("revisión I4: «Traducir» usa la misma elección de tiempos que el SRT", async () => {
+  const a = { traducirSrt: vi.fn(async () => ["c.en.srt"]), alProgresoEntregas: vi.fn(() => () => {}) };
+  (window as unknown as { reels: unknown }).reels = a;
+  render(<Entregas proyectoId="p" />);
+  await userEvent.click(screen.getByRole("switch", { name: "Tiempos del video completo" }));
+  await userEvent.click(screen.getByRole("checkbox", { name: "Inglés" }));
+  await userEvent.click(screen.getByRole("button", { name: "Traducir" }));
+  expect(a.traducirSrt).toHaveBeenCalledWith("p", ["en"], { completo: false });
 });

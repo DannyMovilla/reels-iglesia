@@ -45,3 +45,15 @@ test("subtítulos muy abajo (95 %) quedan dentro de la zona común; con la altur
   expect(abajo).toBeLessThan(0.95 * 1920);
   expect(abajo).toBeLessThanOrEqual(1920 - z.abajo);
 });
+
+test("revisión I1: la tarjeta del versículo y los subtítulos «caja» grandes quedan donde estaban (9:16 y 1:1)", () => {
+  const conVersiculo = clip({ versiculos: [{ ref: "Salmos 51:17", texto: "Los sacrificios de Dios son el espíritu quebrantado", en: 5, activo: true, confirmado: true }] });
+  const topVers = (formato: "9:16" | "1:1", c = conVersiculo) => Number(/class="clip vers"[^>]*style="top:([\d.]+)px"/.exec(construirComposicion({
+    clip: c, transcripcion: muestra, caras: null, formato, dimensiones: { ancho: 1280, alto: 720 },
+    marca: { nombre: "I", color: "#f5c542", invitacion: "", ...MARCA_PLAN3 }, fuenteVideo: "v.mp4", recursos: { gsap: "g.js", fuentes: "f" }, modo: "render",
+  }).html)![1]);
+  expect(topVers("9:16")).toBeCloseTo(0.62 * 1920, 1);
+  expect(topVers("1:1")).toBeCloseTo(0.6 * 1080, 1);
+  const caja = clip({ subtitulos: { activos: true, estilo: "caja", tamano: "l", altura: 0.74 } });
+  expect(Number(/class="clip sub caja"[^>]*style="top:([\d.]+)px"/.exec(comp(caja).html)![1])).toBeCloseTo(0.74 * 1920, 1);
+});

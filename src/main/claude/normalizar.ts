@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { completarClip, ESTILO_POR_DEFECTO } from "@shared/clip";
+import { completarClip, delEstiloParaClipNuevo, ESTILO_POR_DEFECTO } from "@shared/clip";
 import { recortarRedes } from "@shared/redes";
 import type { ClipSpec, EstiloIglesia, Transcripcion } from "@shared/tipos";
 import { formatearReferencia } from "../biblia/biblia";
@@ -78,6 +78,7 @@ export function normalizarClips(r: ClipClaude[], t: Transcripcion, estilo: Estil
       cierre: estilo.cierre,
       formatos: [...estilo.formatos],
       estado: "sugerido",
+      ...delEstiloParaClipNuevo(estilo),
     }, estilo));
   }
   return clips.sort((x, y) => y.puntaje - x.puntaje);

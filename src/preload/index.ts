@@ -30,7 +30,7 @@ const api: ApiReels = {
   crearSrt: (id, opciones) => ipcRenderer.invoke("entregas:srt", id, opciones),
   crearPdf: (id) => ipcRenderer.invoke("entregas:pdf", id),
   crearMp3: (id, nivel) => ipcRenderer.invoke("entregas:mp3", id, nivel),
-  traducirSrt: (id, idiomas) => ipcRenderer.invoke("entregas:traducir", id, idiomas),
+  traducirSrt: (id, idiomas, opciones) => ipcRenderer.invoke("entregas:traducir", id, idiomas, opciones),
   alProgresoEntregas: (cb) => {
     const f = (_e: unknown, texto: string) => cb(texto);
     ipcRenderer.on("entregas:progreso", f);

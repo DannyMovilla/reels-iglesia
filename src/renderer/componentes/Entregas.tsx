@@ -50,7 +50,7 @@ export function Entregas({ proyectoId }: { proyectoId: string }) {
   const traducir = () => traduccion.correr(async () => {
     const quitar = window.reels!.alProgresoEntregas(setProgreso);
     try {
-      return (await window.reels!.traducirSrt(proyectoId, idiomas)).join(", ");
+      return (await window.reels!.traducirSrt(proyectoId, idiomas, { completo })).join(", ");
     } finally {
       quitar();
       setProgreso(null);
@@ -97,7 +97,7 @@ export function Entregas({ proyectoId }: { proyectoId: string }) {
       </section>
       <section className="entrega">
         <h3><Languages size={16} aria-hidden="true" />Subtítulos traducidos</h3>
-        <p className="ayuda">Claude traduce los subtítulos con los mismos tiempos (tiempos del video completo). Los versículos van en una versión reconocida de cada idioma.</p>
+        <p className="ayuda">Claude traduce los subtítulos con los mismos tiempos que elegiste arriba para el SRT. Los versículos van en una versión reconocida de cada idioma.</p>
         <div className="idiomas" role="group" aria-label="Idiomas">
           {Object.entries(IDIOMAS).map(([codigo, nombre]) => (
             <label key={codigo} className="opcion">

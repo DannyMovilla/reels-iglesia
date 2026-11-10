@@ -24,9 +24,12 @@ process.stdin.on("end", () => {
   }
   if (entrada.includes("ESTILO DE UN REEL")) {
     // Comprueba que pidieron permiso para leer los cuadros y que los cuadros existen.
-    const lee = process.argv.includes("--allowedTools") && process.argv.includes("Read");
-    const cuadros = [...entrada.matchAll(/^- (.+cuadro-\d+\.jpg)$/gm)].map((m) => m[1]);
+    const i = process.argv.indexOf("--add-dir");
+    const carpeta = i >= 0 ? process.argv[i + 1] : "";
+    const lee = process.argv.includes("--allowedTools") && process.argv.includes("Read") && modo !== "estilo-ciego";
+    const cuadros = [...entrada.matchAll(/^- (.+cuadro-\d+\.jpg)$/gm)].map((m) => m[1]).filter((c) => carpeta && c.startsWith(carpeta));
     const r = { subtitulos: "karaoke", tamano: "L", altura: 0.7, fuente_titulos: "montserrat", fuente_subtitulos: "inventada", animo: "victoria", intensidad: "fuerte", look: "cine",
+      cuadros_vistos: lee ? cuadros.filter((c) => existsSync(c)).length : 0,
       explicacion: lee && cuadros.length && cuadros.every((c) => existsSync(c)) ? `Miré ${cuadros.length} cuadros.` : "No pude mirar los cuadros." };
     console.log(JSON.stringify({ type: "result", is_error: false, result: JSON.stringify(r) }));
     return;

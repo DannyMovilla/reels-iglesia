@@ -57,12 +57,12 @@ const acomodar = (t: string): string => {
 
 /**
  * Traduce los subtítulos de la prédica a cada idioma (una consulta por cada 120 bloques, un reintento por parte)
- * y escribe exportados/<slug>.<idioma>.srt con los mismos tiempos del SRT en español (video completo).
+ * y escribe exportados/<slug>.<idioma>.srt con los tiempos del video completo o, con `completo: false`, de la prédica.
  * Si una parte sigue mal tras el reintento, ese idioma no se guarda y se avisa.
  */
 export async function traducirSrt(
   proyectoId: string, idiomas: string[],
-  opciones: { comando?: string; senal?: AbortSignal; alProgreso?: (texto: string) => void } = {},
+  opciones: { comando?: string; senal?: AbortSignal; alProgreso?: (texto: string) => void; completo?: boolean } = {},
 ): Promise<string[]> {
   if (!idiomas.length || idiomas.some((i) => !IDIOMAS[i])) throw new Error("Ese idioma no está disponible.");
   const t = await leerTranscripcion(proyectoId);
@@ -93,7 +93,9 @@ export async function traducirSrt(
       traducidos.push(...textos);
     }
     const nombre = `${base}.${idioma}.srt`;
-    await writeFile(join(carpeta, nombre), textoSrt(bloques.map((b, i) => ({ ...b, texto: acomodar(traducidos[i]) }))), "utf8");
+    // Los mismos tiempos que el SRT en español: del video completo o solo de la prédica.
+    const desplazar = opciones.completo === false ? -t.inicio : 0;
+    await writeFile(join(carpeta, nombre), textoSrt(bloques.map((b, i) => ({ ...b, texto: acomodar(traducidos[i]) })), desplazar), "utf8");
     nombres.push(nombre);
   }
   return nombres;

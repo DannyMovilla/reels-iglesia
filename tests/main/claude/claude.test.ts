@@ -222,3 +222,15 @@ test("plan 6: validarTramoClip rechaza id raro y tiempos no finitos o fuera de l
   expect(() => validarTramoClip("ok", 40, 30, p)).toThrow("No pude crear el clip con ese tramo.");
   expect(() => validarTramoClip("ok", 20, 30, p)).not.toThrow();
 });
+
+test("revisión plan 6 I2: los clips que sugiere Claude nacen con la voz, el color y las fuentes del estilo", async () => {
+  const { normalizarClips } = await import("../../../src/main/claude/normalizar");
+  const { RespuestaClaude } = await import("../../../src/main/claude/esquema");
+  const r = RespuestaClaude.parse([{ titulo: "T", gancho: "G", categoria: "Esperanza", inicio: "0:00:30", fin: "0:01:00", puntaje: 80 }]);
+  const { ESTILO_POR_DEFECTO } = await import("../../../src/shared/clip");
+  const estilo = { ...ESTILO_POR_DEFECTO, voz: "podcast" as const, color: { look: "frio" as const, intensidad: 0.5 }, fuentes: { titulos: "montserrat" as const, subtitulos: "montserrat" as const } };
+  const [c] = normalizarClips(r, muestra(), estilo);
+  expect(c.voz).toBe("podcast");
+  expect(c.color).toEqual({ look: "frio", intensidad: 0.5 });
+  expect(c.fuentes).toEqual({ titulos: "montserrat", subtitulos: "montserrat" });
+});

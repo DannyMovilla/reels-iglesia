@@ -1,5 +1,5 @@
 import { execFile } from "node:child_process";
-import { mkdir, readdir } from "node:fs/promises";
+import { mkdir, readdir, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { z } from "zod";
@@ -64,7 +64,9 @@ ${m.cuadros.map((c) => `- ${c}`).join("\n")}
 Medidas del video: dura ${m.duracion} s; ${m.cortesPorMinuto === null ? "no se midió el ritmo de cortes" : `${m.cortesPorMinuto} cortes por minuto`}; ${m.lufs === null ? "sin audio medido" : `volumen ${m.lufs} LUFS`}.
 
 Propón el estilo más parecido con las opciones de la app y responde solo con un objeto JSON:
-{"subtitulos":"pop","tamano":"m","altura":0.74,"fuente_titulos":"figtree","fuente_subtitulos":"montserrat","animo":"esperanza","intensidad":"normal","look":"natural","explicacion":"…"}
+{"cuadros_vistos":6,"subtitulos":"pop","tamano":"m","altura":0.74,"fuente_titulos":"figtree","fuente_subtitulos":"montserrat","animo":"esperanza","intensidad":"normal","look":"natural","explicacion":"…"}
+
+- "cuadros_vistos": cuántos de los cuadros pudiste abrir y mirar (0 si no pudiste abrir ninguno).
 
 - "subtitulos": uno de ${ESTILOS_SUB.join(", ")}. "tamano": s, m o l. "altura": dónde van los subtítulos, de 0.55 a 0.85 del alto.
 - "fuente_titulos" y "fuente_subtitulos": montserrat (gruesa, moderna) o figtree (redondeada, amable).
@@ -74,6 +76,7 @@ Propón el estilo más parecido con las opciones de la app y responde solo con u
 }
 
 const Respuesta = z.object({
+  cuadros_vistos: z.coerce.number().catch(0),
   subtitulos: z.string().optional().catch(undefined),
   tamano: z.string().optional().catch(undefined),
   altura: z.coerce.number().optional().catch(undefined),
@@ -106,10 +109,19 @@ export function leerEstilo(v: unknown, clip: ClipSpec): EstiloReferencia {
 
 /** Mide el reel de referencia y le pide a Claude el estilo (una consulta, con permiso solo para leer los cuadros). */
 export async function analizarReferencia(video: string, clip: ClipSpec, opciones: { comando?: string } = {}): Promise<{ estilo: EstiloReferencia; avisos: string[] }> {
-  const m = await medirReferencia(video);
-  const comando = opciones.comando ? partirComando(opciones.comando) : resolverComandoClaude();
-  const tiempo = AbortSignal.timeout(5 * 60 * 1000);
-  const texto = await preguntar(comando, promptEstilo(m), new AbortController().signal, tiempo, ["--allowedTools", "Read"]);
-  const estilo = leerEstilo(extraerObjeto(texto, "Claude no devolvió el estilo en el formato esperado. Prueba de nuevo."), clip);
-  return { estilo, avisos: m.avisos };
+  const dir = join(tmpdir(), `reels-referencia-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
+  try {
+    const m = await medirReferencia(video, dir);
+    const comando = opciones.comando ? partirComando(opciones.comando) : resolverComandoClaude();
+    const tiempo = AbortSignal.timeout(5 * 60 * 1000);
+    // Los cuadros están fuera de la carpeta de trabajo de Claude: se le da permiso para leer esa carpeta.
+    const texto = await preguntar(comando, promptEstilo(m), new AbortController().signal, tiempo, ["--allowedTools", "Read", "--add-dir", dir]);
+    const crudo = extraerObjeto(texto, "Claude no devolvió el estilo en el formato esperado. Prueba de nuevo.");
+    const vistos = Number((crudo as { cuadros_vistos?: unknown }).cuadros_vistos) || 0;
+    const avisos = [...m.avisos];
+    if (m.cuadros.length && vistos <= 0) avisos.push("Claude no pudo mirar los cuadros: la propuesta se basa solo en el ritmo y el volumen.");
+    return { estilo: leerEstilo(crudo, clip), avisos };
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
 }

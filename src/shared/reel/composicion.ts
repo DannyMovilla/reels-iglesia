@@ -46,7 +46,7 @@ const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replac
 const n = (x: number) => String(r2(x));
 
 /** Altos aproximados (px) para mantener los textos dentro de la zona segura común. */
-const ALTO_GANCHO = 200, ALTO_VERSICULO = 380, ALTO_ROTULO = 110;
+const ALTO_GANCHO = 200, ALTO_VERSICULO = 300, ALTO_ROTULO = 110;
 
 /** Fundido de cada lado de un corte de voz (s). */
 export const FUNDIDO = 0.01;
@@ -139,7 +139,10 @@ export function construirComposicion(e: EntradaComposicion): { html: string; dur
   if (c.subtitulos.activos) {
     const estilo = c.subtitulos.estilo;
     const altoSub = Math.round(TAMANOS[estilo][c.subtitulos.tamano] * 1.25 * 2 + 20);
-    const top = dentroDeZona(r2((formato === "9:16" ? c.subtitulos.altura : 0.8) * H), altoSub, formato);
+    // Solo se suben los subtítulos puestos más abajo que la altura de siempre (74 %): los de siempre no se mueven.
+    const pedido = r2((formato === "9:16" ? c.subtitulos.altura : 0.8) * H);
+    const ajustado = dentroDeZona(pedido, altoSub, formato);
+    const top = ajustado < pedido ? Math.max(ajustado, Math.min(pedido, r2((formato === "9:16" ? 0.74 : 0.8) * H))) : ajustado;
     bloquesSubtitulos(c, palabras, partes).forEach((b, i) => {
       el.push(`<div id="b${i}" class="clip sub ${estilo}" data-start="${n(b.desde)}" data-duration="${n(Math.max(0.2, b.hasta - b.desde))}" style="top:${top}px">${htmlBloque(estilo, b, i)}</div>`);
       js.push(...animarBloque(estilo, b, i, marca.color));

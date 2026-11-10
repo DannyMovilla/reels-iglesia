@@ -47,3 +47,21 @@ test("analizarReferencia con el Claude falso: le da permiso de leer los cuadros 
   expect(r.estilo).toMatchObject({ subtitulos: "karaoke", tamano: "l", look: "cine", intensidad: "fuerte", fuenteSubtitulos: "montserrat" });
   expect(r.estilo.explicacion).toMatch(/^Miré \d cuadros\.$/);
 }, 60_000);
+
+test("revisión I3: a Claude se le da la carpeta de los cuadros; si no los pudo ver, se avisa", async () => {
+  const v = video("ciego.mp4", ["-f", "lavfi", "-i", "testsrc2=s=360x640:d=4", "-f", "lavfi", "-i", "sine=f=330:d=4", "-shortest"]);
+  const clip = {
+    id: "c", titulo: "T", gancho: "", ganchosAlternativos: [], categoria: "Esperanza", inicio: 10, fin: 50, apertura: null, palabrasClave: [],
+    versiculos: [], puntaje: 80, razon: "", descripcion: "", hashtags: [], encuadre: { modo: "auto", x: 0.5, zoom: 1.25 },
+    subtitulos: { activos: true, estilo: "pop", tamano: "m", altura: 0.74 }, ...PLAN3, cierre: true, formatos: ["9:16"], estado: "sugerido",
+  } as ClipSpec;
+  const comando = `node ${join(resolve(__dirname, "../fixtures"), "claude/falso-claude.mjs")}`;
+  process.env.FALSO_CLAUDE_MODO = "ok";
+  const bien = await analizarReferencia(v, clip, { comando });
+  expect(bien.estilo.explicacion).toMatch(/^Miré \d cuadros\.$/);
+  expect(bien.avisos.join(" ")).not.toMatch(/no pudo mirar/);
+  process.env.FALSO_CLAUDE_MODO = "estilo-ciego";
+  const ciego = await analizarReferencia(v, clip, { comando });
+  expect(ciego.avisos).toContain("Claude no pudo mirar los cuadros: la propuesta se basa solo en el ritmo y el volumen.");
+  process.env.FALSO_CLAUDE_MODO = "ok";
+}, 60_000);

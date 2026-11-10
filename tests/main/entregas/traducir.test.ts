@@ -68,3 +68,15 @@ test("una parte con un bloque de menos: se reintenta y luego error claro, sin ar
 test("un idioma desconocido se rechaza", async () => {
   await expect(traducirSrt(id, ["xx"], { comando })).rejects.toThrow("Ese idioma no está disponible.");
 });
+
+test("revisión I4: con «solo la prédica» la traducción usa los mismos tiempos que el SRT en español", async () => {
+  const t = larga();
+  const corrido = { ...t, inicio: 100, fin: 1300, segmentos: t.segmentos.map((s) => ({ ...s, s: s.s + 100, e: s.e + 100, w: s.w.map(([a, b, x]) => [a + 100, b + 100, x] as [number, number, string]) })) };
+  await guardarJson(id, "transcripcion.json", corrido);
+  await traducirSrt(id, ["en"], { comando, completo: false });
+  const en = leerSrt(readFileSync(join(carpetaProyecto(id), "exportados", "culto.en.srt"), "utf8"));
+  expect(en[0].desde).toBeCloseTo(0, 2);
+  await traducirSrt(id, ["en"], { comando });
+  const enCompleto = leerSrt(readFileSync(join(carpetaProyecto(id), "exportados", "culto.en.srt"), "utf8"));
+  expect(enCompleto[0].desde).toBeCloseTo(100, 2);
+});

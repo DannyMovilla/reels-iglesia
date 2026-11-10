@@ -46,9 +46,6 @@ export function completarClip(entrada: unknown, estilo: EstiloIglesia): ClipSpec
       volumen: m.volumen ?? estilo.musica.volumen,
     },
     cortes: c.cortes ?? { ...estilo.cortes },
-    ...((c.voz ?? estilo.voz) ? { voz: c.voz ?? estilo.voz } : {}),
-    ...((c.color ?? estilo.color) ? { color: c.color ?? structuredClone(estilo.color) } : {}),
-    ...((c.fuentes ?? estilo.fuentes) ? { fuentes: c.fuentes ?? { ...estilo.fuentes! } } : {}),
     efectos: c.efectos ?? { ...estilo.efectos },
     redes,
   };
@@ -114,8 +111,20 @@ export function clipManual(inicio: number, fin: number, palabras: Palabra[], est
     subtitulos: { activos: true, estilo: estilo.subtitulos.estilo, tamano: estilo.subtitulos.tamano, altura: 0.74 },
     musica: { modo: estilo.musica.modo, pista: null, volumen: estilo.musica.volumen },
     cortes: structuredClone(estilo.cortes), efectos: structuredClone(estilo.efectos), cierre: estilo.cierre, formatos: [...estilo.formatos],
-    estado: "editado", origen: "manual",
+    estado: "editado", origen: "manual", ...delEstiloParaClipNuevo(estilo),
   }, estilo);
+}
+
+/**
+ * Lo que un clip NUEVO toma del estilo de la iglesia además de lo de siempre: voz, color y fuentes.
+ * Un clip ya guardado no los toma al leerse (guardar un estilo no cambia clips viejos sin avisar).
+ */
+export function delEstiloParaClipNuevo(estilo: EstiloIglesia): Pick<ClipSpec, "voz" | "color" | "fuentes"> {
+  return {
+    ...(estilo.voz ? { voz: estilo.voz } : {}),
+    ...(estilo.color ? { color: { look: estilo.color.look, intensidad: estilo.color.intensidad } } : {}),
+    ...(estilo.fuentes ? { fuentes: { ...estilo.fuentes } } : {}),
+  };
 }
 
 /** Al volver a analizar: se quedan los favoritos, los clips a mano, los editados y los exportados; las sugerencias sin tocar se reemplazan. */

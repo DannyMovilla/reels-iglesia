@@ -69,9 +69,21 @@ test("plan 5: aplicar el estilo de la iglesia copia intensidad y lista pero cons
 test("revisión I5: el nivel de voz del estilo de la iglesia llega a los clips nuevos (y no pisa el de un clip)", async () => {
   const { clipManual } = await import("../../src/shared/clip");
   const estilo = { ...ESTILO_POR_DEFECTO, voz: "podcast" as const };
-  expect(completarClip(viejo, estilo).voz).toBe("podcast");
+  // Revisión plan 6 (I2): un clip ya guardado no toma el estilo al leerse; solo los clips nuevos.
+  expect(completarClip(viejo, estilo).voz).toBeUndefined();
   expect(completarClip({ ...viejo, voz: "ligera" }, estilo).voz).toBe("ligera");
   expect(completarClip(viejo, ESTILO_POR_DEFECTO).voz).toBeUndefined();
   const ps = [{ s: 0, e: 3, t: "Dios" }, { s: 3, e: 7, t: "es" }];
   expect(clipManual(0, 7, ps, estilo).voz).toBe("podcast");
+});
+
+test("revisión plan 6 I2: color y fuentes del estilo no cambian clips ya guardados, pero llegan a los clips nuevos", async () => {
+  const { clipManual } = await import("../../src/shared/clip");
+  const estilo = { ...ESTILO_POR_DEFECTO, color: { look: "calido" as const, intensidad: 0.7 }, fuentes: { titulos: "montserrat" as const, subtitulos: "figtree" as const } };
+  const leido = completarClip(viejo, estilo);
+  expect(leido.color).toBeUndefined();
+  expect(leido.fuentes).toBeUndefined();
+  const nuevo = clipManual(0, 7, [{ s: 0, e: 3, t: "Dios" }, { s: 3, e: 7, t: "es" }], estilo);
+  expect(nuevo.color).toEqual({ look: "calido", intensidad: 0.7 });
+  expect(nuevo.fuentes).toEqual({ titulos: "montserrat", subtitulos: "figtree" });
 });
