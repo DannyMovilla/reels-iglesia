@@ -120,6 +120,15 @@ describe("guardarImagenesFrases", () => {
     expect(await leerFrases(id)).toEqual([{ texto: "x", en: 1, original: "x", fondo: "marca" }]);
   });
 
+  test("revisión: al volver a guardar con menos frases no quedan imágenes viejas", async () => {
+    const { frases } = await sacarFrases(id, { comando });
+    await guardarImagenesFrases(id, pintar);
+    await guardarFrases(id, frases.slice(0, 5));
+    await guardarImagenesFrases(id, pintar);
+    const dir = join(carpetaProyecto(id), "exportados", "frases");
+    expect(readdirSync(dir).filter((f) => f.endsWith(".png")).sort()).toEqual(Array.from({ length: 5 }, (_, i) => `culto-frase-${i + 1}.png`));
+  });
+
   test("sin frases: error legible", async () => {
     await expect(guardarImagenesFrases(id, pintar)).rejects.toThrow("Primero saca las frases de la prédica.");
   });

@@ -1,5 +1,5 @@
 import { execFile } from "node:child_process";
-import { mkdir, rm, writeFile } from "node:fs/promises";
+import { mkdir, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -190,6 +190,10 @@ export async function guardarImagenesFrases(proyectoId: string, pintar: (html: s
   const carpeta = await carpetaEntregas(proyectoId);
   const dir = join(carpeta, "frases");
   await mkdir(dir, { recursive: true });
+  // Las imágenes de una vez anterior se borran: si no, una frase quitada seguiría en la carpeta.
+  const prefijo = `${base}-frase-`;
+  const vieja = (f: string) => f.startsWith(prefijo) && f.endsWith(".png") && /^\d+$/.test(f.slice(prefijo.length, -4));
+  for (const f of await readdir(dir)) if (vieja(f)) await rm(join(dir, f), { force: true });
   const tmp = join(carpetaProyecto(proyectoId), "tmp");
   await mkdir(tmp, { recursive: true });
   const predicador = proyecto.predicador?.trim() || marca.predicador?.trim() || undefined;
