@@ -109,3 +109,8 @@ test("cada muestra lleva solo el CSS de su estilo", () => {
   expect(golpe).toContain(".gancho.golpe");
   expect(golpe).not.toContain(".gancho.marca");
 });
+
+test("las muestras son franjas bajas: el texto va centrado en un lienzo de 260 px (las 15 entran en el panel)", () => {
+  expect(muestraSub("viral", "#f5c542").html).toContain("top:130px");
+  expect(muestraGancho("gigante", "#f5c542").html).toContain("top:130px");
+});

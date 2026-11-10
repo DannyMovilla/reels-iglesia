@@ -20,7 +20,8 @@ export interface Muestra {
   fija: string;
 }
 
-const ANCHO = 1080, ALTO = 560;
+/** Lienzo de la muestra: el ancho del reel y solo la franja del medio (así las 15 tarjetas entran en el panel). */
+const ANCHO = 1080, ALTO = 260;
 const FRASE = "Tu prueba no es el final";
 
 /** Antepone `raiz` a cada selector, para que el CSS de la muestra no toque el resto de la app. */
