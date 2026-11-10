@@ -107,3 +107,17 @@ test("un error se muestra con Reintentar", async () => {
   await userEvent.click(screen.getByRole("button", { name: "Reintentar" }));
   expect(api.sacarFrases).toHaveBeenCalledTimes(2);
 });
+
+test("revisión: con frases ya guardadas, sacar otras pide confirmación", async () => {
+  api.leerFrases.mockResolvedValue(frases());
+  render(<FrasesPublicar proyectoId="p" />);
+  await screen.findByDisplayValue(A);
+  await userEvent.click(screen.getByRole("button", { name: "Sacar otras frases" }));
+  expect(api.sacarFrases).not.toHaveBeenCalled();
+  expect(screen.getByText("Esto reemplaza las frases de ahora y tus cambios.")).toBeInTheDocument();
+  await userEvent.click(screen.getByRole("button", { name: "No" }));
+  expect(api.sacarFrases).not.toHaveBeenCalled();
+  await userEvent.click(screen.getByRole("button", { name: "Sacar otras frases" }));
+  await userEvent.click(screen.getByRole("button", { name: "Sí, reemplazar" }));
+  expect(api.sacarFrases).toHaveBeenCalledTimes(1);
+});

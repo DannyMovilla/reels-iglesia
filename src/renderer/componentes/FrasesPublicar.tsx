@@ -19,6 +19,8 @@ export function FrasesPublicar({ proyectoId, alIrA, videoDisponible = true }: { 
   const [error, setError] = useState<string | null>(null);
   const [pintando, setPintando] = useState(false);
   const [listo, setListo] = useState<{ texto: string; avisos: string[] } | null>(null);
+  /** Con frases ya guardadas, sacar otras las reemplaza: se pide confirmación. */
+  const [confirmar, setConfirmar] = useState(false);
 
   useEffect(() => {
     let vivo = true;
@@ -38,6 +40,7 @@ export function FrasesPublicar({ proyectoId, alIrA, videoDisponible = true }: { 
   };
 
   const sacar = async () => {
+    setConfirmar(false);
     setBuscando(true);
     setError(null);
     setAviso(null);
@@ -73,11 +76,18 @@ export function FrasesPublicar({ proyectoId, alIrA, videoDisponible = true }: { 
       <h3><Quote size={16} aria-hidden="true" />Frases para publicar</h3>
       <p className="ayuda">Claude elige hasta 7 frases que dijo el predicador, palabra por palabra, para publicar como imagen (1080×1350).</p>
       <div className="fila">
-        <button type="button" className="btn" disabled={buscando} onClick={() => void sacar()}>
-          {buscando ? <><LoaderCircle size={15} className="girar" aria-hidden="true" />Buscando frases…</> : "Sacar 7 frases"}
+        <button type="button" className="btn" disabled={buscando || confirmar} onClick={() => (frases.length ? setConfirmar(true) : void sacar())}>
+          {buscando ? <><LoaderCircle size={15} className="girar" aria-hidden="true" />Buscando frases…</> : frases.length ? "Sacar otras frases" : "Sacar 7 frases"}
         </button>
         {buscando && <button type="button" className="btn pequeno fantasma" onClick={() => void api.cancelarFrases(proyectoId)}>Cancelar</button>}
       </div>
+      {confirmar && (
+        <div className="fila confirmar">
+          <p className="aviso-chico"><TriangleAlert size={13} aria-hidden="true" />Esto reemplaza las frases de ahora y tus cambios.</p>
+          <button type="button" className="btn pequeno primario" onClick={() => void sacar()}>Sí, reemplazar</button>
+          <button type="button" className="btn pequeno fantasma" onClick={() => setConfirmar(false)}>No</button>
+        </div>
+      )}
       {aviso && <p className="ayuda" role="status">{aviso}</p>}
       {error && (
         <div className="fila">
