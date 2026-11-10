@@ -134,19 +134,33 @@ export function cuadroDelMomento(video: string, t: number, destino: string): Pro
     { windowsHide: true }, (err) => r(!err)));
 }
 
-/** HTML → PNG de 1080×1350 con una ventana oculta de Electron. */
+/**
+ * HTML → PNG de 1080×1350. El tamaño lo fija el protocolo de DevTools (una ventana no puede ser más alta que la
+ * pantalla: en una laptop la imagen saldría recortada). La ventana se muestra sin activarse, transparente y fuera de la
+ * vista: una ventana oculta no siempre dibuja y la captura se queda esperando.
+ */
 export async function pintarPng(html: string): Promise<Buffer> {
   const { BrowserWindow } = await import("electron");
   const archivo = join(tmpdir(), `reels-frase-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.html`);
   await writeFile(archivo, html, "utf8");
-  const v = new BrowserWindow({ show: false, width: 1080, height: 1350, useContentSize: true, webPreferences: { sandbox: true, offscreen: true } });
+  const v = new BrowserWindow({
+    show: false, opacity: 0, skipTaskbar: true, focusable: false, x: -4000, y: -4000, width: 1080, height: 1350, useContentSize: true,
+    webPreferences: { sandbox: true },
+  });
   try {
     await v.loadFile(archivo);
-    await v.webContents.executeJavaScript("document.fonts.ready.then(() => true)");
-    let img = await v.webContents.capturePage({ x: 0, y: 0, width: 1080, height: 1350 });
-    const s = img.getSize();
-    if (s.width !== 1080 || s.height !== 1350) img = img.resize({ width: 1080, height: 1350 });
-    return img.toPNG();
+    v.showInactive();
+    const d = v.webContents.debugger;
+    d.attach("1.3");
+    try {
+      await d.sendCommand("Emulation.setDeviceMetricsOverride", { width: 1080, height: 1350, deviceScaleFactor: 1, mobile: false });
+      await v.webContents.executeJavaScript("document.fonts.ready.then(() => true)");
+      const captura = d.sendCommand("Page.captureScreenshot", { format: "png", clip: { x: 0, y: 0, width: 1080, height: 1350, scale: 1 }, captureBeyondViewport: true }) as Promise<{ data: string }>;
+      const r = await Promise.race([captura, new Promise<never>((_, no) => setTimeout(() => no(new Error("No pude pintar la imagen de la frase. Prueba de nuevo.")), 20_000))]);
+      return Buffer.from(r.data, "base64");
+    } finally {
+      d.detach();
+    }
   } finally {
     v.destroy();
     await rm(archivo, { force: true });

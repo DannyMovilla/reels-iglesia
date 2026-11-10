@@ -69,6 +69,16 @@ process.stdin.on("end", () => {
       setTimeout(() => console.log(JSON.stringify({ type: "result", is_error: false, result: "[]" })), 5000);
       return;
     }
+    if (process.env.FALSO_CLAUDE_FRASES === "entrada") {
+      // Para la prueba de punta a punta: frases de 8 palabras copiadas de la transcripción que llegó.
+      const frases = [];
+      for (const m of entrada.matchAll(/^\[(\d+:\d{2}:\d{2})\] (.+)$/gm)) {
+        const ps = m[2].split(/\s+/).filter(Boolean);
+        for (let i = 0; i + 8 <= ps.length && frases.length < 10; i += 8) frases.push({ texto: ps.slice(i, i + 8).join(" "), en: m[1] });
+      }
+      console.log(JSON.stringify({ type: "result", is_error: false, result: JSON.stringify(frases) }));
+      return;
+    }
     const r = readFileSync(join(aqui, "respuesta-frases.json"), "utf8").trim();
     console.log(JSON.stringify({ type: "result", is_error: false, result: "Aquí están:" + String.fromCharCode(10) + "```json" + String.fromCharCode(10) + r + String.fromCharCode(10) + "```" }));
     return;
