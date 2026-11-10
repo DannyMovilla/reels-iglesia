@@ -58,7 +58,7 @@ export function Predicas({ alAbrir, alNueva }: Props) {
               <Portada p={p} />
               <b>{p.nombre}</b>
               <span className="mono">{new Date(p.creado).toLocaleDateString("es", { day: "numeric", month: "long", year: "numeric" })}</span>
-              <span className="duracion">Prédica de {Math.round((p.rango.fin - p.rango.inicio) / 60)} min</span>
+              <span className="duracion-predica">Prédica de {Math.max(1, Math.round((p.rango.fin - p.rango.inicio) / 60))} min</span>
               <span className={`estado ${p.estado}`}>
                 {p.estado === "listo" ? <CircleCheck size={14} aria-hidden="true" /> : p.estado === "error" ? <CircleAlert size={14} aria-hidden="true" /> : <LoaderCircle size={14} className="girar" aria-hidden="true" />}
                 {ESTADO[p.estado]}

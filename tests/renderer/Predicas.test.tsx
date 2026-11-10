@@ -34,3 +34,11 @@ test("plan 9: sin video la portada queda lisa", async () => {
   expect(document.querySelector(".proyecto video")).toBeNull();
   expect(document.querySelector(".proyecto .portada-vacia")).not.toBeNull();
 });
+
+test("revisión plan 9: una prédica de menos de un minuto dice «Prédica de 1 min»", async () => {
+  (window as unknown as { reels: unknown }).reels = {
+    listarProyectos: vi.fn(async () => [{ ...proyecto, rango: { inicio: 0, fin: 20 } }]), alCambiarTareas: () => () => {}, urlVideo: () => "",
+  };
+  render(<Predicas alAbrir={() => {}} alNueva={() => {}} />);
+  expect(await screen.findByText("Prédica de 1 min")).toHaveClass("duracion-predica");
+});
