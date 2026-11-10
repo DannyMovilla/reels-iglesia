@@ -10,6 +10,10 @@ import "@fontsource/geist-sans/latin-700.css";
 import "@fontsource/geist-mono/latin-400.css";
 import "@fontsource/geist-mono/latin-500.css";
 import "@fontsource/fraunces/latin-600.css";
+// Las del reel, para que las muestras de la galería se vean como el video.
+import "@fontsource/montserrat/latin-800.css";
+import "@fontsource/montserrat/latin-900.css";
+import "@fontsource/figtree/latin-800.css";
 import "./estilos/base.css";
 import "./estilos/pantallas.css";
 import "./estilos/pulido.css";

@@ -16,19 +16,7 @@ html, body { width: ${p.ancho}px; height: ${p.alto}px; overflow: hidden; backgro
 .vineta { position: absolute; inset: 0; background: radial-gradient(ellipse at center, transparent 45%, rgba(0,0,0,.6) 100%); }
 .sombra { position: absolute; left: 0; right: 0; bottom: 0; height: 40%; background: linear-gradient(transparent, rgba(0,0,0,.55)); }
 .flash { position: absolute; inset: 0; background: #fff; }
-.gancho { position: absolute; left: 50%; transform: translate(-50%, -50%); max-width: ${p.ancho - 160}px; width: max-content;
-  background: #fff; color: #111; font: 800 60px/1.15 Figtree, sans-serif; text-align: center; padding: 26px 44px 34px;
-  border-radius: 26px; box-shadow: 0 14px 40px rgba(0,0,0,.35); }
-.gancho i { position: absolute; left: 36px; right: 36px; bottom: 12px; height: 8px; border-radius: 4px; background: var(--marca); }
-.sub { position: absolute; left: 60px; right: 60px; text-align: center; transform: translateY(-50%); color: #fff; line-height: 1.25; }
-.sub .w { display: inline-block; margin: 0 0.14em; }
-.sub.pop { font: 900 ${p.tamanoSub}px/1.25 Montserrat, sans-serif; }
-.sub.pop .w { -webkit-text-stroke: ${Math.round(p.tamanoSub * 0.17)}px #0b0b0b; paint-order: stroke fill; text-shadow: 0 6px 18px rgba(0,0,0,.5); }
-.sub.caja { font: 900 ${p.tamanoSub}px/1.3 Montserrat, sans-serif; }
-.sub.caja .w { padding: 0 0.18em; border-radius: 14px; -webkit-text-stroke: ${Math.round(p.tamanoSub * 0.15)}px #0b0b0b; paint-order: stroke fill; }
-.sub.limpio { font: 800 ${p.tamanoSub}px/1.3 Figtree, sans-serif; text-shadow: 0 3px 16px rgba(0,0,0,.75); }
-.sub .clave { color: var(--marca); }
-.vers { position: absolute; left: 0; width: ${Math.round(p.ancho * 0.84)}px; background: rgba(12,14,28,.84); color: #fff;
+${cssGanchoTarjeta(p.ancho)}${cssSubBase(p.tamanoSub)}.vers { position: absolute; left: 0; width: ${Math.round(p.ancho * 0.84)}px; background: rgba(12,14,28,.84); color: #fff;
   padding: 26px 34px 30px 46px; border-radius: 0 22px 22px 0; border-left: 12px solid var(--marca); }
 .vers b { display: block; font: 800 44px/1.1 Figtree, sans-serif; color: var(--marca); margin-bottom: 10px; }
 .vers b small { font: 600 26px Figtree, sans-serif; color: rgba(255,255,255,.7); margin-left: 12px; }
@@ -60,5 +48,27 @@ html, body { width: ${p.ancho}px; height: ${p.alto}px; overflow: hidden; backgro
 .cierre .seguir b { font-weight: 800; }
 .cierre .seguir .mas { width: 52px; height: 52px; border-radius: 50%; background: var(--marca); color: #111; display: grid; place-items: center; font: 800 40px/1 Figtree, sans-serif; }
 ${cssEstilosSub(p.tamanoSub)}
+`;
+}
+
+/** CSS de la tarjeta del gancho (la de siempre). */
+export function cssGanchoTarjeta(ancho: number): string {
+  return `.gancho { position: absolute; left: 50%; transform: translate(-50%, -50%); max-width: ${ancho - 160}px; width: max-content;
+  background: #fff; color: #111; font: 800 60px/1.15 Figtree, sans-serif; text-align: center; padding: 26px 44px 34px;
+  border-radius: 26px; box-shadow: 0 14px 40px rgba(0,0,0,.35); }
+.gancho i { position: absolute; left: 36px; right: 36px; bottom: 12px; height: 8px; border-radius: 4px; background: var(--marca); }
+`;
+}
+
+/** CSS base de los subtítulos y de Pop, Caja y Limpio (t = tamaño de letra en px). */
+export function cssSubBase(t: number): string {
+  return `.sub { position: absolute; left: 60px; right: 60px; text-align: center; transform: translateY(-50%); color: #fff; line-height: 1.25; }
+.sub .w { display: inline-block; margin: 0 0.14em; }
+.sub.pop { font: 900 ${t}px/1.25 Montserrat, sans-serif; }
+.sub.pop .w { -webkit-text-stroke: ${Math.round(t * 0.17)}px #0b0b0b; paint-order: stroke fill; text-shadow: 0 6px 18px rgba(0,0,0,.5); }
+.sub.caja { font: 900 ${t}px/1.3 Montserrat, sans-serif; }
+.sub.caja .w { padding: 0 0.18em; border-radius: 14px; -webkit-text-stroke: ${Math.round(t * 0.15)}px #0b0b0b; paint-order: stroke fill; }
+.sub.limpio { font: 800 ${t}px/1.3 Figtree, sans-serif; text-shadow: 0 3px 16px rgba(0,0,0,.75); }
+.sub .clave { color: var(--marca); }
 `;
 }

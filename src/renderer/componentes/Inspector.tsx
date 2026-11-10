@@ -11,6 +11,8 @@ import { formatoTiempo } from "@shared/validar";
 import { detectarRepeticiones } from "@shared/reel/cortes-voz";
 import type { Palabra } from "@shared/reel/tiempo";
 import { ChatClip, type EntradaChat } from "./ChatClip";
+import { Galeria, muestraGancho, muestraSub } from "./Galeria";
+import { ESTILOS_GANCHO, NOMBRE_GANCHO, type EstiloGancho } from "@shared/reel/gancho";
 import { NOMBRE_ANIMO } from "../pantallas/Musica";
 
 interface Props {
@@ -33,6 +35,8 @@ interface Props {
   preparandoVoz?: boolean;
   /** Pestaña «Claude»: pedir cambios en palabras (con su historial por clip). */
   chat?: { proyectoId: string; historial: EntradaChat[]; alHistorial(h: EntradaChat[]): void };
+  /** Color de la marca (para las muestras de las galerías). */
+  colorMarca?: string;
 }
 
 const TONALIDADES = ["Do", "Re", "Mi", "Fa", "Sol", "La", "Si", "Mib", "Lab", "Sib"];
@@ -53,7 +57,7 @@ export function Segmentos<T extends string>({ opciones, valor, etiqueta, alCambi
 
 const FORMATOS: [Formato, string, string][] = [["9:16", "Reels · TikTok", "12px 21px"], ["4:5", "Feed IG · FB", "15px 19px"], ["1:1", "Cuadrado", "17px 17px"]];
 
-export function Inspector({ clip: c, avisos, alCambiar, alGuardarEstilo, alAplicarEstilo, pistas, palabras, chat, preparandoVoz, alMedirColor, fuenteIglesia }: Props) {
+export function Inspector({ clip: c, avisos, alCambiar, alGuardarEstilo, alAplicarEstilo, pistas, palabras, chat, preparandoVoz, alMedirColor, fuenteIglesia, colorMarca }: Props) {
   // El clip de ahora (las mediciones que tardan se aplican sobre lo último que eligió la persona).
   const ultimo = useRef(c);
   ultimo.current = c;
@@ -91,6 +95,12 @@ export function Inspector({ clip: c, avisos, alCambiar, alGuardarEstilo, alAplic
                   ))}
                 </div>
               )}
+            </div>
+            <div className="campo">
+              <span>Estilo del gancho</span>
+              <Galeria etiqueta="Estilo del gancho" color={colorMarca} valor={c.estiloGancho ?? "tarjeta"}
+                opciones={ESTILOS_GANCHO.map((e) => [e, NOMBRE_GANCHO[e]] as [EstiloGancho, string])}
+                muestra={(e) => muestraGancho(e, colorMarca ?? "#f5c542")} alCambiar={(estiloGancho) => cambiar({ estiloGancho })} />
             </div>
             {c.razon && <div className="porque"><TrendingUp size={16} aria-hidden="true" /><div><b>{c.puntaje} · Por qué funciona.</b> {c.razon}</div></div>}
 
@@ -147,8 +157,8 @@ export function Inspector({ clip: c, avisos, alCambiar, alGuardarEstilo, alAplic
           <>
             <div className="grupo"><h3>Subtítulos</h3>
               <div className="fila"><Interruptor activo={c.subtitulos.activos} etiqueta="Mostrar subtítulos" alCambiar={(activos) => cambiar({ subtitulos: { ...c.subtitulos, activos } })} /> Mostrar subtítulos</div>
-              <Segmentos etiqueta="Estilo de subtítulos" valor={c.subtitulos.estilo} opciones={ESTILOS_SUB.map((e) => [e, NOMBRE_ESTILO[e]] as [EstiloSub, string])}
-                alCambiar={(estilo) => cambiar({ subtitulos: { ...c.subtitulos, estilo } })} />
+              <Galeria etiqueta="Estilo de subtítulos" color={colorMarca} valor={c.subtitulos.estilo} opciones={ESTILOS_SUB.map((e) => [e, NOMBRE_ESTILO[e]] as [EstiloSub, string])}
+                muestra={(e) => muestraSub(e, colorMarca ?? "#f5c542")} alCambiar={(estilo) => cambiar({ subtitulos: { ...c.subtitulos, estilo } })} />
               <Segmentos etiqueta="Tamaño de subtítulos" valor={c.subtitulos.tamano} opciones={[["s", "Chico"], ["m", "Medio"], ["l", "Grande"]]}
                 alCambiar={(tamano) => cambiar({ subtitulos: { ...c.subtitulos, tamano } })} />
               <label className="campo">Altura (9:16)

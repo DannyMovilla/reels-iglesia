@@ -11,6 +11,8 @@ const LIMITES: Record<EstiloSub, { palabras: number; letras: number }> = {
   pop: CORTO, caja: CORTO, limpio: { palabras: 6, letras: 30 }, resaltado: CORTO, karaoke: CORTO, impacto: CORTO, neon: CORTO,
   ...(Object.fromEntries(Object.entries(PRESETS_SUB).map(([id, p]) => [id, { palabras: p.palabras, letras: p.letras }])) as Record<EstiloNuevo, { palabras: number; letras: number }>),
 };
+/** Cuántas palabras y letras caben en un bloque de ese estilo. */
+export const limiteSub = (e: EstiloSub): { palabras: number; letras: number } => LIMITES[e];
 const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9ñ]+/g, "");
 
 /** Mientras se ve la tarjeta del versículo no hay subtítulos: el que entra se corta y si queda < 0,3 s se omite. */

@@ -50,7 +50,7 @@ test("en Estilo se cambia el estilo de subtítulos", async () => {
   const alCambiar = vi.fn();
   render(<Prueba alCambiar={alCambiar} />);
   await userEvent.click(screen.getByRole("tab", { name: "Estilo" }));
-  await userEvent.click(screen.getByRole("button", { name: "Caja" }));
+  await userEvent.click(screen.getByRole("radio", { name: "Caja" }));
   expect(alCambiar.mock.calls.at(-1)![0].subtitulos.estilo).toBe("caja");
 });
 
@@ -92,11 +92,11 @@ test("en Estilo hay 15 estilos de subtítulos con nombre en español", async () 
   const alCambiar = vi.fn();
   render(<Prueba alCambiar={alCambiar} />);
   await userEvent.click(screen.getByRole("tab", { name: "Estilo" }));
-  const grupo = screen.getByRole("group", { name: "Estilo de subtítulos" });
-  const nombres = within(grupo).getAllByRole("button").map((b) => b.textContent);
+  const grupo = screen.getByRole("radiogroup", { name: "Estilo de subtítulos" });
+  const nombres = within(grupo).getAllByRole("radio").map((b) => b.getAttribute("aria-label"));
   expect(nombres).toEqual(["Pop", "Caja", "Limpio", "Resaltado", "Karaoke", "Impacto", "Neón",
     "Viral", "Una palabra", "Caja de marca", "Subrayado", "Dos tonos", "Rebote", "Brillo", "Elegante"]);
-  await userEvent.click(within(grupo).getByRole("button", { name: "Karaoke" }));
+  await userEvent.click(within(grupo).getByRole("radio", { name: "Karaoke" }));
   expect(alCambiar.mock.calls.at(-1)![0].subtitulos.estilo).toBe("karaoke");
 });
 
@@ -281,4 +281,26 @@ test("plan 7: si el clip usa la fuente de la iglesia y el archivo falta, el sele
   await userEvent.click(screen.getByRole("tab", { name: /Estilo/ }));
   expect(screen.getByLabelText("Fuente de títulos")).toHaveValue("iglesia");
   expect(screen.getByRole("option", { name: "La de la iglesia (falta el archivo: se usa Figtree)" })).toBeInTheDocument();
+});
+
+describe("plan 8: galerías de estilo", () => {
+  test("en Estilo los subtítulos se eligen en una galería", async () => {
+    const alCambiar = vi.fn();
+    render(<Prueba alCambiar={alCambiar} />);
+    await userEvent.click(screen.getByRole("tab", { name: "Estilo" }));
+    const grupo = screen.getByRole("radiogroup", { name: "Estilo de subtítulos" });
+    expect(within(grupo).getAllByRole("radio")).toHaveLength(15);
+    await userEvent.click(within(grupo).getByRole("radio", { name: "Viral" }));
+    expect(alCambiar.mock.calls.at(-1)![0].subtitulos.estilo).toBe("viral");
+  });
+
+  test("en Clip se elige el estilo del gancho", async () => {
+    const alCambiar = vi.fn();
+    render(<Prueba alCambiar={alCambiar} />);
+    const grupo = screen.getByRole("radiogroup", { name: "Estilo del gancho" });
+    expect(within(grupo).getAllByRole("radio")).toHaveLength(5);
+    expect(within(grupo).getByRole("radio", { name: "Tarjeta" })).toHaveAttribute("aria-checked", "true");
+    await userEvent.click(within(grupo).getByRole("radio", { name: "Gigante" }));
+    expect(alCambiar.mock.calls.at(-1)![0].estiloGancho).toBe("gigante");
+  });
 });
