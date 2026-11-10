@@ -28,3 +28,24 @@ test("sin pistas explica que se usarán pads", async () => {
   render(<Musica />);
   expect(await screen.findByText(/pads/i)).toBeInTheDocument();
 });
+
+test("plan 9: las pistas se agrupan por ánimo con su cuenta", async () => {
+  (window as unknown as { reels: unknown }).reels = {
+    listarPistas: vi.fn(async () => [pista("Luz.mp3", "esperanza"), pista("Aurora.mp3", "esperanza"), pista("Triunfo.mp3", "victoria")]),
+    agregarPistas: vi.fn(async () => []), cambiarAnimo: vi.fn(async () => {}), urlPista: () => "",
+  };
+  render(<Musica />);
+  const esperanza = await screen.findByRole("region", { name: /Esperanza/ });
+  expect(within(esperanza).getByText("2 pistas")).toBeInTheDocument();
+  expect(within(esperanza).getAllByRole("listitem")).toHaveLength(2);
+  const victoria = screen.getByRole("region", { name: /Victoria/ });
+  expect(within(victoria).getByText("1 pista")).toBeInTheDocument();
+  expect(screen.queryByRole("region", { name: /Tensión/ })).toBeNull();
+});
+
+test("plan 9: sin pistas, un estado vacío con el botón para agregarlas", async () => {
+  (window as unknown as { reels: unknown }).reels = { listarPistas: vi.fn(async () => []), agregarPistas: vi.fn(async () => []), cambiarAnimo: vi.fn(), urlPista: () => "" };
+  render(<Musica />);
+  expect(await screen.findByText("Todavía no hay pistas propias")).toBeInTheDocument();
+  expect(screen.getAllByRole("button", { name: /Agregar mis pistas/ })).toHaveLength(2);
+});

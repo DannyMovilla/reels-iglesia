@@ -3,6 +3,14 @@ import { Clapperboard, FolderOpen } from "lucide-react";
 
 type Lista = Awaited<ReturnType<NonNullable<typeof window.reels>["listarExportados"]>>;
 
+/** Formato de un reel según su nombre (`…-9x16.mp4` → «9:16»); null si el nombre no lo dice. */
+export function formatoDeArchivo(nombre: string): "9:16" | "4:5" | "1:1" | null {
+  const m = /(9x16|4x5|1x1)/.exec(nombre);
+  return m ? (m[1].replace("x", ":") as "9:16" | "4:5" | "1:1") : null;
+}
+
+const cuantos = (n: number) => (n === 1 ? "1 reel" : `${n} reels`);
+
 /** Todos los reels exportados, agrupados por prédica. */
 export function Exportados() {
   const [lista, setLista] = useState<Lista | null>(null);
@@ -24,13 +32,14 @@ export function Exportados() {
       )}
       {lista?.map((p) => (
         <div key={p.proyectoId} className="grupo-exportados">
-          <div className="fila"><b>{p.nombre}</b><span className="espacio" />
+          <div className="fila"><b>{p.nombre}</b><span className="tenue">{cuantos(p.archivos.filter((a) => /\.mp4$/i.test(a.nombre)).length)}</span><span className="espacio" />
             <button type="button" className="btn pequeno" onClick={() => void window.reels!.abrirCarpetaExportados(p.proyectoId)}><FolderOpen size={13} aria-hidden="true" />Abrir carpeta</button>
           </div>
           <ul className="rejilla-exportados">
             {p.archivos.map((a) => (
               <li key={a.nombre} className="exportado">
                 {a.portada ? <img className="portada" src={window.reels!.urlExportado(p.proyectoId, a.portada)} alt="" /> : <span className="portada vacia" aria-hidden="true" />}
+                {formatoDeArchivo(a.nombre) && <span className="etiqueta-formato">{formatoDeArchivo(a.nombre)}</span>}
                 <span className="nombre" title={a.nombre}>{a.nombre}</span>
                 <span className="tenue">{(a.tamano / 1e6).toFixed(1)} MB</span>
               </li>

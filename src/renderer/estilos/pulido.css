@@ -323,3 +323,19 @@ select.entrada, .orden select, .selector-zona select {
 .proyecto .portada video { width: 100%; height: 100%; object-fit: cover; display: block; }
 .proyecto .duracion { color: var(--text-2); font-size: 12.5px; }
 .proyecto .estado { margin-top: 4px; }
+
+/* Marca: ajustes en tarjetas y la vista previa fija al recorrer la página */
+.marca-form { display: flex; flex-direction: column; gap: 16px; }
+.tarjeta-ajuste { display: flex; flex-direction: column; gap: 14px; padding: 18px 20px 20px; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--superficie, var(--bg-1)); box-shadow: var(--sombra-1); }
+.tarjeta-ajuste > h2 { margin: 0; font: 700 15px var(--font-ui); letter-spacing: -0.01em; color: var(--text); }
+.marca-vista { position: sticky; top: 24px; align-self: start; }
+
+/* Música: un grupo por ánimo */
+.grupo-pistas { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
+.grupo-pistas > .fila { align-items: baseline; gap: 10px; }
+.grupo-pistas h2 { margin: 0; font: 700 15px var(--font-ui); }
+
+/* Exportados: cuántos reels y el formato de cada uno */
+.grupo-exportados > .fila { align-items: baseline; gap: 10px; }
+.grupo-exportados li.exportado { position: relative; }
+.etiqueta-formato { position: absolute; top: 8px; left: 8px; padding: 2px 8px; border-radius: 999px; background: rgba(10, 12, 22, 0.78); color: #fff; font: 600 11px var(--font-mono); }

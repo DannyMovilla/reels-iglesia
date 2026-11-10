@@ -79,51 +79,60 @@ export function Marca() {
       <p className="ayuda">Así aparece tu iglesia al final de cada reel. Los cambios se guardan solos.</p>
       <div className="marca-grid">
         <div className="marca-form">
-          <label className="campo">Nombre de la iglesia
-            <input className="entrada" value={marca.nombre} onChange={(e) => cambiar({ nombre: e.target.value })} />
-          </label>
-          <label className="campo">Invitación
-            <input className="entrada" value={marca.invitacion} placeholder="Síguenos · Domingos 10:00 AM" onChange={(e) => cambiar({ invitacion: e.target.value })} />
-          </label>
-          <div className="campo">Color principal
-            <div className="fila">
-              <input type="color" aria-label="Color principal" value={marca.color} onChange={(e) => cambiar({ color: e.target.value })} />
-              <input key={marca.color} className="entrada mono corta" aria-label="Color en hexadecimal" defaultValue={marca.color}
-                onChange={(e) => /^#[0-9a-f]{6}$/i.test(e.target.value) && cambiar({ color: e.target.value })} />
+          <section className="tarjeta-ajuste" aria-labelledby="m-iglesia">
+            <h2 id="m-iglesia">Tu iglesia</h2>
+            <label className="campo">Nombre de la iglesia
+              <input className="entrada" value={marca.nombre} onChange={(e) => cambiar({ nombre: e.target.value })} />
+            </label>
+            <label className="campo">Invitación
+              <input className="entrada" value={marca.invitacion} placeholder="Síguenos · Domingos 10:00 AM" onChange={(e) => cambiar({ invitacion: e.target.value })} />
+            </label>
+            <div className="campo">Color principal
+              <div className="fila">
+                <input type="color" aria-label="Color principal" value={marca.color} onChange={(e) => cambiar({ color: e.target.value })} />
+                <input key={marca.color} className="entrada mono corta" aria-label="Color en hexadecimal" defaultValue={marca.color}
+                  onChange={(e) => /^#[0-9a-f]{6}$/i.test(e.target.value) && cambiar({ color: e.target.value })} />
+              </div>
             </div>
-          </div>
-          <div className="campo">Logo
-            <div className="fila">
-              <button type="button" className="btn" onClick={() => void elegirLogo()}><ImagePlus size={16} aria-hidden="true" />{marca.logo ? "Cambiar logo" : "Elegir logo"}</button>
-              {marca.logo && <span className="ayuda">PNG con fondo transparente se ve mejor.</span>}
+            <label className="campo">Predicador por defecto
+              <input className="entrada" value={marca.predicador ?? ""} placeholder="Pastor Juan Pérez" onChange={(e) => cambiar({ predicador: e.target.value || undefined })} />
+            </label>
+            <fieldset className="grupo-redes">
+              <legend>Redes de la iglesia</legend>
+              {REDES.map(([red, nombre]) => (
+                <label key={red} className="campo">{nombre}
+                  <input className="entrada" value={marca.redes[red] ? `@${marca.redes[red]}` : ""} placeholder="@usuario"
+                    onChange={(e) => cambiar({ redes: { ...marca.redes, [red]: e.target.value.replace(/^@+/, "").trim() || undefined } })} />
+                </label>
+              ))}
+            </fieldset>
+          </section>
+          <section className="tarjeta-ajuste" aria-labelledby="m-logo">
+            <h2 id="m-logo">Logo y fuente</h2>
+            <div className="campo">Logo
+              <div className="fila">
+                <button type="button" className="btn" onClick={() => void elegirLogo()}><ImagePlus size={16} aria-hidden="true" />{marca.logo ? "Cambiar logo" : "Elegir logo"}</button>
+                {marca.logo && <span className="ayuda">PNG con fondo transparente se ve mejor.</span>}
+              </div>
             </div>
-          </div>
-          <div className="campo">Fuente de la iglesia
-            <div className="fila">
-              <button type="button" className="btn" onClick={() => void elegirFuente()}><Type size={16} aria-hidden="true" />{marca.fuente ? "Cambiar fuente de la iglesia" : "Elegir fuente de la iglesia"}</button>
-              {marca.fuente && <span className="ayuda mono">{marca.fuente.split(/[\\/]/).pop()}</span>}
-              {marca.fuente && <button type="button" className="btn pequeno fantasma" onClick={() => cambiar({ fuente: undefined })}>Quitar fuente</button>}
+            <label className="campo">
+              <span className="campo-cabeza">Tamaño del logo <span className="mono">{Math.round(marca.logoEscala * 100)} %</span></span>
+              <input type="range" aria-label="Tamaño del logo" min={50} max={150} step={5} value={Math.round(marca.logoEscala * 100)} onChange={(e) => cambiar({ logoEscala: Number(e.target.value) / 100 })} />
+            </label>
+            <div className="campo">Fuente de la iglesia
+              <div className="fila">
+                <button type="button" className="btn" onClick={() => void elegirFuente()}><Type size={16} aria-hidden="true" />{marca.fuente ? "Cambiar fuente de la iglesia" : "Elegir fuente de la iglesia"}</button>
+                {marca.fuente && <span className="ayuda mono">{marca.fuente.split(/[\\/]/).pop()}</span>}
+                {marca.fuente && <button type="button" className="btn pequeno fantasma" onClick={() => cambiar({ fuente: undefined })}>Quitar fuente</button>}
+              </div>
+              <span className="ayuda">Un archivo TTF, OTF, WOFF o WOFF2. Luego elígela en cada clip o en el estilo de la iglesia.</span>
+              {errorFuente && <span className="error" role="alert">{errorFuente}</span>}
             </div>
-            <span className="ayuda">Un archivo TTF, OTF, WOFF o WOFF2. Luego elígela en cada clip o en el estilo de la iglesia.</span>
-            {errorFuente && <span className="error" role="alert">{errorFuente}</span>}
-          </div>
-          <MarcaDuranteReel marca={marca} alCambiar={(marcaReel) => cambiar({ marcaReel })} />
-          <label className="campo">
-            <span className="campo-cabeza">Tamaño del logo <span className="mono">{Math.round(marca.logoEscala * 100)} %</span></span>
-            <input type="range" aria-label="Tamaño del logo" min={50} max={150} step={5} value={Math.round(marca.logoEscala * 100)} onChange={(e) => cambiar({ logoEscala: Number(e.target.value) / 100 })} />
-          </label>
-          <fieldset className="grupo-redes">
-            <legend>Redes de la iglesia</legend>
-            {REDES.map(([red, nombre]) => (
-              <label key={red} className="campo">{nombre}
-                <input className="entrada" value={marca.redes[red] ? `@${marca.redes[red]}` : ""} placeholder="@usuario"
-                  onChange={(e) => cambiar({ redes: { ...marca.redes, [red]: e.target.value.replace(/^@+/, "").trim() || undefined } })} />
-              </label>
-            ))}
-          </fieldset>
-          <label className="campo">Predicador por defecto
-            <input className="entrada" value={marca.predicador ?? ""} placeholder="Pastor Juan Pérez" onChange={(e) => cambiar({ predicador: e.target.value || undefined })} />
-          </label>
+          </section>
+          <section className="tarjeta-ajuste" aria-labelledby="m-reel">
+            <h2 id="m-reel">Durante el reel</h2>
+            <MarcaDuranteReel marca={marca} alCambiar={(marcaReel) => cambiar({ marcaReel })} />
+          </section>
           <Muletillas lista={marca.estilo.cortes.lista ?? MULETILLAS_POR_DEFECTO}
             alCambiar={(lista) => cambiar({ estilo: { ...marca.estilo, cortes: { ...marca.estilo.cortes, lista } } })} />
         </div>

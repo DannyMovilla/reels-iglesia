@@ -105,3 +105,11 @@ test("plan 9: si el archivo del logo no está, lo dice y la muestra usa el nombr
   expect(muestra.querySelector("img")).toBeNull();
   expect(muestra).toHaveTextContent("Mi iglesia");
 });
+
+test("plan 9: los ajustes van en tres tarjetas", async () => {
+  api();
+  render(<Marca />);
+  expect(await screen.findByRole("heading", { name: "Tu iglesia" })).toBeInTheDocument();
+  expect(screen.getByRole("heading", { name: "Logo y fuente" })).toBeInTheDocument();
+  expect(screen.getByRole("heading", { name: "Durante el reel" })).toBeInTheDocument();
+});
