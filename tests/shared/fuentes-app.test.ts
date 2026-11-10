@@ -14,3 +14,18 @@ test("plan 7: la app no pide fuentes a internet; trae Geist, Geist Mono y Fraunc
   expect(leer("src/renderer/estilos/tokens.css")).toMatch(/--font-ui: "Geist Sans"/);
   expect(leer("NOTICE.md")).toContain("Geist");
 });
+
+test("plan 7: el tema claro tiene su paleta y el tema se aplica antes de pintar (script en el head)", () => {
+  const tokens = leer("src/renderer/estilos/tokens.css");
+  expect(tokens).toMatch(/:root\[data-tema="claro"\]\s*\{[^}]*--bg-0:[^}]*color-scheme: light/);
+  const html = leer("src/renderer/index.html");
+  expect(html.indexOf('<script src="./tema.js"></script>')).toBeGreaterThan(-1);
+  expect(html.indexOf('<script src="./tema.js"></script>')).toBeLessThan(html.indexOf("</head>"));
+  // Los colores claros fijos (blanco translúcido) pasaron a variables del tema (salvo el brillo del botón dorado).
+  for (const archivo of ["src/renderer/estilos/pulido.css", "src/renderer/estilos/base.css"]) {
+    const lineas = leer(archivo).split(/?
+/).filter((l) => !l.includes(".btn.primario"));
+    expect(lineas.join("
+")).not.toMatch(/rgba\(255, *255, *255/);
+  }
+});

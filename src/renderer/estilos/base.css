@@ -25,7 +25,7 @@ button { cursor: pointer; }
 
 /* botones */
 .btn { display: inline-flex; align-items: center; gap: 7px; height: 32px; padding: 0 12px; border-radius: var(--r-sm); border: 1px solid var(--line-2); background: var(--bg-2); font-weight: 500; transition: background 150ms, border-color 150ms; }
-.btn:hover:not(:disabled) { background: var(--bg-3); border-color: rgba(255, 255, 255, 0.2); }
+.btn:hover:not(:disabled) { background: var(--bg-3); border-color: var(--borde-fuerte); }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn.primario { background: var(--luz); border-color: var(--luz); color: var(--luz-ink); font-weight: 600; }
 .btn.primario:hover:not(:disabled) { background: #ffc65c; }

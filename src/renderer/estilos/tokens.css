@@ -20,8 +20,48 @@
   --font-ui: "Geist Sans", "Segoe UI", system-ui, sans-serif;
   --font-mono: "Geist Mono", ui-monospace, Consolas, monospace;
   --font-brand: "Fraunces", Georgia, serif;
+  --capa: rgba(255, 255, 255, 0.04);          /* hover suave */
+  --borde-fuerte: rgba(255, 255, 255, 0.2);   /* borde al pasar el mouse */
+  --brillo: rgba(255, 255, 255, 0.03);        /* brillo de arriba de las superficies */
+  --scroll: rgba(255, 255, 255, 0.13);
+  --scroll-hover: rgba(255, 255, 255, 0.24);
+  --escenario: #151a2c;                       /* fondo del centro del editor */
+  --porque-texto: #bff2ec;
+  --porque-fuerte: #e3fbf8;
+  --luz-texto: #f2b544;                       /* dorado para texto (más oscuro en el tema claro) */
   --r-sm: 6px;
   --r-md: 10px;
   --r-lg: 14px;
   color-scheme: dark;
+}
+
+/* Tema claro (Ajustes → Apariencia). */
+:root[data-tema="claro"] {
+  --bg-0: #f3f4f8;
+  --bg-1: #ffffff;
+  --bg-2: #f4f5fa;
+  --bg-3: #e6e9f2;
+  --line: rgba(17, 22, 45, 0.09);
+  --line-2: rgba(17, 22, 45, 0.15);
+  --text: #131726;
+  --text-2: #4a5170;
+  --text-3: #767c96;
+  --luz: #e6a53a;
+  --luz-ink: #1c1405;
+  --luz-soft: rgba(214, 145, 30, 0.13);
+  --luz-texto: #9a6100;
+  --cielo: #0d8f84;
+  --cielo-soft: rgba(13, 143, 132, 0.1);
+  --ok: #15803d;
+  --warn: #a16207;
+  --bad: #c62828;
+  --capa: rgba(17, 22, 45, 0.04);
+  --borde-fuerte: rgba(17, 22, 45, 0.26);
+  --brillo: rgba(255, 255, 255, 0.7);
+  --scroll: rgba(17, 22, 45, 0.18);
+  --scroll-hover: rgba(17, 22, 45, 0.32);
+  --escenario: #e8ebf3;
+  --porque-texto: #0b5a53;
+  --porque-fuerte: #073b37;
+  color-scheme: light;
 }

@@ -40,7 +40,7 @@
 .editor-izq { grid-area: izq; } .editor-centro { grid-area: centro; } .editor-der { grid-area: der; }
 .editor-abajo { grid-area: abajo; min-width: 0; border-top: 1px solid var(--line); background: var(--bg-1); }
 .editor-izq { border-right: 1px solid var(--line); background: var(--bg-1); display: flex; flex-direction: column; min-height: 0; overflow-y: auto; }
-.editor-centro { display: flex; flex-direction: column; gap: 10px; padding: 14px; min-width: 0; background: radial-gradient(ellipse at 50% 40%, #151a2c 0%, var(--bg-0) 70%); }
+.editor-centro { display: flex; flex-direction: column; gap: 10px; padding: 14px; min-width: 0; background: radial-gradient(ellipse at 50% 40%, var(--escenario) 0%, var(--bg-0) 70%); }
 .editor-der { border-left: 1px solid var(--line); background: var(--bg-1); display: flex; flex-direction: column; min-height: 0; }
 .titulo-seccion { display: flex; justify-content: space-between; padding: 14px 14px 8px; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3); }
 .titulo-seccion span { color: var(--text-2); text-transform: none; letter-spacing: 0; font-weight: 500; }
@@ -81,9 +81,9 @@
 .alternativas { display: flex; flex-wrap: wrap; gap: 6px; }
 .alt { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 6px; border: 1px dashed var(--line-2); color: var(--text-2); font-size: 12px; }
 .alt svg { color: var(--cielo); }
-.porque { display: grid; grid-template-columns: auto 1fr; gap: 10px; padding: 10px 12px; border-radius: var(--r-md); background: var(--cielo-soft); color: #bff2ec; font-size: 12.5px; }
+.porque { display: grid; grid-template-columns: auto 1fr; gap: 10px; padding: 10px 12px; border-radius: var(--r-md); background: var(--cielo-soft); color: var(--porque-texto); font-size: 12.5px; }
 .porque svg { color: var(--cielo); }
-.porque b { color: #e3fbf8; }
+.porque b { color: var(--porque-fuerte); }
 .tarjeta { border: 1px solid var(--line); border-radius: var(--r-md); background: var(--bg-2); padding: 12px; display: flex; flex-direction: column; gap: 6px; }
 .tarjeta-cabeza { display: flex; align-items: center; gap: 8px; }
 .tarjeta-cabeza b { flex: 1; }

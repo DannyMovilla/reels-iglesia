@@ -1,4 +1,4 @@
-import { act, render, screen } from "@testing-library/react";
+import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
 import { Ajustes } from "../../src/renderer/pantallas/Ajustes";
@@ -51,4 +51,20 @@ test("menor: preparar el entorno se puede cancelar", async () => {
   await userEvent.click(await screen.findByRole("button", { name: "Preparar el entorno" }));
   await userEvent.click(screen.getByRole("button", { name: "Cancelar" }));
   expect(accionSistema).toHaveBeenCalledWith("cancelar");
+});
+
+test("plan 7: Apariencia — Oscuro, Claro o Como Windows; se aplica enseguida y se recuerda", async () => {
+  window.reels = { verificarSistema: async () => estado, accionSistema: vi.fn(), alProgresoSistema: () => () => {} } as unknown as ApiReels;
+  localStorage.removeItem("reels-tema");
+  render(<Ajustes />);
+  const grupo = await screen.findByRole("group", { name: "Apariencia" });
+  expect(within(grupo).getByRole("button", { name: "Oscuro" })).toHaveAttribute("aria-pressed", "true");
+  await userEvent.click(within(grupo).getByRole("button", { name: "Claro" }));
+  expect(document.documentElement.dataset.tema).toBe("claro");
+  expect(localStorage.getItem("reels-tema")).toBe("claro");
+  await userEvent.click(within(grupo).getByRole("button", { name: "Como Windows" }));
+  expect(localStorage.getItem("reels-tema")).toBe("sistema");
+  expect(["claro", "oscuro"]).toContain(document.documentElement.dataset.tema);
+  await userEvent.click(within(grupo).getByRole("button", { name: "Oscuro" }));
+  expect(document.documentElement.dataset.tema).toBe("oscuro");
 });
