@@ -58,3 +58,8 @@ test("medidas por estilo: tarjeta conserva las de siempre", () => {
   expect(MEDIO_GANCHO_ESTILO.gigante).toEqual({ "9:16": 0.09, "4:5": 0.11, "1:1": 0.13 });
   expect(ALTO_GANCHO_PX).toEqual({ tarjeta: 200, gigante: 400, marca: 260, subrayado: 300, golpe: 400 });
 });
+
+test("revisión: los ganchos con relleno miden el ancho máximo con el relleno incluido", () => {
+  const css = cssGancho("9:16", 1080, "#f5c542");
+  expect(css).toMatch(/\.gancho\.marca \{[^}]*box-sizing: border-box/);
+});

@@ -89,7 +89,7 @@ export function pasosGancho(estilo: EstiloGancho, palabras: number, dur: number)
 export function cssGancho(formato: Formato, ancho: number, color: string): string {
   const f = TAMANO_GIGANTE[formato];
   const max = ancho - 120;
-  const sinTarjeta = `background: transparent; box-shadow: none; border-radius: 0; max-width: ${max}px;`;
+  const sinTarjeta = `box-sizing: border-box; background: transparent; box-shadow: none; border-radius: 0; max-width: ${max}px;`;
   return `
 .gancho.gigante, .gancho.golpe { ${sinTarjeta} padding: 0; color: #ffffff; font: 900 ${f}px/1.05 Figtree, sans-serif; text-transform: uppercase; }
 .gancho.gigante .g, .gancho.golpe .g { display: inline-block; -webkit-text-stroke: ${Math.round(f * 0.12)}px #0b0b0b; paint-order: stroke fill; text-shadow: 0 8px 24px rgba(0,0,0,.55); }
