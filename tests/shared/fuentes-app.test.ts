@@ -27,3 +27,12 @@ test("plan 7: el tema claro tiene su paleta y el tema se aplica antes de pintar 
     expect(lineas.join(" ")).not.toMatch(/rgba\(255, *255, *255/);
   }
 });
+
+test("revisión plan 7: duración legible en el tema claro, textos dorados con contraste y «Como Windows» al abrir", () => {
+  const pantallas = leer("src/renderer/estilos/pantallas.css");
+  expect(pantallas).toMatch(/\.duracion \{[^}]*color: #fff/);
+  expect(pantallas).toMatch(/\.fmt\[aria-pressed="true"\] \{[^}]*color: var\(--luz-texto\)/);
+  expect(pantallas).toMatch(/\.lt-oculto \{[^}]*color: var\(--luz-texto\)/);
+  expect(leer("src/renderer/estilos/pulido.css")).toMatch(/:root\[data-tema="claro"\] \{[^}]*--chevron:/);
+  expect(leer("src/renderer/main.tsx")).toContain("aplicarTema(leerPreferencia())");
+});

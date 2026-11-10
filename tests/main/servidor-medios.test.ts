@@ -42,3 +42,15 @@ test("atiende los pedazos que pide el reproductor al adelantar (206 + Content-Ra
   const fuera = await fetch(`${srv.base}/archivo/culto`, { headers: { Range: "bytes=5000-" } });
   expect(fuera.status).toBe(416);
 });
+
+test("revisión plan 7: el logo se entrega con su tipo de imagen (un SVG sin tipo no se ve)", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "medios-logo-"));
+  const tipos: Record<string, string> = { "logo.svg": "image/svg+xml", "logo.png": "image/png", "logo.webp": "image/webp", "logo.jpeg": "image/jpeg" };
+  for (const n of Object.keys(tipos)) writeFileSync(join(dir, n), "x");
+  const s = await iniciarServidorMedios(async (tipo, valor) => (tipo === "marca" ? join(dir, valor) : null));
+  try {
+    for (const [n, t] of Object.entries(tipos)) expect((await fetch(`${s.base}/marca/${n}`)).headers.get("content-type")).toBe(t);
+  } finally {
+    s.cerrar();
+  }
+});

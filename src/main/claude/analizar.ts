@@ -13,7 +13,7 @@ const ERROR_JSON = "Claude no devolvió una lista de clips válida";
 export const ERROR_SESION = "Claude no tiene sesión iniciada. Abre Ajustes → Iniciar sesión en Claude.";
 const ERROR_FORMATO = "Claude no devolvió una lista de clips válida. Toca Reintentar.";
 const ERROR_TIEMPO = "Claude tardó demasiado en responder. Revisa tu conexión y toca Reintentar.";
-const ERROR_SIN_CLAUDE = "No encuentro Claude Code en esta PC. Revisa Ajustes.";
+export const ERROR_SIN_CLAUDE = "No encuentro Claude Code en esta PC. Revisa Ajustes.";
 const ERROR_SIN_CLIPS = "Claude no encontró momentos de al menos 5 segundos. Revisa el rango de la prédica y toca Reintentar.";
 const DIEZ_MINUTOS = 10 * 60 * 1000;
 

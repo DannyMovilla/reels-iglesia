@@ -35,6 +35,10 @@ process.stdin.on("end", () => {
     return;
   }
   if (entrada.includes("TRADUCCIÓN DE SUBTÍTULOS")) {
+    if (modo === "traduccion-sin-sesion") {
+      console.log(JSON.stringify({ type: "result", subtype: "success", is_error: true, result: "Not logged in · Please run /login" }));
+      process.exit(1);
+    }
     if (modo === "traduccion-error-primera" && n === 1) {
       console.error("Error de conexión");
       process.exit(1);

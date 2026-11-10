@@ -2,7 +2,7 @@ import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { palabrasDe } from "@shared/reel/tiempo";
 import { bloquesSrt, partirLineas, REGLAS_SRT, textoSrt, type BloqueSrt } from "@shared/srt";
-import { extraerJson, partirComando, preguntar } from "../claude/analizar";
+import { ERROR_SESION, ERROR_SIN_CLAUDE, extraerJson, partirComando, preguntar } from "../claude/analizar";
 import { leerTranscripcion } from "../proyectos/almacen";
 import { resolverComandoClaude } from "../sistema/claude-cmd";
 import { baseEntregas, carpetaEntregas, validarIdProyecto } from "./entregas";
@@ -90,12 +90,16 @@ export async function traducirSrt(
   }
 }
 
-/** Una consulta de una parte; si la consulta falla (no por cancelar) cuenta como respuesta inválida. */
+/**
+ * Una consulta de una parte. Si falla por algo que reintentar no arregla (cancelar, Claude no instalado, sin sesión),
+ * el error sube tal cual; cualquier otro fallo cuenta como respuesta inválida y se reintenta.
+ */
 async function consultar(comando: [string, string[]], prompt: string, senal: AbortSignal): Promise<string> {
   try {
     return await preguntar(comando, prompt, senal, AbortSignal.timeout(DIEZ_MINUTOS));
   } catch (e) {
-    if (senal.aborted) throw e;
+    const m = e instanceof Error ? e.message : "";
+    if (senal.aborted || m === ERROR_SESION || m === ERROR_SIN_CLAUDE) throw e;
     return "";
   }
 }

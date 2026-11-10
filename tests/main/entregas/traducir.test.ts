@@ -100,3 +100,9 @@ test("plan 7: una sola traducción a la vez por prédica; cancelar no deja un .s
   expect(existsSync(join(carpetaProyecto(id), "exportados", "culto.it.srt"))).toBe(false);
   expect(cancelarTraduccion(id)).toBe(false);
 }, 20_000);
+
+test("revisión plan 7: sin sesión de Claude, se dice cómo iniciarla (no «Prueba de nuevo»)", async () => {
+  process.env.FALSO_CLAUDE_MODO = "traduccion-sin-sesion";
+  await expect(traducirSrt(id, ["en"], { comando })).rejects.toThrow("Claude no tiene sesión iniciada. Abre Ajustes → Iniciar sesión en Claude.");
+  await expect(traducirSrt(id, ["en"], { comando: "no-existe-claude-xyz" })).rejects.toThrow("No encuentro Claude Code en esta PC. Revisa Ajustes.");
+});
