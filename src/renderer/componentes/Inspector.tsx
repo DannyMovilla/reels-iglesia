@@ -1,5 +1,5 @@
 import { CopiarEstilo } from "./CopiarEstilo";
-import { FUENTES, FUENTES_POR_DEFECTO, type IdFuente } from "@shared/reel/fuentes";
+import { cssFuentesElegidas, FUENTES, FUENTES_POR_DEFECTO, type IdFuente } from "@shared/reel/fuentes";
 import { NOMBRE_LOOK, type Look } from "@shared/reel/color";
 import { useRef, useState } from "react";
 import { PanelCategorias, Seccion, type CategoriaRiel } from "./PanelCategorias";
@@ -57,6 +57,8 @@ interface Props {
   chat?: { proyectoId: string; historial: EntradaChat[]; alHistorial(h: EntradaChat[]): void };
   /** Color de la marca (para las muestras de las galerías). */
   colorMarca?: string;
+  /** URL del archivo de la fuente de la iglesia (para que las galerías la usen). */
+  urlFuenteIglesia?: string;
   /** Categoría abierta, si la maneja el editor (la línea de tiempo también la cambia). */
   categoria?: Categoria;
   alCategoria?(c: Categoria): void;
@@ -85,7 +87,7 @@ const TRANSICION: Record<string, string> = { destello: "Destello", luz: "Luz", n
 const VOZ: Record<string, string> = { ligera: "Ligera", limpia: "Limpia", podcast: "Podcast" };
 const nombreFuente = (id: IdFuente) => (id === "iglesia" ? "La de la iglesia" : FUENTES[id].nombre);
 
-export function Inspector({ clip: c, avisos, alCambiar, alGuardarEstilo, alAplicarEstilo, pistas, palabras, chat, preparandoVoz, alMedirColor, fuenteIglesia, colorMarca, categoria, alCategoria }: Props) {
+export function Inspector({ clip: c, avisos, alCambiar, alGuardarEstilo, alAplicarEstilo, pistas, palabras, chat, preparandoVoz, alMedirColor, fuenteIglesia, colorMarca, urlFuenteIglesia, categoria, alCategoria }: Props) {
   // El clip de ahora (las mediciones que tardan se aplican sobre lo último que eligió la persona).
   const ultimo = useRef(c);
   ultimo.current = c;
@@ -100,6 +102,7 @@ export function Inspector({ clip: c, avisos, alCambiar, alGuardarEstilo, alAplic
   const cambiarVersiculo = (i: number, parcial: Partial<ClipSpec["versiculos"][number]>) =>
     cambiar({ versiculos: c.versiculos.map((v, j) => (j === i ? { ...v, ...parcial } : v)) });
   const fuentes = c.fuentes ?? FUENTES_POR_DEFECTO;
+  const cssFuente = cssFuentesElegidas(c.fuentes, urlFuenteIglesia);
 
   return (
     <PanelCategorias etiqueta="Categorías de ajustes" categorias={cats} actual={cat.id} alElegir={elegir}
@@ -128,7 +131,7 @@ export function Inspector({ clip: c, avisos, alCambiar, alGuardarEstilo, alAplic
               </div>
               <div className="campo">
                 <span>Estilo del gancho</span>
-                <Galeria etiqueta="Estilo del gancho" color={colorMarca} valor={c.estiloGancho ?? "tarjeta"}
+                <Galeria etiqueta="Estilo del gancho" color={colorMarca} cssFuente={cssFuente} valor={c.estiloGancho ?? "tarjeta"}
                   opciones={ESTILOS_GANCHO.map((e) => [e, NOMBRE_GANCHO[e]] as [EstiloGancho, string])}
                   muestra={(e) => muestraGancho(e, colorMarca ?? "#f5c542")} alCambiar={(estiloGancho) => cambiar({ estiloGancho })} />
               </div>
@@ -138,7 +141,7 @@ export function Inspector({ clip: c, avisos, alCambiar, alGuardarEstilo, alAplic
 
           {cat.id === "subtitulos" && (
             <>
-              <Galeria etiqueta="Estilo de subtítulos" color={colorMarca} valor={c.subtitulos.estilo} familias={FAMILIAS_SUB} recorte
+              <Galeria etiqueta="Estilo de subtítulos" color={colorMarca} cssFuente={cssFuente} valor={c.subtitulos.estilo} familias={FAMILIAS_SUB} recorte
                 opciones={ESTILOS_SUB.map((e) => [e, NOMBRE_ESTILO[e]] as [EstiloSub, string])}
                 muestra={(e) => muestraSub(e, colorMarca ?? "#f5c542")} alCambiar={(estilo) => cambiar({ subtitulos: { ...c.subtitulos, estilo } })} />
               <Seccion titulo="Tamaño" resumen={TAMANO[c.subtitulos.tamano]}>

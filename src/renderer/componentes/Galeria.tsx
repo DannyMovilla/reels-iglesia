@@ -16,8 +16,8 @@ export interface Muestra {
   dur: number;
   /** Elementos que se ven solo un tramo (los bloques de subtítulos). */
   tramos: { sel: string; desde: number; hasta: number }[];
-  /** Cuadro fijo (movimiento reducido): el bloque con la palabra clave. */
-  fija: string;
+  /** Segundo en que la muestra queda quieta con movimiento reducido (la palabra clave ya marcada). */
+  momento: number;
 }
 
 /** Lienzo de la muestra: el ancho del reel y solo la franja del medio (así las 15 tarjetas entran en el panel). */
@@ -60,9 +60,10 @@ export function muestraSub(estilo: EstiloSub, color: string): Muestra {
   bloques.forEach((b, i) => { if (bloques[i + 1]) b.hasta = bloques[i + 1].desde; else b.hasta += 0.4; });
   const t = TAMANOS[estilo].m;
   const divs = bloques.map((b, i) => `<div id="b${i}" class="sub ${estilo}" style="top:${ALTO / 2}px">${htmlBloque(estilo, b, i, t)}</div>`);
+  const clave = bloques[Math.max(0, bloques.findIndex((b) => b.palabras.some((w) => w.clave)))];
   return {
     html: divs.join(""),
-    fija: divs[Math.max(0, bloques.findIndex((b) => b.palabras.some((w) => w.clave)))],
+    momento: clave.desde + (clave.hasta - clave.desde) * 0.6,
     css: soloDe(cssSubBase(t) + cssEstilosSub(t), "sub", estilo),
     pasos: bloques.flatMap((b, i) => pasosBloque(estilo, b, i, color)),
     dur: bloques.at(-1)!.hasta,
@@ -80,19 +81,20 @@ export function muestraGancho(estilo: EstiloGancho, color: string): Muestra {
     pasos: pasosGancho(estilo, FRASE.split(" ").length, dur),
     dur,
     tramos: [],
-    fija: "",
+    momento: dur * 0.5,
   };
 }
 
 const reducido = () => typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-function Lienzo({ muestra, color }: { muestra: Muestra; color: string }) {
+function Lienzo({ muestra, color, cssFuente }: { muestra: Muestra; color: string; cssFuente?: string }) {
   const ref = useRef<HTMLDivElement>(null);
   const quieta = reducido();
   useEffect(() => {
     const raiz = ref.current;
-    if (!raiz || quieta) return;
-    const tl = gsap.timeline({ repeat: -1, repeatDelay: 0.6 });
+    if (!raiz) return;
+    // Con movimiento reducido, la misma línea de tiempo queda quieta en el momento de la palabra clave.
+    const tl = quieta ? gsap.timeline() : gsap.timeline({ repeat: -1, repeatDelay: 0.6 });
     const buscar = (sel: string) => raiz.querySelector(sel);
     for (const tr of muestra.tramos) {
       const el = buscar(tr.sel);
@@ -108,14 +110,16 @@ function Lienzo({ muestra, color }: { muestra: Muestra; color: string }) {
       else tl[p.metodo](el, p.a, p.t);
     }
     tl.set({}, {}, muestra.dur + 0.4);
+    if (quieta) {
+      tl.pause();
+      tl.seek(muestra.momento, false);
+    }
     return () => { tl.kill(); };
   }, [muestra, quieta]);
-  // Quieta: se ve el bloque con la palabra clave, sin animación.
-  const html = quieta && muestra.fija ? muestra.fija : muestra.html;
   return (
     <div className={`muestra-lienzo${quieta ? " quieta" : ""}`} ref={ref} style={{ ["--marca" as string]: color }} aria-hidden="true">
-      <style>{aislarCss(muestra.css, ".muestra-lienzo")}</style>
-      <div dangerouslySetInnerHTML={{ __html: html }} />
+      <style>{aislarCss(muestra.css + (cssFuente ?? ""), ".muestra-lienzo")}</style>
+      <div dangerouslySetInnerHTML={{ __html: muestra.html }} />
     </div>
   );
 }
@@ -132,10 +136,12 @@ interface Props<T extends string> {
   familias?: [string, string, T[]][];
   /** Mostrar solo el centro del lienzo (texto más grande); para muestras angostas como los subtítulos. */
   recorte?: boolean;
+  /** CSS de la fuente elegida para el clip (se aísla igual que el de la muestra). */
+  cssFuente?: string;
 }
 
 /** Grilla de estilos con su muestra animada (con el teclado: flechas para moverse y elegir). */
-export function Galeria<T extends string>({ etiqueta, opciones: todas, valor, alCambiar, muestra, color = "#f5c542", familias, recorte }: Props<T>) {
+export function Galeria<T extends string>({ etiqueta, opciones: todas, valor, alCambiar, muestra, color = "#f5c542", familias, recorte, cssFuente }: Props<T>) {
   const grupo = useRef<HTMLDivElement>(null);
   const [familia, setFamilia] = useState<string | null>(null);
   const filtro = familias?.find(([id]) => id === familia)?.[2];
@@ -172,7 +178,7 @@ export function Galeria<T extends string>({ etiqueta, opciones: todas, valor, al
       {opciones.map(([id, nombre], i) => (
         <button key={id} type="button" role="radio" aria-checked={valor === id} aria-label={nombre} tabIndex={valor === id ? 0 : -1}
           className="galeria-opcion" onClick={() => alCambiar(id)} onKeyDown={(e) => mover(e, i)}>
-          <span className="muestra-escenario"><Lienzo muestra={muestras.get(id)!} color={color} /></span>
+          <span className="muestra-escenario"><Lienzo muestra={muestras.get(id)!} color={color} cssFuente={cssFuente} /></span>
           <span className="galeria-nombre">{nombre}</span>
         </button>
       ))}

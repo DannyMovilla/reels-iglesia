@@ -75,7 +75,7 @@ export async function resolverMedio(tipo: string, valor: string): Promise<string
     if (nivel === undefined || nivel === "limpia") return join(carpetaProyecto(id), "voz.m4a");
     return nivel === "ligera" || nivel === "podcast" ? join(carpetaProyecto(id), archivoVoz(nivel)) : null;
   }
-  if (tipo === "marca") return /^logo\.(png|jpe?g|svg|webp)$/.test(valor) ? join(carpetaDatos(), "marca", valor) : null;
+  if (tipo === "marca") return /^(logo\.(png|jpe?g|svg|webp)|fuente\.(ttf|otf|woff2?))$/.test(valor) ? join(carpetaDatos(), "marca", valor) : null;
   if (tipo === "cache") return simple(valor) ? join(carpetaDatos(), "cache", valor) : null;
   if (tipo === "proyecto") return simple(valor) ? (await leerProyecto(valor).catch(() => null))?.video.ruta ?? null : null;
   return null;

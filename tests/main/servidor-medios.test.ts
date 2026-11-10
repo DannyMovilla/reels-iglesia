@@ -54,3 +54,15 @@ test("revisión plan 7: el logo se entrega con su tipo de imagen (un SVG sin tip
     s.cerrar();
   }
 });
+
+test("plan 9: la fuente de la iglesia se entrega con su tipo (para la galería)", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "medios-fuente-"));
+  const tipos: Record<string, string> = { "fuente.ttf": "font/ttf", "fuente.otf": "font/otf", "fuente.woff": "font/woff", "fuente.woff2": "font/woff2" };
+  for (const n of Object.keys(tipos)) writeFileSync(join(dir, n), "x");
+  const s = await iniciarServidorMedios(async (tipo, valor) => (tipo === "marca" ? join(dir, valor) : null));
+  try {
+    for (const [n, t] of Object.entries(tipos)) expect((await fetch(`${s.base}/marca/${n}`)).headers.get("content-type")).toBe(t);
+  } finally {
+    s.cerrar();
+  }
+});

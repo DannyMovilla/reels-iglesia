@@ -78,4 +78,8 @@ test("el servidor de medios entrega la voz limpia y los pads de la caché (solo 
   expect(await resolverMedio("voz", "../x")).toBeNull();
   expect(await resolverMedio("cache", "pad-esperanza-Sol.wav")).toBe(join(carpetaDatos(), "cache", "pad-esperanza-Sol.wav"));
   expect(await resolverMedio("cache", "../marca.json")).toBeNull();
+  // plan 9: la fuente de la iglesia (para la galería), solo con su nombre fijo.
+  expect(await resolverMedio("marca", "fuente.woff2")).toBe(join(carpetaDatos(), "marca", "fuente.woff2"));
+  expect(await resolverMedio("marca", "../fuente.ttf")).toBeNull();
+  expect(await resolverMedio("marca", "marca.json")).toBeNull();
 });

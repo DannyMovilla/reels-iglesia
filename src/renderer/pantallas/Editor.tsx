@@ -301,6 +301,7 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
         {clip ? <Inspector clip={clip} avisos={avisos} alCambiar={cambiarClip} alGuardarEstilo={(c) => void guardarEstilo(c)} alAplicarEstilo={() => void aplicarEstilo()} pistas={pistas} palabras={datos.transcripcion ? palabrasDe(datos.transcripcion) : undefined}
           preparandoVoz={audioListo && !voces.includes(nivelPedido) && !errorVoz}
           fuenteIglesia={!!datos.marca?.fuente} colorMarca={datos.marca?.color}
+          urlFuenteIglesia={datos.marca?.fuente ? window.reels!.urlMarca?.(datos.marca.fuente) : undefined}
           alMedirColor={proyecto.videoDisponible ? () => window.reels!.medirColor(proyectoId, clip.inicio, clip.fin) : undefined}
           chat={datos.transcripcion ? { proyectoId, historial: conversaciones[clip.id] ?? [], alHistorial: (h) => setConversaciones((x) => ({ ...x, [clip.id]: h })) } : undefined}
           categoria={categoria} alCategoria={setCategoria} /> : <p className="vacio">Elige un clip para editarlo.</p>}

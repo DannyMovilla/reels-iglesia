@@ -47,14 +47,37 @@ test("con las flechas se elige el siguiente y el anterior", async () => {
   expect(alCambiar).toHaveBeenLastCalledWith("elegante");
 });
 
-test("con movimiento reducido no se anima nada y se ve la palabra clave", () => {
+test("plan 9: con movimiento reducido la muestra queda quieta en el momento de la palabra dicha", () => {
   reducido = true;
-  const espia = vi.spyOn(gsap, "timeline");
+  const vistos: { vars: unknown; seek: ReturnType<typeof vi.fn>; pause: ReturnType<typeof vi.fn>; play: ReturnType<typeof vi.fn> }[] = [];
+  const real = gsap.timeline.bind(gsap);
+  const espia = vi.spyOn(gsap, "timeline").mockImplementation((vars) => {
+    const tl = real(vars);
+    const seek = vi.fn(tl.seek.bind(tl)), pause = vi.fn(tl.pause.bind(tl)), play = vi.fn(tl.play.bind(tl));
+    vistos.push({ vars, seek, pause, play });
+    return Object.assign(tl, { seek, pause, play });
+  });
   const { container } = galeria();
-  expect(espia).not.toHaveBeenCalled();
-  expect(container.querySelectorAll(".muestra-lienzo .clave").length).toBeGreaterThanOrEqual(15);
+  expect(vistos).toHaveLength(15);
+  const pop = muestraSub("pop", "#f5c542");
+  expect(pop.momento).toBeGreaterThan(0);
+  for (const v of vistos) {
+    expect(v.vars).not.toMatchObject({ repeat: -1 });
+    expect(v.seek).toHaveBeenCalled();
+    expect(v.pause).toHaveBeenCalled();
+    expect(v.play).not.toHaveBeenCalled();
+  }
+  expect(vistos[0].seek).toHaveBeenCalledWith(pop.momento, false);
   expect(container.querySelectorAll(".muestra-lienzo.quieta")).toHaveLength(15);
   espia.mockRestore();
+});
+
+test("plan 9: la galería usa la fuente elegida del clip", () => {
+  const { container } = render(<Galeria etiqueta="Estilo de subtítulos" opciones={OPCIONES} valor="pop" alCambiar={vi.fn()} muestra={(e) => muestraSub(e, "#f5c542")}
+    cssFuente={".sub, .sub * { font-family: Figtree, sans-serif !important; }"} />);
+  const estilo = container.querySelector(".muestra-lienzo style")!.textContent!;
+  expect(estilo).toContain(".muestra-lienzo .sub");
+  expect(estilo).toContain("Figtree");
 });
 
 test("sin reducción: una línea de tiempo en bucle por muestra que se mata al desmontar", () => {
