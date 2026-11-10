@@ -43,6 +43,10 @@ process.stdin.on("end", () => {
       console.error("Error de conexión");
       process.exit(1);
     }
+    if (modo === "traduccion-cuelga-pt" && entrada.includes("idioma: pt")) {
+      setInterval(() => {}, 1000); // el inglés sale, el portugués nunca responde (para cancelar a la mitad)
+      return;
+    }
     if (modo === "traduccion-lenta") {
       setInterval(() => {}, 1000); // nunca responde (para cancelar)
       return;

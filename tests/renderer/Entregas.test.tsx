@@ -72,3 +72,26 @@ test("revisión I4: «Traducir» usa la misma elección de tiempos que el SRT", 
   await userEvent.click(screen.getByRole("button", { name: "Traducir" }));
   expect(a.traducirSrt).toHaveBeenCalledWith("p", ["en"], { completo: false });
 });
+
+test("plan 9: al volver a Entregas se ve el progreso de la traducción y se puede cancelar", async () => {
+  let responder: (v: string[]) => void = () => {};
+  let avisar: (t: string) => void = () => {};
+  const a = {
+    traducirSrt: vi.fn(() => new Promise<string[]>((r) => { responder = r; })),
+    alProgresoEntregas: vi.fn((cb: (t: string) => void) => { avisar = cb; return () => {}; }),
+    cancelarTraduccion: vi.fn(async () => true),
+  };
+  (window as unknown as { reels: unknown }).reels = a;
+  const { unmount } = render(<Entregas proyectoId="p-volver" />);
+  await userEvent.click(screen.getByRole("checkbox", { name: "Inglés" }));
+  await userEvent.click(screen.getByRole("button", { name: "Traducir" }));
+  act(() => avisar("Traduciendo al inglés (parte 1 de 1)…"));
+  unmount();
+  render(<Entregas proyectoId="p-volver" />);
+  expect(await screen.findByText("Traduciendo al inglés (parte 1 de 1)…")).toBeInTheDocument();
+  await userEvent.click(screen.getByRole("button", { name: "Cancelar" }));
+  expect(a.cancelarTraduccion).toHaveBeenCalledWith("p-volver");
+  expect(a.traducirSrt).toHaveBeenCalledTimes(1);
+  await act(async () => responder(["culto.en.srt"]));
+  expect(await screen.findByText("Listo: culto.en.srt")).toBeInTheDocument();
+});

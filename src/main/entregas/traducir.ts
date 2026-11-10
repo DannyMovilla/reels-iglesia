@@ -71,6 +71,14 @@ export function cancelarTraduccion(proyectoId: string): boolean {
   return true;
 }
 
+/** Mensaje al cancelar: dice qué idiomas alcanzaron a guardarse («inglés, portugués y francés»). */
+export function mensajeCancelada(hechos: string[]): string {
+  const nombres = hechos.map((i) => IDIOMAS[i] ?? i);
+  if (!nombres.length) return "Se canceló la traducción.";
+  const lista = nombres.length === 1 ? nombres[0] : `${nombres.slice(0, -1).join(", ")} y ${nombres.at(-1)}`;
+  return `Se canceló la traducción. ${nombres.length === 1 ? "Ya se guardó" : "Ya se guardaron"}: ${lista}.`;
+}
+
 export async function traducirSrt(
   proyectoId: string, idiomas: string[],
   opciones: { comando?: string; senal?: AbortSignal; alProgreso?: (texto: string) => void; completo?: boolean } = {},
@@ -80,10 +88,11 @@ export async function traducirSrt(
   if (enCurso.has(proyectoId)) throw new Error("Ya se está traduciendo esta prédica.");
   const control = new AbortController();
   enCurso.set(proyectoId, control);
+  const hechos: string[] = [];
   try {
-    return await traducir(proyectoId, idiomas, { ...opciones, senal: opciones.senal ? AbortSignal.any([opciones.senal, control.signal]) : control.signal });
+    return await traducir(proyectoId, idiomas, { ...opciones, senal: opciones.senal ? AbortSignal.any([opciones.senal, control.signal]) : control.signal }, hechos);
   } catch (e) {
-    if (control.signal.aborted) throw new Error("Se canceló la traducción.");
+    if (control.signal.aborted) throw new Error(mensajeCancelada(hechos));
     throw e;
   } finally {
     enCurso.delete(proyectoId);
@@ -107,6 +116,8 @@ async function consultar(comando: [string, string[]], prompt: string, senal: Abo
 async function traducir(
   proyectoId: string, idiomas: string[],
   opciones: { comando?: string; senal: AbortSignal; alProgreso?: (texto: string) => void; completo?: boolean },
+  /** Se llena con cada idioma ya guardado (para decirlo si se cancela a la mitad). */
+  hechos: string[] = [],
 ): Promise<string[]> {
   const t = await leerTranscripcion(proyectoId);
   if (!t?.segmentos.length) throw new Error("No hay transcripción para traducir.");
@@ -140,6 +151,7 @@ async function traducir(
     const desplazar = opciones.completo === false ? -t.inicio : 0;
     await writeFile(join(carpeta, nombre), textoSrt(bloques.map((b, i) => ({ ...b, texto: acomodar(traducidos[i]) })), desplazar), "utf8");
     nombres.push(nombre);
+    hechos.push(idioma);
   }
   return nombres;
 }

@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { alCambiar, enCurso, lanzar } from "../enCurso";
 import { Captions, FileText, FolderOpen, Languages, LoaderCircle, Music } from "lucide-react";
 import type { NivelVoz } from "@shared/tipos";
 import { Interruptor, Segmentos } from "./Inspector";
@@ -47,16 +48,28 @@ export function Entregas({ proyectoId, alIrA, videoDisponible }: { proyectoId: s
   const [nivel, setNivel] = useState<NivelVoz>("limpia");
   const traduccion = useAccion();
   const [idiomas, setIdiomas] = useState<string[]>([]);
-  const [progreso, setProgreso] = useState<string | null>(null);
-  const traducir = () => traduccion.correr(async () => {
-    const quitar = window.reels!.alProgresoEntregas(setProgreso);
+  // La traducción vive fuera del componente: si se sale de Entregas y se vuelve, sigue su progreso y se puede cancelar.
+  const clave = `traducir:${proyectoId}`;
+  const [progreso, setProgreso] = useState<string | null>(() => enCurso(clave)?.progreso ?? null);
+  const oyente = useRef<() => void>(() => {});
+  const seguir = (promesa: Promise<string[]>) => {
+    oyente.current();
+    oyente.current = alCambiar(clave, setProgreso);
+    return traduccion.correr(async () => (await promesa).join(", "));
+  };
+  useEffect(() => {
+    const ya = enCurso<string[]>(clave);
+    if (ya) void seguir(ya.promesa);
+    return () => oyente.current();
+  }, [clave]); // eslint-disable-line react-hooks/exhaustive-deps
+  const traducir = () => seguir(lanzar(clave, async (alProgreso) => {
+    const quitar = window.reels!.alProgresoEntregas((t) => alProgreso(t));
     try {
-      return (await window.reels!.traducirSrt(proyectoId, idiomas, { completo })).join(", ");
+      return await window.reels!.traducirSrt(proyectoId, idiomas, { completo });
     } finally {
       quitar();
-      setProgreso(null);
     }
-  });
+  }));
   return (
     <div className="entregas">
       <p className="ayuda">Todo se guarda en la carpeta de exportados de esta prédica.</p>

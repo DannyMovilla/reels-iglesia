@@ -106,3 +106,21 @@ test("revisión plan 7: sin sesión de Claude, se dice cómo iniciarla (no «Pru
   await expect(traducirSrt(id, ["en"], { comando })).rejects.toThrow("Claude no tiene sesión iniciada. Abre Ajustes → Iniciar sesión en Claude.");
   await expect(traducirSrt(id, ["en"], { comando: "no-existe-claude-xyz" })).rejects.toThrow("No encuentro Claude Code en esta PC. Revisa Ajustes.");
 });
+
+test("plan 9: al cancelar una traducción de varios idiomas, dice cuáles quedaron guardados", async () => {
+  const { cancelarTraduccion } = await import("../../../src/main/entregas/traducir");
+  process.env.FALSO_CLAUDE_MODO = "traduccion-cuelga-pt";
+  const vistos: string[] = [];
+  const t = traducirSrt(id, ["en", "pt"], { comando, alProgreso: (x) => vistos.push(x) });
+  for (let i = 0; i < 100 && !vistos.some((v) => v.includes("portugués")); i++) await new Promise((r) => setTimeout(r, 100));
+  expect(cancelarTraduccion(id)).toBe(true);
+  await expect(t).rejects.toThrow("Se canceló la traducción. Ya se guardó: inglés.");
+  expect(existsSync(join(carpetaProyecto(id), "exportados", "culto.en.srt"))).toBe(true);
+}, 20_000);
+
+test("plan 9: el mensaje de cancelar nombra varios idiomas con comas e «y»", async () => {
+  const { mensajeCancelada } = await import("../../../src/main/entregas/traducir");
+  expect(mensajeCancelada([])).toBe("Se canceló la traducción.");
+  expect(mensajeCancelada(["en"])).toBe("Se canceló la traducción. Ya se guardó: inglés.");
+  expect(mensajeCancelada(["en", "pt", "fr"])).toBe("Se canceló la traducción. Ya se guardaron: inglés, portugués y francés.");
+});
