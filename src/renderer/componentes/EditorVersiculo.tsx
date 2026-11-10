@@ -99,10 +99,12 @@ export function EditorVersiculo({ creacion, error, alVolver }: { creacion: Creac
       {error && <p className="error" role="alert">{error}</p>}
       <div className="ia-cuerpo">
         <div className="ia-vista">
-          <div className="seg" role="group" aria-label="Formato de la vista previa">
-            {(["9:16", "4:5", "1:1"] as Formato[]).map((f) => <button key={f} type="button" aria-pressed={formato === f} onClick={() => setFormato(f)}>{f}</button>)}
+          <div className="vista-barra">
+            <div className="seg" role="group" aria-label="Formato de la vista previa">
+              {(["9:16", "4:5", "1:1"] as Formato[]).map((f) => <button key={f} type="button" aria-pressed={formato === f} onClick={() => setFormato(f)}>{f}</button>)}
+            </div>
+            <SelectorZona valor={zona} alCambiar={setZona} />
           </div>
-          <SelectorZona valor={zona} alCambiar={setZona} />
           <div className="pantalla-reel" style={{ aspectRatio: `1080 / ${alto}` }}>
             <ZonaSegura red={zona} formato={formato} />
             {src && <hyperframes-player src={src} width={1080} height={alto} controls />}

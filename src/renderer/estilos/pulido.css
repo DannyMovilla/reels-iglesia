@@ -1,0 +1,171 @@
+/*
+ * Pulido visual: arreglos de encaje (nada se sale ni se parte en dos líneas) y una capa más moderna
+ * (superficies, botones, campos, barras de desplazamiento y movimiento). Se carga después de pantallas.css.
+ */
+:root {
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --sombra-1: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 10px 30px rgba(0, 0, 0, 0.28);
+  --sombra-2: 0 18px 50px rgba(0, 0, 0, 0.45);
+  --superficie: linear-gradient(180deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0) 60%), var(--bg-1);
+  --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23a4aac3' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}
+
+/* ---------- Base ---------- */
+body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+::selection { background: rgba(242, 181, 68, 0.3); }
+:focus-visible { outline: 2px solid var(--luz); outline-offset: 2px; border-radius: 6px; }
+input[type="range"], input[type="checkbox"], input[type="radio"] { accent-color: var(--luz); }
+
+/* Barras de desplazamiento finas y discretas */
+* { scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.14) transparent; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track, ::-webkit-scrollbar-corner { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.12); border-radius: 99px; border: 3px solid transparent; background-clip: padding-box; }
+::-webkit-scrollbar-thumb:hover { background-color: rgba(255, 255, 255, 0.22); }
+
+/* ---------- Barra de título y riel ---------- */
+.barra-titulo { background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent); }
+.riel { gap: 6px; background: linear-gradient(180deg, rgba(255, 255, 255, 0.015), transparent 40%); }
+.riel a { width: 56px; padding: 9px 0 7px; border-radius: var(--r-md); }
+.riel a[aria-current="page"] { background: var(--luz-soft); color: var(--luz); box-shadow: inset 0 0 0 1px rgba(242, 181, 68, 0.18); }
+.riel a[aria-current="page"]::before { content: ""; position: absolute; left: -6px; top: 14px; bottom: 14px; width: 3px; border-radius: 0 3px 3px 0; background: var(--luz); }
+
+/* ---------- Botones ---------- */
+.btn { height: 34px; padding: 0 14px; border-radius: var(--r-sm); white-space: nowrap; transition: background 150ms, border-color 150ms, box-shadow 150ms, transform 100ms, color 150ms; }
+.btn:active:not(:disabled) { transform: translateY(1px); }
+.btn.pequeno { height: 30px; padding: 0 11px; }
+.btn.primario { background: linear-gradient(180deg, #ffc964, var(--luz)); border-color: rgba(255, 214, 133, 0.7); box-shadow: 0 6px 20px rgba(242, 181, 68, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.35); }
+.btn.primario:hover:not(:disabled) { background: linear-gradient(180deg, #ffd47e, #f7bd52); box-shadow: 0 8px 26px rgba(242, 181, 68, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.4); }
+.btn.fantasma:hover:not(:disabled) { background: var(--bg-2); color: var(--text); }
+.btn.icono { width: 30px; padding: 0; justify-content: center; }
+
+/* ---------- Campos ---------- */
+.entrada { height: 36px; padding: 0 12px; border-radius: var(--r-sm); background: var(--bg-2); border-color: var(--line-2); transition: border-color 150ms, box-shadow 150ms, background 150ms; }
+.entrada:hover:not(:focus):not(:disabled) { border-color: rgba(255, 255, 255, 0.2); }
+.entrada::placeholder, .buscador input::placeholder { color: var(--text-3); }
+textarea.entrada { height: auto; min-height: 84px; padding: 9px 12px; line-height: 1.5; resize: vertical; }
+.texto-versiculo { min-height: 96px; }
+select.entrada, .orden select, .selector-zona select {
+  appearance: none; -webkit-appearance: none; padding-right: 30px; cursor: pointer;
+  background-image: var(--chevron); background-repeat: no-repeat; background-position: right 10px center;
+}
+.orden select, .selector-zona select { height: 30px; border: 1px solid var(--line-2); border-radius: var(--r-sm); background-color: var(--bg-2); color: var(--text-2); font: 500 12px var(--font-ui); padding-left: 10px; }
+.campo { gap: 7px; }
+
+/* Controles segmentados: nunca se salen ni parten una opción en dos líneas */
+.seg { flex-wrap: wrap; max-width: 100%; padding: 3px; border-radius: 10px; background: var(--bg-2); border-color: var(--line); }
+.seg button { white-space: nowrap; height: 28px; padding: 0 11px; border-radius: 7px; transition: background 150ms, color 150ms, box-shadow 150ms; }
+.seg button:hover:not(:disabled):not([aria-pressed="true"]) { color: var(--text); background: rgba(255, 255, 255, 0.04); }
+.seg button[aria-pressed="true"] { background: var(--bg-3); color: var(--text); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.07); }
+
+/* Interruptor con transición suave */
+.interruptor { width: 36px; height: 21px; }
+.interruptor::after { top: 3px; left: 3px; width: 15px; height: 15px; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4); }
+.interruptor[aria-checked="true"]::after { transform: translateX(15px); }
+
+/* ---------- Pantallas de contenido ---------- */
+.pantalla { max-width: 1080px; padding: 36px 40px 56px; gap: 20px; }
+.pantalla-cabeza h1 { font-size: 26px; font-weight: 650; letter-spacing: -0.02em; }
+.estado-vacio { background: var(--superficie); }
+
+/* Prédicas */
+.proyectos { gap: 14px; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+.proyecto { min-height: 124px; padding: 18px 20px; border-radius: var(--r-lg); background: var(--superficie); box-shadow: var(--sombra-1); gap: 8px; transition: border-color 150ms, transform 150ms, box-shadow 150ms; }
+.proyecto:hover { transform: translateY(-2px); box-shadow: var(--sombra-2); background: var(--superficie); }
+.proyecto b { font-size: 16px; letter-spacing: -0.01em; }
+.proyecto .mono { font-family: var(--font-ui); font-size: 12.5px; }
+
+/* Nueva prédica */
+.pestanas.origen { align-self: flex-start; margin-bottom: 0; }
+.zona-video { padding: 56px 32px; border-radius: var(--r-lg); background: var(--superficie); transition: border-color 150ms, color 150ms, background 150ms; }
+.zona-video svg { color: var(--luz); }
+.zona-enlace { border-radius: var(--r-lg); }
+
+/* Exportados: rejilla de portadas */
+.grupo-exportados { padding: 18px 20px; border-radius: var(--r-lg); background: var(--superficie); box-shadow: var(--sombra-1); gap: 14px; }
+.grupo-exportados > .fila b { font-size: 15px; }
+.grupo-exportados ul.rejilla-exportados { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 14px; }
+.grupo-exportados li.exportado { display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 8px; min-width: 0; }
+.grupo-exportados li.exportado .portada { width: 100%; height: auto; aspect-ratio: 9 / 16; border-radius: 10px; box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35); }
+.exportado .nombre { font-size: 12px; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.exportado .tenue { font-size: 11.5px; }
+
+/* Marca, Música, Con IA, Ajustes: superficies iguales */
+.grupo-redes, .pista, .item-ia, .chequeo, .tarjeta-nuevo, .zona-enlace { border-radius: var(--r-md); background: var(--superficie); }
+.item-ia { transition: border-color 150ms, transform 150ms, box-shadow 150ms; }
+.item-ia:hover { transform: translateY(-1px); box-shadow: var(--sombra-1); background: var(--superficie); }
+
+/* ---------- Editor ---------- */
+.editor { grid-template-columns: 312px minmax(0, 1fr) 360px; }
+.editor-izq { overflow-x: hidden; }
+.editor-izq > * { min-width: 0; }
+.titulo-seccion { padding: 16px 16px 8px; }
+.pasos { padding: 0 8px; }
+.paso { padding: 7px 8px; border-radius: var(--r-sm); }
+
+/* Lista de clips: buscador, filtros y orden dentro del panel */
+.lista-clips .buscador { flex: none; margin: 0 14px 10px; height: 34px; border-color: var(--line-2); background: var(--bg-2); }
+.filtros { flex-wrap: wrap; padding: 0 14px 10px; gap: 6px; }
+.chipf { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; height: 28px; padding: 0 11px; transition: background 150ms, color 150ms, border-color 150ms; }
+.chipf:hover:not([aria-pressed="true"]) { color: var(--text); border-color: rgba(255, 255, 255, 0.22); }
+.lista-cabeza { padding: 0 14px; margin: 0 0 8px; flex-wrap: nowrap; justify-content: space-between; }
+.lista-cabeza .ayuda { font-size: 12px; white-space: nowrap; }
+.panel-filtros { margin: 0 14px 10px; border-radius: var(--r-md); }
+.clips { padding: 0 10px 10px; gap: 6px; }
+.clip { padding: 9px 10px; border-radius: var(--r-md); transition: background 150ms, border-color 150ms; }
+.clip[aria-current="true"] { background: linear-gradient(180deg, rgba(242, 181, 68, 0.09), rgba(242, 181, 68, 0.03)); border-color: rgba(242, 181, 68, 0.42); box-shadow: none; }
+.miniatura { border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35); }
+.clip-acciones { top: auto; bottom: 8px; right: 10px; background: rgba(16, 19, 31, 0.9); border-radius: 8px; padding: 2px; }
+
+/* Centro del editor */
+.editor-centro { padding: 16px 18px; gap: 12px; }
+.centro-cabeza h2 { font-size: 16px; letter-spacing: -0.01em; }
+.centro-pestanas { gap: 4px; }
+.centro-pestanas button { border-radius: 8px 8px 0 0; transition: color 150ms, background 150ms; }
+.centro-pestanas button:hover:not([aria-selected="true"]) { color: var(--text); background: rgba(255, 255, 255, 0.03); }
+.vista-barra { flex-wrap: wrap; }
+.pantalla-reel { border-radius: 18px; }
+
+/* Inspector: las cuatro pestañas caben siempre */
+.inspector > .pestanas { padding: 8px 8px 0; gap: 0; }
+.inspector > .pestanas button { flex: 1 1 0; min-width: 0; justify-content: center; padding: 0 4px; height: 40px; font-size: 12.5px; white-space: nowrap; transition: color 150ms; }
+.inspector > .pestanas button:hover:not([aria-selected="true"]) { color: var(--text); }
+.inspector-cuerpo { overflow-x: hidden; padding: 16px; gap: 16px; }
+.grupo { gap: 11px; padding-bottom: 16px; }
+.grupo h3 { font-size: 10.5px; letter-spacing: 0.1em; }
+.inspector-pie { padding: 14px 16px; background: var(--bg-1); }
+.inspector-pie .btn { height: 40px; font-size: 13.5px; }
+.tarjeta, .porque, .avisos, .propuesta, .corregir, .barra-rango, .repeticiones li { border-radius: var(--r-md); }
+
+/* Línea de tiempo */
+.editor-abajo { background: linear-gradient(180deg, rgba(255, 255, 255, 0.015), transparent 30%), var(--bg-1); }
+.lt-parte.clip { border-radius: 8px; box-shadow: 0 0 0 1px rgba(242, 181, 68, 0.2), 0 6px 18px rgba(0, 0, 0, 0.35); }
+
+/* Pestañas «Entregas», «Capítulos» y «Transcripción» */
+.entregas, .capitulos { max-width: 780px; width: 100%; align-self: center; padding-right: 4px; }
+.entrega { border-radius: var(--r-lg); background: var(--superficie); padding: 16px 18px; gap: 10px; box-shadow: var(--sombra-1); }
+.entrega h3 { font-size: 14.5px; }
+.entrega h3 svg { color: var(--luz); }
+.idiomas { gap: 8px 16px; }
+.transcripcion-texto { padding: 6px 10px 28px; }
+.transcripcion-barra .buscador { height: 34px; border-color: var(--line-2); background: var(--bg-2); }
+
+/* Chat con Claude */
+.chat-atajos .chipf { height: auto; min-height: 28px; padding: 5px 11px; white-space: normal; text-align: left; }
+.chat-respuesta, .chat-pedido { border-radius: 12px; }
+
+/* ---------- Con IA (editor de versículo) ---------- */
+.editor-ia { padding: 20px 28px; gap: 16px; }
+.ia-cabeza h1 { font-size: 24px; letter-spacing: -0.02em; }
+.ia-cuerpo { grid-template-columns: minmax(300px, 1fr) minmax(360px, 440px); }
+.ia-vista .vista-barra { align-self: stretch; justify-content: center; }
+.ia-panel { border-radius: var(--r-lg); background: var(--superficie); box-shadow: var(--sombra-1); overflow: hidden; }
+.ia-panel .pestanas button { flex: 1 1 0; justify-content: center; white-space: nowrap; }
+.ia-campos { padding: 18px; gap: 16px; overflow-x: hidden; }
+.galeria-pinturas { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+.pintura-op { border-radius: 10px; transition: border-color 150ms, background 150ms; }
+.pintura-op:hover { border-color: rgba(255, 255, 255, 0.2); }
+
+@media (prefers-reduced-motion: reduce) { .proyecto:hover, .item-ia:hover { transform: none; } }

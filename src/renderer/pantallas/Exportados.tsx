@@ -27,11 +27,12 @@ export function Exportados() {
           <div className="fila"><b>{p.nombre}</b><span className="espacio" />
             <button type="button" className="btn pequeno" onClick={() => void window.reels!.abrirCarpetaExportados(p.proyectoId)}><FolderOpen size={13} aria-hidden="true" />Abrir carpeta</button>
           </div>
-          <ul>
+          <ul className="rejilla-exportados">
             {p.archivos.map((a) => (
-              <li key={a.nombre}>
+              <li key={a.nombre} className="exportado">
                 {a.portada ? <img className="portada" src={window.reels!.urlExportado(p.proyectoId, a.portada)} alt="" /> : <span className="portada vacia" aria-hidden="true" />}
-                <span className="mono">{a.nombre}</span><span className="tenue">{(a.tamano / 1e6).toFixed(1)} MB</span>
+                <span className="nombre" title={a.nombre}>{a.nombre}</span>
+                <span className="tenue">{(a.tamano / 1e6).toFixed(1)} MB</span>
               </li>
             ))}
           </ul>
