@@ -115,6 +115,11 @@ describe("guardarImagenesFrases", () => {
     expect(pintadas[0]).toContain("linear-gradient(160deg");
   });
 
+  test("revisión: un versículo mal formado en frases.json se quita sin romper", async () => {
+    await guardarFrases(id, [{ texto: "x", en: 1, original: "x", fondo: "marca", versiculo: { ref: 3 } } as unknown as Frase]);
+    expect(await leerFrases(id)).toEqual([{ texto: "x", en: 1, original: "x", fondo: "marca" }]);
+  });
+
   test("sin frases: error legible", async () => {
     await expect(guardarImagenesFrases(id, pintar)).rejects.toThrow("Primero saca las frases de la prédica.");
   });

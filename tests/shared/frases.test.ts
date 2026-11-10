@@ -135,3 +135,13 @@ test("la palabra clave de Claude se guarda solo si está en la frase", () => {
   expect(r[0].clave).toBe("gloria");
   expect(r[1].clave).toBeUndefined();
 });
+
+test("revisión: el código de frases no lleva bytes nulos (git lo vería como binario)", () => {
+  expect(readFileSync(join(resolve(__dirname, "../.."), "src/shared/frases.ts")).includes(0)).toBe(false);
+});
+
+test("revisión: un versículo con campos que no son texto se descarta sin romper", () => {
+  const r = elegirFrases([{ texto: A, en: "0:39", versiculo: { ref: 5, texto: ["x"] } as unknown as { ref: string; texto: string } }], palabras, rango);
+  expect(r).toHaveLength(1);
+  expect(r[0].versiculo).toBeUndefined();
+});

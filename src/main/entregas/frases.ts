@@ -117,15 +117,25 @@ const esFrase = (f: unknown): f is Frase => {
     && ["marca", "momento", "pintura"].includes(x.fondo);
 };
 
+/** Las frases válidas; un versículo mal formado se quita (la frase se conserva). */
+function limpiar(lista: unknown): Frase[] {
+  return (Array.isArray(lista) ? lista : []).filter(esFrase).map((f) => {
+    const v = f.versiculo as Partial<NonNullable<Frase["versiculo"]>> | undefined;
+    if (v === undefined) return f;
+    if (typeof v?.ref === "string" && typeof v.texto === "string" && typeof v.confirmado === "boolean") return f;
+    const { versiculo: _malo, ...resto } = f;
+    return resto;
+  });
+}
+
 export async function leerFrases(proyectoId: string): Promise<Frase[]> {
   validarIdProyecto(proyectoId);
-  const v = await leerJson<unknown[]>(proyectoId, "frases.json");
-  return Array.isArray(v) ? v.filter(esFrase) : [];
+  return limpiar(await leerJson<unknown[]>(proyectoId, "frases.json"));
 }
 
 export async function guardarFrases(proyectoId: string, frases: Frase[]): Promise<void> {
   validarIdProyecto(proyectoId);
-  await guardarJson(proyectoId, "frases.json", (Array.isArray(frases) ? frases : []).filter(esFrase));
+  await guardarJson(proyectoId, "frases.json", limpiar(frases));
 }
 
 /** Un cuadro del video en el segundo `t` (1080 de ancho). false si FFmpeg no pudo. */
