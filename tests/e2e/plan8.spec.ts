@@ -38,10 +38,10 @@ test("plan 8: galerías de estilo y frases para publicar", async () => {
   await v.getByRole("button", { name: "Procesar prédica" }).click();
   await expect(v.getByRole("list", { name: "Proceso" }).locator(".paso.ok")).toHaveCount(4, { timeout: 240_000 });
 
-  // Galerías: estilo del gancho (Clip) y de subtítulos (Estilo).
-  await v.getByRole("tab", { name: /^Clip$/ }).click();
+  // Galerías: estilo del gancho (Gancho) y de subtítulos (Subtítulos).
+  await v.getByRole("tab", { name: "Gancho" }).click();
   await v.getByRole("radiogroup", { name: "Estilo del gancho" }).getByRole("radio", { name: "Gigante" }).click();
-  await v.getByRole("tab", { name: /Estilo/ }).click();
+  await v.getByRole("tab", { name: "Subtítulos" }).click();
   const galeria = v.getByRole("radiogroup", { name: "Estilo de subtítulos" });
   await expect(galeria.getByRole("radio")).toHaveCount(15);
   await galeria.getByRole("radio", { name: "Viral" }).click();

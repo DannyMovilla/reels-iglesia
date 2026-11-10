@@ -1,5 +1,5 @@
 import gsap from "gsap";
-import { useEffect, useMemo, useRef, type KeyboardEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { cssEstilosSub, htmlBloque, pasosBloque } from "@shared/reel/estilos-sub";
 import { cssGanchoTarjeta, cssSubBase } from "@shared/reel/estilos.css";
 import { cssGancho, htmlGancho, palabraEnColor, pasosGancho, type EstiloGancho } from "@shared/reel/gancho";
@@ -22,6 +22,8 @@ export interface Muestra {
 
 /** Lienzo de la muestra: el ancho del reel y solo la franja del medio (así las 15 tarjetas entran en el panel). */
 const ANCHO = 1080, ALTO = 260;
+/** Ancho del lienzo que se ve en la tarjeta con `recorte` (solo el centro): así el texto se ve más grande. */
+export const VISIBLE = 840;
 const FRASE = "Tu prueba no es el final";
 
 /** Antepone `raiz` a cada selector, para que el CSS de la muestra no toque el resto de la app. */
@@ -124,11 +126,32 @@ interface Props<T extends string> {
   muestra(id: T): Muestra;
   /** Color de la marca para las muestras. */
   color?: string;
+  /** Filtros por familia ([id, nombre, estilos]); «Todos» va primero. */
+  familias?: [string, string, T[]][];
+  /** Mostrar solo el centro del lienzo (texto más grande); para muestras angostas como los subtítulos. */
+  recorte?: boolean;
 }
 
 /** Grilla de estilos con su muestra animada (con el teclado: flechas para moverse y elegir). */
-export function Galeria<T extends string>({ etiqueta, opciones, valor, alCambiar, muestra, color = "#f5c542" }: Props<T>) {
+export function Galeria<T extends string>({ etiqueta, opciones: todas, valor, alCambiar, muestra, color = "#f5c542", familias, recorte }: Props<T>) {
   const grupo = useRef<HTMLDivElement>(null);
+  const [familia, setFamilia] = useState<string | null>(null);
+  const filtro = familias?.find(([id]) => id === familia)?.[2];
+  // La escala de las muestras sigue al ancho real de la tarjeta (el panel puede ser más ancho o más angosto).
+  const visible = recorte ? VISIBLE : ANCHO;
+  useEffect(() => {
+    const g = grupo.current;
+    if (!g || typeof ResizeObserver === "undefined") return;
+    const medir = () => {
+      const ancho = g.querySelector<HTMLElement>(".muestra-escenario")?.clientWidth;
+      if (ancho) g.style.setProperty("--k", String(ancho / visible));
+    };
+    const ro = new ResizeObserver(medir);
+    ro.observe(g);
+    medir();
+    return () => ro.disconnect();
+  }, [visible]);
+  const opciones = filtro ? todas.filter(([id]) => filtro.includes(id)) : todas;
   // Las muestras solo cambian si cambian los estilos o el color: así un cambio del clip no reinicia las animaciones.
   const ids = opciones.map(([id]) => id).join("|");
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -141,8 +164,9 @@ export function Galeria<T extends string>({ etiqueta, opciones, valor, alCambiar
     alCambiar(opciones[j][0]);
     grupo.current?.querySelectorAll<HTMLButtonElement>("[role=radio]")[j]?.focus();
   };
-  return (
-    <div className="galeria" role="radiogroup" aria-label={etiqueta} ref={grupo}>
+  const rejilla = (
+    <div className="galeria" role="radiogroup" aria-label={etiqueta} ref={grupo}
+      style={{ ["--vis" as string]: visible, ["--x" as string]: `${-(ANCHO - visible) / 2}px` }}>
       {opciones.map(([id, nombre], i) => (
         <button key={id} type="button" role="radio" aria-checked={valor === id} aria-label={nombre} tabIndex={valor === id ? 0 : -1}
           className="galeria-opcion" onClick={() => alCambiar(id)} onKeyDown={(e) => mover(e, i)}>
@@ -150,6 +174,17 @@ export function Galeria<T extends string>({ etiqueta, opciones, valor, alCambiar
           <span className="galeria-nombre">{nombre}</span>
         </button>
       ))}
+    </div>
+  );
+  if (!familias) return rejilla;
+  return (
+    <div className="galeria-con-familias">
+      <div className="familias" role="group" aria-label="Familias de estilos">
+        {([[null, "Todos"], ...familias.map(([id, nombre]) => [id, nombre])] as [string | null, string][]).map(([id, nombre]) => (
+          <button key={nombre} type="button" className="familia" aria-pressed={familia === id} onClick={() => setFamilia(id)}>{nombre}</button>
+        ))}
+      </div>
+      {rejilla}
     </div>
   );
 }

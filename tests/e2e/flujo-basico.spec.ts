@@ -31,7 +31,9 @@ test("nueva prédica → procesar → ver clips sugeridos", async () => {
   await expect(pasos.locator(".paso.ok")).toHaveCount(4, { timeout: 240_000 });
   const lista = v.getByRole("list", { name: "Clips sugeridos" });
   await expect(lista.getByRole("heading", { name: "El quebrantamiento activa la gloria" })).toBeVisible();
+  await v.getByRole("tab", { name: "Versículo" }).click();
   await expect(v.getByLabel("Datos del clip")).toContainText("Romanos 8:28");
+  await v.getByRole("tab", { name: "Gancho" }).click();
 
   // Vista previa en vivo: el reproductor de HyperFrames queda listo con la composición del clip.
   let listo = false;

@@ -28,8 +28,10 @@ test("la app instalada crea, procesa y exporta una prédica", async () => {
   await expect(v.getByLabel("Fin de la prédica")).not.toHaveValue("");
   await v.getByRole("button", { name: "Procesar prédica" }).click();
   await expect(v.getByRole("list", { name: "Proceso" }).locator(".paso.ok")).toHaveCount(4, { timeout: 300_000 });
+  await v.getByRole("tab", { name: "Versículo" }).click();
   await v.getByLabel("Texto RVR1960 de Romanos 8:28").fill("Y sabemos que a los que aman a Dios, todas las cosas les ayudan a bien.");
   await v.getByRole("button", { name: "Confirmar texto" }).click();
+  await v.getByRole("tab", { name: "Publicar" }).click();
   await v.getByRole("group", { name: "Formatos" }).getByRole("button", { name: /4:5/ }).click();
   await v.waitForTimeout(700);
   await v.getByRole("button", { name: "Exportar este clip" }).click();

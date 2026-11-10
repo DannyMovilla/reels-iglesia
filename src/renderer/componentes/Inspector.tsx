@@ -1,8 +1,11 @@
 import { CopiarEstilo } from "./CopiarEstilo";
 import { FUENTES, FUENTES_POR_DEFECTO, type IdFuente } from "@shared/reel/fuentes";
 import { NOMBRE_LOOK, type Look } from "@shared/reel/color";
-import { useRef, useState } from "react";
-import { BookOpen, Check, Contrast, Copy, FileText, Flag, LoaderCircle, Send, Sparkles, TrendingUp, TriangleAlert, Type } from "lucide-react";
+import { useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import {
+  AudioLines, BookOpen, Check, ChevronRight, Copy, Image, LoaderCircle, Palette, Scissors, Send, Sparkles, Subtitles, TrendingUp, TriangleAlert, Type,
+  type LucideIcon,
+} from "lucide-react";
 import { ANIMOS, type Animo, type ClipSpec, type EstiloSub, type Formato, type Redes } from "@shared/tipos";
 import { ESTILOS_SUB, NOMBRE_ESTILO } from "@shared/reel/estilos-sub";
 import { LIMITES_REDES, NOMBRE_RED, textoParaPublicar } from "@shared/redes";
@@ -12,8 +15,24 @@ import { detectarRepeticiones } from "@shared/reel/cortes-voz";
 import type { Palabra } from "@shared/reel/tiempo";
 import { ChatClip, type EntradaChat } from "./ChatClip";
 import { Galeria, muestraGancho, muestraSub } from "./Galeria";
+import { FAMILIAS_SUB } from "./familias";
 import { ESTILOS_GANCHO, NOMBRE_GANCHO, type EstiloGancho } from "@shared/reel/gancho";
 import { NOMBRE_ANIMO } from "../pantallas/Musica";
+
+/** Categorías del panel de la derecha (una a la vez, elegidas en el riel del borde). */
+export type Categoria = "gancho" | "subtitulos" | "versiculo" | "imagen" | "audio" | "ritmo" | "publicar" | "estilo" | "claude";
+
+const CATEGORIAS: { id: Categoria; nombre: string; titulo: string; ayuda: string; Icono: LucideIcon }[] = [
+  { id: "gancho", nombre: "Gancho", titulo: "Gancho", ayuda: "El título del clip y la frase grande de los primeros segundos.", Icono: Type },
+  { id: "subtitulos", nombre: "Subtítulos", titulo: "Subtítulos", ayuda: "Cómo se ven las palabras mientras habla el predicador.", Icono: Subtitles },
+  { id: "versiculo", nombre: "Versículo", titulo: "Versículo", ayuda: "La cita bíblica que aparece en el clip (RVR1960).", Icono: BookOpen },
+  { id: "imagen", nombre: "Imagen", titulo: "Imagen", ayuda: "Color, encuadre, efectos y el principio y final del clip.", Icono: Image },
+  { id: "audio", nombre: "Audio", titulo: "Audio", ayuda: "La voz del predicador, la música de fondo y los efectos de sonido.", Icono: AudioLines },
+  { id: "ritmo", nombre: "Ritmo", titulo: "Ritmo", ayuda: "Pausas, muletillas y frases repetidas que se quitan del clip.", Icono: Scissors },
+  { id: "publicar", nombre: "Publicar", titulo: "Publicar", ayuda: "Los formatos a exportar y el texto para cada red.", Icono: Send },
+  { id: "estilo", nombre: "Mi estilo", titulo: "Estilo de la iglesia", ayuda: "Guarda cómo se ve este clip o copia el estilo de un reel que te guste.", Icono: Palette },
+  { id: "claude", nombre: "Claude", titulo: "Pedirle a Claude", ayuda: "Cambia el clip escribiendo lo que quieres.", Icono: Sparkles },
+];
 
 interface Props {
   clip: ClipSpec;
@@ -33,15 +52,16 @@ interface Props {
   alMedirColor?(): Promise<[number, number, number]>;
   /** El nivel de voz elegido todavía se está preparando. */
   preparandoVoz?: boolean;
-  /** Pestaña «Claude»: pedir cambios en palabras (con su historial por clip). */
+  /** Categoría «Claude»: pedir cambios en palabras (con su historial por clip). */
   chat?: { proyectoId: string; historial: EntradaChat[]; alHistorial(h: EntradaChat[]): void };
   /** Color de la marca (para las muestras de las galerías). */
   colorMarca?: string;
+  /** Categoría abierta, si la maneja el editor (la línea de tiempo también la cambia). */
+  categoria?: Categoria;
+  alCategoria?(c: Categoria): void;
 }
 
 const TONALIDADES = ["Do", "Re", "Mi", "Fa", "Sol", "La", "Si", "Mib", "Lab", "Sib"];
-
-type Pestana = "clip" | "estilo" | "publicar" | "claude";
 
 export function Interruptor({ activo, etiqueta, alCambiar }: { activo: boolean; etiqueta: string; alCambiar(v: boolean): void }) {
   return <button type="button" className="interruptor" role="switch" aria-checked={activo} aria-label={etiqueta} onClick={() => alCambiar(!activo)} />;
@@ -55,211 +75,292 @@ export function Segmentos<T extends string>({ opciones, valor, etiqueta, alCambi
   );
 }
 
-const FORMATOS: [Formato, string, string][] = [["9:16", "Reels · TikTok", "12px 21px"], ["4:5", "Feed IG · FB", "15px 19px"], ["1:1", "Cuadrado", "17px 17px"]];
+/** Sección plegable de una categoría: la cabecera muestra cómo está ahora («Tamaño · Medio»). */
+export function Seccion({ titulo, resumen, children, abierta = true }: { titulo: string; resumen?: string; children: ReactNode; abierta?: boolean }) {
+  const [abierto, setAbierto] = useState(abierta);
+  return (
+    <section className="seccion">
+      <h3>
+        <button type="button" className="seccion-cabeza" aria-expanded={abierto} onClick={() => setAbierto((a) => !a)}>
+          <span className="seccion-titulo">{titulo}</span>
+          {resumen && <span className="seccion-resumen">{resumen}</span>}
+          <ChevronRight size={15} className="seccion-flecha" aria-hidden="true" />
+        </button>
+      </h3>
+      {abierto && <div className="seccion-cuerpo">{children}</div>}
+    </section>
+  );
+}
 
-export function Inspector({ clip: c, avisos, alCambiar, alGuardarEstilo, alAplicarEstilo, pistas, palabras, chat, preparandoVoz, alMedirColor, fuenteIglesia, colorMarca }: Props) {
+const FORMATOS: [Formato, string, string][] = [["9:16", "Reels · TikTok", "12px 21px"], ["4:5", "Feed IG · FB", "15px 19px"], ["1:1", "Cuadrado", "17px 17px"]];
+const TAMANO: Record<string, string> = { s: "Chico", m: "Medio", l: "Grande" };
+const MUSICA: Record<string, string> = { auto: "Automática", pista: "Mi pista", pad: "Pad", ninguna: "Sin música" };
+const TRANSICION: Record<string, string> = { destello: "Destello", luz: "Luz", ninguna: "Sin transición" };
+const VOZ: Record<string, string> = { ligera: "Ligera", limpia: "Limpia", podcast: "Podcast" };
+const nombreFuente = (id: IdFuente) => (id === "iglesia" ? "La de la iglesia" : FUENTES[id].nombre);
+
+export function Inspector({ clip: c, avisos, alCambiar, alGuardarEstilo, alAplicarEstilo, pistas, palabras, chat, preparandoVoz, alMedirColor, fuenteIglesia, colorMarca, categoria, alCategoria }: Props) {
   // El clip de ahora (las mediciones que tardan se aplican sobre lo último que eligió la persona).
   const ultimo = useRef(c);
   ultimo.current = c;
-  const [pestana, setPestana] = useState<Pestana>("clip");
+  const [propia, setPropia] = useState<Categoria>("gancho");
+  const cats = CATEGORIAS.filter((k) => k.id !== "claude" || chat);
+  const pedida = categoria ?? propia;
+  const cat = cats.find((k) => k.id === pedida) ?? cats[0];
+  const elegir = (id: Categoria) => { setPropia(id); alCategoria?.(id); };
+  const riel = useRef<HTMLDivElement>(null);
+  const mover = (e: KeyboardEvent, i: number) => {
+    const paso = e.key === "ArrowDown" ? 1 : e.key === "ArrowUp" ? -1 : 0;
+    if (!paso) return;
+    e.preventDefault();
+    const j = (i + paso + cats.length) % cats.length;
+    elegir(cats[j].id);
+    riel.current?.querySelectorAll<HTMLButtonElement>("[role=tab]")[j]?.focus();
+  };
   const cambiar = (parcial: Partial<ClipSpec>) => alCambiar({ ...c, ...parcial });
   const cambiarVersiculo = (i: number, parcial: Partial<ClipSpec["versiculos"][number]>) =>
     cambiar({ versiculos: c.versiculos.map((v, j) => (j === i ? { ...v, ...parcial } : v)) });
+  const faltaConfirmar = c.versiculos.some((v) => v.activo && !v.confirmado);
+  const fuentes = c.fuentes ?? FUENTES_POR_DEFECTO;
 
   return (
     <div className="inspector">
-      <div className="pestanas" role="tablist">
-        {([["clip", "Clip", FileText], ["estilo", "Estilo", Type], ["publicar", "Publicar", Send], ...(chat ? [["claude", "Claude", Sparkles]] as const : [])] as const).map(([id, texto, Icono]) => (
-          <button key={id} type="button" role="tab" aria-selected={pestana === id} onClick={() => setPestana(id)}><Icono size={14} aria-hidden="true" />{texto}</button>
-        ))}
-      </div>
-      <div className="inspector-cuerpo">
-        {avisos.length > 0 && (
-          <div className="avisos" role="status">{avisos.map((a) => <p key={a}><TriangleAlert size={14} aria-hidden="true" />{a}</p>)}</div>
-        )}
+      <div className="inspector-panel" role="tabpanel" id="panel-categoria" aria-labelledby={`cat-${cat.id}`}>
+        <div className="panel-cabeza">
+          <div className="panel-titulo">
+            <h2>{cat.titulo}</h2>
+            {cat.id === "subtitulos" && <Interruptor activo={c.subtitulos.activos} etiqueta="Mostrar subtítulos" alCambiar={(activos) => cambiar({ subtitulos: { ...c.subtitulos, activos } })} />}
+          </div>
+          <p>{cat.ayuda}</p>
+        </div>
+        <div className="inspector-cuerpo">
+          {avisos.length > 0 && (
+            <div className="avisos" role="status">{avisos.map((a) => <p key={a}><TriangleAlert size={14} aria-hidden="true" />{a}</p>)}</div>
+          )}
 
-        {pestana === "clip" && (
-          <>
-            <label className="campo">Título del clip
-              <input className="entrada" value={c.titulo} onChange={(e) => cambiar({ titulo: e.target.value })} />
-            </label>
-            <div className="campo">
-              <div className="campo-cabeza"><label htmlFor="gancho">Gancho en pantalla</label><span className="mono" aria-hidden="true">{c.gancho.length}/40</span></div>
-              <input id="gancho" className="entrada" maxLength={60} value={c.gancho} onChange={(e) => cambiar({ gancho: e.target.value })} />
-              {c.ganchosAlternativos.length > 0 && (
-                <div className="alternativas" aria-label="Otras opciones de Claude">
-                  {c.ganchosAlternativos.map((g, i) => (
-                    <button key={g + i} type="button" className="alt" onClick={() => cambiar({ gancho: g, ganchosAlternativos: c.ganchosAlternativos.map((x, j) => (j === i ? c.gancho : x)) })}>
-                      <Sparkles size={12} aria-hidden="true" />{g}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-            <div className="campo">
-              <span>Estilo del gancho</span>
-              <Galeria etiqueta="Estilo del gancho" color={colorMarca} valor={c.estiloGancho ?? "tarjeta"}
-                opciones={ESTILOS_GANCHO.map((e) => [e, NOMBRE_GANCHO[e]] as [EstiloGancho, string])}
-                muestra={(e) => muestraGancho(e, colorMarca ?? "#f5c542")} alCambiar={(estiloGancho) => cambiar({ estiloGancho })} />
-            </div>
-            {c.razon && <div className="porque"><TrendingUp size={16} aria-hidden="true" /><div><b>{c.puntaje} · Por qué funciona.</b> {c.razon}</div></div>}
-
-            {c.versiculos.map((v, i) => (
-              <div key={v.ref + i} className="tarjeta">
-                <div className="tarjeta-cabeza"><BookOpen size={16} aria-hidden="true" /><b>{v.ref}</b><span className="mono">RVR1960</span>
-                  <Interruptor activo={v.activo} etiqueta={`Mostrar ${v.ref}`} alCambiar={(activo) => cambiarVersiculo(i, { activo, fuera: false })} /></div>
-                {v.fuera && !v.activo && <p className="aviso-chico"><TriangleAlert size={13} aria-hidden="true" />Quedó fuera del corte: el predicador lo cita en una parte que ya no está en el clip.</p>}
-                <label className="campo">
-                  <span className="sr">Texto RVR1960 de {v.ref}</span>
-                  <textarea className="entrada texto-versiculo" rows={3} value={v.texto} onChange={(e) => cambiarVersiculo(i, { texto: e.target.value })} />
-                </label>
-                {v.confirmado ? (
-                  <p className="ok-texto"><Check size={13} aria-hidden="true" />Texto confirmado</p>
-                ) : (
-                  <div className="confirmar">
-                    <p>Revisa el texto RVR1960 antes de exportar: lo escribió Claude y puede tener diferencias.</p>
-                    <button type="button" className="btn pequeno primario" disabled={!v.texto.trim()} onClick={() => cambiarVersiculo(i, { confirmado: true })}>Confirmar texto</button>
+          {cat.id === "gancho" && (
+            <>
+              <label className="campo">Título del clip
+                <input className="entrada" value={c.titulo} onChange={(e) => cambiar({ titulo: e.target.value })} />
+              </label>
+              <div className="campo">
+                <div className="campo-cabeza"><label htmlFor="gancho">Gancho en pantalla</label><span className="mono" aria-hidden="true">{c.gancho.length}/40</span></div>
+                <input id="gancho" className="entrada" maxLength={60} value={c.gancho} onChange={(e) => cambiar({ gancho: e.target.value })} />
+                {c.ganchosAlternativos.length > 0 && (
+                  <div className="alternativas" aria-label="Otras opciones de Claude">
+                    {c.ganchosAlternativos.map((g, i) => (
+                      <button key={g + i} type="button" className="alt" onClick={() => cambiar({ gancho: g, ganchosAlternativos: c.ganchosAlternativos.map((x, j) => (j === i ? c.gancho : x)) })}>
+                        <Sparkles size={12} aria-hidden="true" />{g}
+                      </button>
+                    ))}
                   </div>
                 )}
-                <p className="regla">Los subtítulos se ocultan mientras aparece la cita.</p>
               </div>
-            ))}
+              <div className="campo">
+                <span>Estilo del gancho</span>
+                <Galeria etiqueta="Estilo del gancho" color={colorMarca} valor={c.estiloGancho ?? "tarjeta"}
+                  opciones={ESTILOS_GANCHO.map((e) => [e, NOMBRE_GANCHO[e]] as [EstiloGancho, string])}
+                  muestra={(e) => muestraGancho(e, colorMarca ?? "#f5c542")} alCambiar={(estiloGancho) => cambiar({ estiloGancho })} />
+              </div>
+              {c.razon && <div className="porque"><TrendingUp size={16} aria-hidden="true" /><div><b>{c.puntaje} · Por qué funciona.</b> {c.razon}</div></div>}
+            </>
+          )}
 
-            {c.apertura && (
-              <div className="tarjeta">
-                <div className="tarjeta-cabeza"><Contrast size={16} aria-hidden="true" /><b>Apertura en blanco y negro</b>
-                  <Interruptor activo={c.apertura.activa} etiqueta="Apertura en blanco y negro" alCambiar={(activa) => cambiar({ apertura: { ...c.apertura!, activa } })} /></div>
-                <p>«{c.apertura.frase}» · {(c.apertura.fin - c.apertura.inicio).toFixed(1)} s</p>
-              </div>
-            )}
-            <div className="tarjeta">
-              <div className="tarjeta-cabeza"><Flag size={16} aria-hidden="true" /><b>Cierre con invitación</b>
-                <Interruptor activo={c.cierre} etiqueta="Cierre con invitación" alCambiar={(cierre) => cambiar({ cierre })} /></div>
-            </div>
-            <div className="campo">
-              <span>Formatos a exportar</span>
-              <div className="formatos" role="group" aria-label="Formatos">
-                {FORMATOS.map(([f, nota, caja]) => {
-                  const on = c.formatos.includes(f);
-                  return (
-                    <button key={f} type="button" className="fmt" aria-pressed={on}
-                      onClick={() => cambiar({ formatos: on ? c.formatos.filter((x) => x !== f) : [...c.formatos, f] })}>
-                      <i style={{ width: caja.split(" ")[0], height: caja.split(" ")[1] }} />{f}<span>{nota}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </>
-        )}
-
-        {pestana === "estilo" && (
-          <>
-            <div className="grupo"><h3>Subtítulos</h3>
-              <div className="fila"><Interruptor activo={c.subtitulos.activos} etiqueta="Mostrar subtítulos" alCambiar={(activos) => cambiar({ subtitulos: { ...c.subtitulos, activos } })} /> Mostrar subtítulos</div>
-              <Galeria etiqueta="Estilo de subtítulos" color={colorMarca} valor={c.subtitulos.estilo} opciones={ESTILOS_SUB.map((e) => [e, NOMBRE_ESTILO[e]] as [EstiloSub, string])}
+          {cat.id === "subtitulos" && (
+            <>
+              <Galeria etiqueta="Estilo de subtítulos" color={colorMarca} valor={c.subtitulos.estilo} familias={FAMILIAS_SUB} recorte
+                opciones={ESTILOS_SUB.map((e) => [e, NOMBRE_ESTILO[e]] as [EstiloSub, string])}
                 muestra={(e) => muestraSub(e, colorMarca ?? "#f5c542")} alCambiar={(estilo) => cambiar({ subtitulos: { ...c.subtitulos, estilo } })} />
-              <Segmentos etiqueta="Tamaño de subtítulos" valor={c.subtitulos.tamano} opciones={[["s", "Chico"], ["m", "Medio"], ["l", "Grande"]]}
-                alCambiar={(tamano) => cambiar({ subtitulos: { ...c.subtitulos, tamano } })} />
-              <label className="campo">Altura (9:16)
-                <input type="range" min={0.55} max={0.86} step={0.01} value={c.subtitulos.altura} onChange={(e) => cambiar({ subtitulos: { ...c.subtitulos, altura: Number(e.target.value) } })} />
-              </label>
-            </div>
-            <div className="grupo"><h3>Efectos</h3>
-              <Segmentos etiqueta="Transición" valor={c.efectos.transicion} opciones={[["destello", "Destello"], ["luz", "Luz"], ["ninguna", "Ninguna"]]}
-                alCambiar={(transicion) => cambiar({ efectos: { ...c.efectos, transicion } })} />
-              <div className="fila"><Interruptor activo={c.efectos.grano} etiqueta="Grano de película" alCambiar={(grano) => cambiar({ efectos: { ...c.efectos, grano } })} /> Grano de película</div>
-              <div className="fila"><Interruptor activo={c.efectos.rotulo} etiqueta="Nombre del predicador" alCambiar={(rotulo) => cambiar({ efectos: { ...c.efectos, rotulo } })} /> Nombre del predicador al inicio</div>
-              <div className="fila"><Interruptor activo={c.efectos.sonidos !== false} etiqueta="Efectos de sonido" alCambiar={(sonidos) => cambiar({ efectos: { ...c.efectos, sonidos } })} /> Efectos de sonido (whoosh y pop)</div>
-            </div>
-            <div className="grupo"><h3>Ritmo</h3>
+              <Seccion titulo="Tamaño" resumen={TAMANO[c.subtitulos.tamano]}>
+                <Segmentos etiqueta="Tamaño de subtítulos" valor={c.subtitulos.tamano} opciones={[["s", "Chico"], ["m", "Medio"], ["l", "Grande"]]}
+                  alCambiar={(tamano) => cambiar({ subtitulos: { ...c.subtitulos, tamano } })} />
+              </Seccion>
+              <Seccion titulo="Altura en pantalla" resumen={`${Math.round(c.subtitulos.altura * 100)} %`}>
+                <label className="campo">Altura (9:16)
+                  <input type="range" min={0.55} max={0.86} step={0.01} value={c.subtitulos.altura} onChange={(e) => cambiar({ subtitulos: { ...c.subtitulos, altura: Number(e.target.value) } })} />
+                </label>
+              </Seccion>
+              <Seccion titulo="Fuentes" resumen={`${nombreFuente(fuentes.titulos)} · ${nombreFuente(fuentes.subtitulos)}`}>
+                {(["titulos", "subtitulos"] as const).map((k) => (
+                  <label key={k} className="campo">{k === "titulos" ? "Fuente de títulos" : "Fuente de subtítulos"}
+                    <select className="entrada" aria-label={k === "titulos" ? "Fuente de títulos" : "Fuente de subtítulos"}
+                      value={fuentes[k]}
+                      onChange={(e) => cambiar({ fuentes: { ...fuentes, [k]: e.target.value as IdFuente } })}>
+                      {(Object.keys(FUENTES) as IdFuente[]).filter((id) => id !== "iglesia" || fuenteIglesia || fuentes[k] === "iglesia").map((id) => (
+                        <option key={id} value={id}>{id === "iglesia" && !fuenteIglesia ? `La de la iglesia (falta el archivo: se usa ${FUENTES[FUENTES_POR_DEFECTO[k]].nombre})` : FUENTES[id].nombre}</option>
+                      ))}
+                    </select>
+                  </label>
+                ))}
+              </Seccion>
+            </>
+          )}
+
+          {cat.id === "versiculo" && (
+            <>
+              {c.versiculos.length === 0 && <p className="vacio-categoria">Este clip no cita ningún versículo. Si el predicador cita uno, Claude lo agrega al analizar.</p>}
+              {c.versiculos.map((v, i) => (
+                <div key={v.ref + i} className="tarjeta">
+                  <div className="tarjeta-cabeza"><BookOpen size={16} aria-hidden="true" /><b>{v.ref}</b><span className="mono">RVR1960</span>
+                    <Interruptor activo={v.activo} etiqueta={`Mostrar ${v.ref}`} alCambiar={(activo) => cambiarVersiculo(i, { activo, fuera: false })} /></div>
+                  {v.fuera && !v.activo && <p className="aviso-chico"><TriangleAlert size={13} aria-hidden="true" />Quedó fuera del corte: el predicador lo cita en una parte que ya no está en el clip.</p>}
+                  <label className="campo">
+                    <span className="sr">Texto RVR1960 de {v.ref}</span>
+                    <textarea className="entrada texto-versiculo" rows={4} value={v.texto} onChange={(e) => cambiarVersiculo(i, { texto: e.target.value })} />
+                  </label>
+                  {v.confirmado ? (
+                    <p className="ok-texto"><Check size={13} aria-hidden="true" />Texto confirmado</p>
+                  ) : (
+                    <div className="confirmar">
+                      <p>Revisa el texto RVR1960 antes de exportar: lo escribió Claude y puede tener diferencias.</p>
+                      <button type="button" className="btn pequeno primario" disabled={!v.texto.trim()} onClick={() => cambiarVersiculo(i, { confirmado: true })}>Confirmar texto</button>
+                    </div>
+                  )}
+                  <p className="regla">Los subtítulos se ocultan mientras aparece la cita.</p>
+                </div>
+              ))}
+            </>
+          )}
+
+          {cat.id === "imagen" && (
+            <>
+              <ColorGrupo clip={c} alCambiar={(col) => cambiar({ color: col })} alMedir={alMedirColor}
+                alBalance={(id, balance) => { const ahora = ultimo.current; if (ahora.id === id) alCambiar({ ...ahora, color: { ...(ahora.color ?? { look: "natural", intensidad: 0.7 }), balance } }); }} />
+              <Seccion titulo="Encuadre" resumen={c.encuadre.modo === "auto" ? "Sigue la cara" : "Fijo"}>
+                <Segmentos etiqueta="Seguimiento" valor={c.encuadre.modo} opciones={[["auto", "Seguir la cara"], ["fijo", "Fijo"]]}
+                  alCambiar={(modo) => cambiar({ encuadre: { ...c.encuadre, modo } })} />
+                {c.encuadre.modo === "fijo" && (
+                  <label className="campo">Posición
+                    <input type="range" min={0} max={1} step={0.01} value={c.encuadre.x} onChange={(e) => cambiar({ encuadre: { ...c.encuadre, x: Number(e.target.value) } })} />
+                  </label>
+                )}
+                <label className="campo">Zoom
+                  <input type="range" min={1} max={2} step={0.05} value={c.encuadre.zoom} onChange={(e) => cambiar({ encuadre: { ...c.encuadre, zoom: Number(e.target.value) } })} />
+                </label>
+              </Seccion>
+              <Seccion titulo="Efectos" resumen={[TRANSICION[c.efectos.transicion], c.efectos.grano && "grano"].filter(Boolean).join(" · ")}>
+                <Segmentos etiqueta="Transición" valor={c.efectos.transicion} opciones={[["destello", "Destello"], ["luz", "Luz"], ["ninguna", "Ninguna"]]}
+                  alCambiar={(transicion) => cambiar({ efectos: { ...c.efectos, transicion } })} />
+                <div className="fila"><Interruptor activo={c.efectos.grano} etiqueta="Grano de película" alCambiar={(grano) => cambiar({ efectos: { ...c.efectos, grano } })} /> Grano de película</div>
+                <div className="fila"><Interruptor activo={c.efectos.rotulo} etiqueta="Nombre del predicador" alCambiar={(rotulo) => cambiar({ efectos: { ...c.efectos, rotulo } })} /> Nombre del predicador al inicio</div>
+              </Seccion>
+              <Seccion titulo="Principio y final" resumen={[c.apertura?.activa && "B/N", c.cierre && "invitación"].filter(Boolean).join(" · ") || "Sin extras"}>
+                {c.apertura && (
+                  <div className="fila"><Interruptor activo={c.apertura.activa} etiqueta="Apertura en blanco y negro" alCambiar={(activa) => cambiar({ apertura: { ...c.apertura!, activa } })} />
+                    <span>Apertura en blanco y negro <span className="tenue">«{c.apertura.frase}» · {(c.apertura.fin - c.apertura.inicio).toFixed(1)} s</span></span></div>
+                )}
+                <div className="fila"><Interruptor activo={c.cierre} etiqueta="Cierre con invitación" alCambiar={(cierre) => cambiar({ cierre })} /> Cierre con invitación</div>
+              </Seccion>
+            </>
+          )}
+
+          {cat.id === "audio" && (
+            <>
+              <Seccion titulo="Voz del predicador" resumen={VOZ[c.voz ?? "limpia"]}>
+                <Segmentos etiqueta="Nivel de voz" valor={c.voz ?? "limpia"} opciones={[["ligera", "Ligera"], ["limpia", "Limpia"], ["podcast", "Podcast"]]}
+                  alCambiar={(voz) => cambiar({ voz })} />
+                <p className="ayuda">{{ ligera: "Para un buen micrófono: solo quita graves y empareja el volumen.", limpia: "Quita ruido, eco y graves (recomendada).", podcast: "Limpia, con más presencia y compresión suave, como un podcast." }[c.voz ?? "limpia"]}</p>
+                {preparandoVoz && <p className="ayuda" role="status"><LoaderCircle size={13} className="girar" aria-hidden="true" /> Preparando la voz… (una vez por prédica)</p>}
+              </Seccion>
+              <Seccion titulo="Música de fondo" resumen={MUSICA[c.musica.modo]}>
+                <Segmentos etiqueta="Música" valor={c.musica.modo} opciones={[["auto", "Automática"], ["pista", "Mi pista"], ["pad", "Pad"], ["ninguna", "Sin música"]]}
+                  alCambiar={(modo) => cambiar({ musica: { ...c.musica, modo } })} />
+                {c.musica.modo !== "ninguna" && (
+                  <>
+                    {c.musica.modo === "pista" ? (
+                      <label className="campo">Pista
+                        <select className="entrada" value={c.musica.pista ?? ""} onChange={(e) => cambiar({ musica: { ...c.musica, pista: e.target.value || null } })}>
+                          <option value="">Elegir según el ánimo</option>
+                          {(pistas ?? []).map((p) => <option key={p.id} value={p.id}>{p.titulo}</option>)}
+                        </select>
+                      </label>
+                    ) : (
+                      <label className="campo">Ánimo de la música
+                        <select className="entrada" value={c.musica.animo} onChange={(e) => cambiar({ musica: { ...c.musica, animo: e.target.value as Animo } })}>
+                          {ANIMOS.map((a) => <option key={a} value={a}>{NOMBRE_ANIMO[a]}</option>)}
+                        </select>
+                      </label>
+                    )}
+                    {c.musica.modo !== "pista" && (
+                      <label className="campo">Tonalidad
+                        <select className="entrada" value={c.musica.tonalidad} onChange={(e) => cambiar({ musica: { ...c.musica, tonalidad: e.target.value } })}>
+                          {TONALIDADES.map((t) => <option key={t} value={t}>{t}</option>)}
+                        </select>
+                      </label>
+                    )}
+                    <label className="campo">Volumen bajo la voz
+                      <input type="range" aria-label="Volumen de la música" min={0.04} max={0.3} step={0.01} value={c.musica.volumen}
+                        onChange={(e) => cambiar({ musica: { ...c.musica, volumen: Number(e.target.value) } })} />
+                    </label>
+                  </>
+                )}
+              </Seccion>
+              <Seccion titulo="Efectos de sonido" resumen={c.efectos.sonidos !== false ? "Whoosh y pop" : "Apagados"}>
+                <div className="fila"><Interruptor activo={c.efectos.sonidos !== false} etiqueta="Efectos de sonido" alCambiar={(sonidos) => cambiar({ efectos: { ...c.efectos, sonidos } })} /> Efectos de sonido (whoosh y pop)</div>
+              </Seccion>
+            </>
+          )}
+
+          {cat.id === "ritmo" && (
+            <>
               <div className="fila"><Interruptor activo={c.cortes.pausas} etiqueta="Acortar pausas largas" alCambiar={(pausas) => cambiar({ cortes: { ...c.cortes, pausas } })} /> Acortar pausas largas</div>
               <Segmentos etiqueta="Intensidad de los cortes" valor={c.cortes.intensidad ?? "normal"} deshabilitado={!c.cortes.pausas}
                 opciones={[["suave", "Suave"], ["normal", "Normal"], ["fuerte", "Fuerte"]]} alCambiar={(intensidad) => cambiar({ cortes: { ...c.cortes, intensidad } })} />
               <div className="fila"><Interruptor activo={c.cortes.muletillas} etiqueta="Quitar muletillas" alCambiar={(muletillas) => cambiar({ cortes: { ...c.cortes, muletillas } })} /> Quitar muletillas («eh», «em»)</div>
               {palabras && <Repeticiones clip={c} palabras={palabras} alCambiar={(quitados) => cambiar({ cortes: { ...c.cortes, quitados } })} />}
-            </div>
-            <CopiarEstilo clip={c} alAplicar={alCambiar} alGuardarEstilo={alGuardarEstilo ? (n) => { alCambiar(n); alGuardarEstilo(n); } : undefined} />
-            <div className="grupo"><h3>Fuentes</h3>
-              {(["titulos", "subtitulos"] as const).map((k) => (
-                <label key={k} className="campo">{k === "titulos" ? "Fuente de títulos" : "Fuente de subtítulos"}
-                  <select className="entrada" aria-label={k === "titulos" ? "Fuente de títulos" : "Fuente de subtítulos"}
-                    value={(c.fuentes ?? FUENTES_POR_DEFECTO)[k]}
-                    onChange={(e) => cambiar({ fuentes: { ...(c.fuentes ?? FUENTES_POR_DEFECTO), [k]: e.target.value as IdFuente } })}>
-                    {(Object.keys(FUENTES) as IdFuente[]).filter((id) => id !== "iglesia" || fuenteIglesia || (c.fuentes ?? FUENTES_POR_DEFECTO)[k] === "iglesia").map((id) => (
-                      <option key={id} value={id}>{id === "iglesia" && !fuenteIglesia ? `La de la iglesia (falta el archivo: se usa ${FUENTES[FUENTES_POR_DEFECTO[k]].nombre})` : FUENTES[id].nombre}</option>
-                    ))}
-                  </select>
-                </label>
-              ))}
-            </div>
-            <ColorGrupo clip={c} alCambiar={(color) => cambiar({ color })} alMedir={alMedirColor}
-              alBalance={(id, balance) => { const ahora = ultimo.current; if (ahora.id === id) alCambiar({ ...ahora, color: { ...(ahora.color ?? { look: "natural", intensidad: 0.7 }), balance } }); }} />
-            <div className="grupo"><h3>Voz</h3>
-              <Segmentos etiqueta="Nivel de voz" valor={c.voz ?? "limpia"} opciones={[["ligera", "Ligera"], ["limpia", "Limpia"], ["podcast", "Podcast"]]}
-                alCambiar={(voz) => cambiar({ voz })} />
-              <p className="ayuda">{{ ligera: "Para un buen micrófono: solo quita graves y empareja el volumen.", limpia: "Quita ruido, eco y graves (recomendada).", podcast: "Limpia, con más presencia y compresión suave, como un podcast." }[c.voz ?? "limpia"]}</p>
-              {preparandoVoz && <p className="ayuda" role="status"><LoaderCircle size={13} className="girar" aria-hidden="true" /> Preparando la voz… (una vez por prédica)</p>}
-            </div>
-            <div className="grupo"><h3>Música</h3>
-              <Segmentos etiqueta="Música" valor={c.musica.modo} opciones={[["auto", "Automática"], ["pista", "Mi pista"], ["pad", "Pad"], ["ninguna", "Sin música"]]}
-                alCambiar={(modo) => cambiar({ musica: { ...c.musica, modo } })} />
-              {c.musica.modo !== "ninguna" && (
-                <>
-                  {c.musica.modo === "pista" ? (
-                    <label className="campo">Pista
-                      <select className="entrada" value={c.musica.pista ?? ""} onChange={(e) => cambiar({ musica: { ...c.musica, pista: e.target.value || null } })}>
-                        <option value="">Elegir según el ánimo</option>
-                        {(pistas ?? []).map((p) => <option key={p.id} value={p.id}>{p.titulo}</option>)}
-                      </select>
-                    </label>
-                  ) : (
-                    <label className="campo">Ánimo de la música
-                      <select className="entrada" value={c.musica.animo} onChange={(e) => cambiar({ musica: { ...c.musica, animo: e.target.value as Animo } })}>
-                        {ANIMOS.map((a) => <option key={a} value={a}>{NOMBRE_ANIMO[a]}</option>)}
-                      </select>
-                    </label>
-                  )}
-                  {c.musica.modo !== "pista" && (
-                    <label className="campo">Tonalidad
-                      <select className="entrada" value={c.musica.tonalidad} onChange={(e) => cambiar({ musica: { ...c.musica, tonalidad: e.target.value } })}>
-                        {TONALIDADES.map((t) => <option key={t} value={t}>{t}</option>)}
-                      </select>
-                    </label>
-                  )}
-                  <label className="campo">Volumen bajo la voz
-                    <input type="range" aria-label="Volumen de la música" min={0.04} max={0.3} step={0.01} value={c.musica.volumen}
-                      onChange={(e) => cambiar({ musica: { ...c.musica, volumen: Number(e.target.value) } })} />
-                  </label>
-                </>
-              )}
-            </div>
-            <div className="grupo"><h3>Encuadre</h3>
-              <Segmentos etiqueta="Seguimiento" valor={c.encuadre.modo} opciones={[["auto", "Seguir la cara"], ["fijo", "Fijo"]]}
-                alCambiar={(modo) => cambiar({ encuadre: { ...c.encuadre, modo } })} />
-              {c.encuadre.modo === "fijo" && (
-                <label className="campo">Posición
-                  <input type="range" min={0} max={1} step={0.01} value={c.encuadre.x} onChange={(e) => cambiar({ encuadre: { ...c.encuadre, x: Number(e.target.value) } })} />
-                </label>
-              )}
-              <label className="campo">Zoom
-                <input type="range" min={1} max={2} step={0.05} value={c.encuadre.zoom} onChange={(e) => cambiar({ encuadre: { ...c.encuadre, zoom: Number(e.target.value) } })} />
-              </label>
-            </div>
-            {(alGuardarEstilo || alAplicarEstilo) && (
-              <div className="grupo"><h3>Estilo de la iglesia</h3>
-                <p className="ayuda">Guarda cómo se ve este clip para que los próximos salgan igual.</p>
-                <div className="fila-botones">
-                  {alGuardarEstilo && <button type="button" className="btn pequeno" onClick={() => alGuardarEstilo(c)}>Guardar como estilo de la iglesia</button>}
-                  {alAplicarEstilo && <button type="button" className="btn pequeno fantasma" onClick={() => alAplicarEstilo()}>Aplicar a todos los clips</button>}
+            </>
+          )}
+
+          {cat.id === "publicar" && (
+            <>
+              <div className="campo">
+                <span>Formatos a exportar</span>
+                <div className="formatos" role="group" aria-label="Formatos">
+                  {FORMATOS.map(([f, nota, caja]) => {
+                    const on = c.formatos.includes(f);
+                    return (
+                      <button key={f} type="button" className="fmt" aria-pressed={on}
+                        onClick={() => cambiar({ formatos: on ? c.formatos.filter((x) => x !== f) : [...c.formatos, f] })}>
+                        <i style={{ width: caja.split(" ")[0], height: caja.split(" ")[1] }} />{f}<span>{nota}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
-            )}
-          </>
-        )}
+              <Publicar redes={c.redes} alCambiar={(redes) => cambiar({ redes })} />
+            </>
+          )}
 
-        {pestana === "claude" && chat && <ChatClip proyectoId={chat.proyectoId} clip={c} historial={chat.historial} alHistorial={chat.alHistorial} alAplicar={alCambiar} />}
-        {pestana === "publicar" && <Publicar redes={c.redes} alCambiar={(redes) => cambiar({ redes })} />}
+          {cat.id === "estilo" && (
+            <>
+              {(alGuardarEstilo || alAplicarEstilo) && (
+                <Seccion titulo="Guardar este estilo">
+                  <p className="ayuda">Guarda cómo se ve este clip para que los próximos salgan igual.</p>
+                  <div className="fila-botones">
+                    {alGuardarEstilo && <button type="button" className="btn pequeno" onClick={() => alGuardarEstilo(c)}>Guardar como estilo de la iglesia</button>}
+                    {alAplicarEstilo && <button type="button" className="btn pequeno fantasma" onClick={() => alAplicarEstilo()}>Aplicar a todos los clips</button>}
+                  </div>
+                </Seccion>
+              )}
+              <CopiarEstilo clip={c} alAplicar={alCambiar} alGuardarEstilo={alGuardarEstilo ? (n) => { alCambiar(n); alGuardarEstilo(n); } : undefined} />
+            </>
+          )}
+
+          {cat.id === "claude" && chat && <ChatClip proyectoId={chat.proyectoId} clip={c} historial={chat.historial} alHistorial={chat.alHistorial} alAplicar={alCambiar} />}
+        </div>
+      </div>
+
+      <div className="riel-categorias" role="tablist" aria-label="Categorías de ajustes" aria-orientation="vertical" ref={riel}>
+        {cats.map((k, i) => (
+          <button key={k.id} id={`cat-${k.id}`} type="button" role="tab" aria-selected={k.id === cat.id} aria-controls="panel-categoria"
+            tabIndex={k.id === cat.id ? 0 : -1} className={k.id === "publicar" ? "separado" : undefined}
+            aria-describedby={k.id === "versiculo" && faltaConfirmar ? "falta-confirmar" : undefined}
+            onClick={() => elegir(k.id)} onKeyDown={(e) => mover(e, i)}>
+            {k.id === "versiculo" && faltaConfirmar && <span className="riel-punto" aria-hidden="true" />}
+            <k.Icono size={19} aria-hidden="true" />{k.nombre}
+          </button>
+        ))}
+        <span id="falta-confirmar" hidden>Falta confirmar el texto</span>
       </div>
     </div>
   );
@@ -386,7 +487,7 @@ function ColorGrupo({ clip: c, alCambiar, alMedir, alBalance }: {
     }
   };
   return (
-    <div className="grupo"><h3>Color</h3>
+    <Seccion titulo="Color" resumen={NOMBRE_LOOK[color.look] + (color.balance ? " · tono corregido" : "")}>
       <Segmentos etiqueta="Look de color" valor={color.look} opciones={(Object.keys(NOMBRE_LOOK) as Look[]).map((l) => [l, NOMBRE_LOOK[l]] as [Look, string])}
         alCambiar={(look) => alCambiar({ ...color, look })} />
       {color.look !== "natural" && (
@@ -407,6 +508,6 @@ function ColorGrupo({ clip: c, alCambiar, alMedir, alBalance }: {
       )}
       {color.balance && <p className="ayuda">Tono corregido con el color promedio del video.</p>}
       {error && <p className="error" role="alert">{error}</p>}
-    </div>
+    </Seccion>
   );
 }

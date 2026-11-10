@@ -29,7 +29,8 @@ test("confirmar el versículo y exportar enseguida guarda el clip antes de encol
     exportar: vi.fn(async () => { orden.push("exportar"); }),
   };
   render(<Editor proyectoId="p" />);
-  await userEvent.click(await screen.findByRole("button", { name: "Confirmar texto" }));
+  await userEvent.click(await screen.findByRole("tab", { name: "Versículo" }));
+  await userEvent.click(screen.getByRole("button", { name: "Confirmar texto" }));
   await userEvent.click(screen.getByRole("button", { name: "Exportar este clip" }));
   await vi.waitFor(() => expect(orden).toContain("exportar"));
   expect(orden).toEqual(["guardar", "exportar"]);

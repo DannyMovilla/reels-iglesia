@@ -1,11 +1,18 @@
 import { useMemo, useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
-import { BookOpen, Captions, Contrast, EyeOff, Film, Flag, Layers } from "lucide-react";
+import { BookOpen, Captions, Contrast, EyeOff, Film, Flag, Music, Type } from "lucide-react";
 import { ajustarCorte, DURACION_MINIMA } from "@shared/reel/cortes";
 import { bloquesSubtitulos } from "@shared/reel/subtitulos";
 import { partesDelReel, reelAVideo, type Palabra, type Parte } from "@shared/reel/tiempo";
 import { ventanaVersiculo, type Ventana } from "@shared/reel/versiculo";
 import type { ClipSpec } from "@shared/tipos";
 import { formatoTiempo } from "@shared/validar";
+import type { Categoria } from "./Inspector";
+
+/** Pistas de la línea de tiempo y la categoría del panel que abre cada una. */
+const PISTAS: [typeof Film, string, Categoria][] = [
+  [Film, "Video", "imagen"], [Type, "Gancho", "gancho"], [Captions, "Subtítulos", "subtitulos"], [BookOpen, "Versículo", "versiculo"], [Music, "Música", "audio"],
+];
+const NOMBRE_MUSICA: Record<string, string> = { auto: "Automática", pista: "Mi pista", pad: "Pad" };
 
 interface Props {
   clip: ClipSpec;
@@ -14,12 +21,14 @@ interface Props {
   tiempoActual: number;
   alBuscar(t: number): void;
   alCambiarCorte(inicio: number, fin: number): void;
+  /** Tocar el nombre de una pista abre sus ajustes en el panel de la derecha. */
+  alElegirPista?(c: Categoria): void;
   alAlternarReproduccion?(): void;
 }
 
 const conDecimal = (t: number) => `${formatoTiempo(t)}.${Math.floor((t % 1) * 10)}`;
 
-export function LineaTiempo({ clip, palabras, tiempoActual, alBuscar, alCambiarCorte, alAlternarReproduccion }: Props) {
+export function LineaTiempo({ clip, palabras, tiempoActual, alBuscar, alCambiarCorte, alElegirPista, alAlternarReproduccion }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [arrastre, setArrastre] = useState<{ borde: "inicio" | "fin"; delta: number } | null>(null);
   const carriles = useRef<HTMLDivElement>(null);
@@ -31,6 +40,8 @@ export function LineaTiempo({ clip, palabras, tiempoActual, alBuscar, alCambiarC
     () => clip.versiculos.map((v) => ({ v, w: ventanaVersiculo(v, parteClip) })).filter((x): x is { v: ClipSpec["versiculos"][number]; w: Ventana } => x.w !== null),
     [clip.versiculos, parteClip],
   );
+  // El gancho se ve durante la apertura o los primeros 4,5 s (igual que en la composición).
+  const durGancho = !clip.gancho.trim() ? 0 : (partes.find((p) => p.tipo === "apertura")?.duracion ?? Math.min(4.5, partes.find((p) => p.tipo === "clip")?.duracion ?? 0));
   const bloques = useMemo(() => (clip.subtitulos.activos ? bloquesSubtitulos(clip, palabras, partes) : []), [clip, palabras, partes]);
   const pct = (t: number) => `${(t / total) * 100}%`;
   const videoEnCabezal = tiempoActual >= parteClip.inicioReel && tiempoActual <= parteClip.inicioReel + parteClip.duracion
@@ -90,9 +101,17 @@ export function LineaTiempo({ clip, palabras, tiempoActual, alBuscar, alCambiarC
   return (
     <section className="linea-tiempo" aria-label="Línea de tiempo" tabIndex={0} onKeyDown={teclado}>
       <div className="lt-pistas">
-        <div className="lt-etiquetas" aria-hidden="true">
-          <div><Film size={13} />Video</div><div><Layers size={13} />Efectos</div><div><Captions size={13} />Subtítulos</div>
-        </div>
+        {alElegirPista ? (
+          <div className="lt-etiquetas" role="group" aria-label="Pistas">
+            {PISTAS.map(([Icono, nombre, cat]) => (
+              <button key={nombre} type="button" title={`Ajustes de ${nombre.toLowerCase()}`} onClick={() => alElegirPista(cat)}><Icono size={13} aria-hidden="true" />{nombre}</button>
+            ))}
+          </div>
+        ) : (
+          <div className="lt-etiquetas" aria-hidden="true">
+            {PISTAS.map(([Icono, nombre]) => <div key={nombre}><Icono size={13} />{nombre}</div>)}
+          </div>
+        )}
         <div className="lt-carriles" ref={carriles} onPointerDown={(e) => alBuscar(tiempoEn(e.clientX))}>
           <div className="lt-regla">{marcas.map((m) => <span key={m} style={{ left: pct(m) }}>{formatoTiempo(m)}</span>)}</div>
           <div className="lt-carril video">
@@ -100,6 +119,8 @@ export function LineaTiempo({ clip, palabras, tiempoActual, alBuscar, alCambiarC
               const b = bloquePara(p);
               return (
                 <div key={p.tipo} className={`lt-parte ${p.tipo}`} style={{ left: pct(b.izq), width: pct(b.ancho) }}>
+                  {p.tipo === "apertura" && <span className="lt-nombre"><Contrast size={11} aria-hidden="true" />Apertura B/N</span>}
+                  {p.tipo === "cierre" && <span className="lt-nombre"><Flag size={11} aria-hidden="true" />Cierre</span>}
                   {p.tipo === "clip" && (
                     <>
                       <span className="asa izq" role="slider" aria-label="Inicio del clip" aria-valuenow={clip.inicio} tabIndex={-1} onPointerDown={empezarArrastre("inicio")} />
@@ -111,23 +132,27 @@ export function LineaTiempo({ clip, palabras, tiempoActual, alBuscar, alCambiarC
             })}
           </div>
           <div className="lt-carril">
-            {partes.filter((p) => p.tipo === "apertura").map((p) => (
-              <div key="ap" className="lt-bloque bn" style={{ left: pct(p.inicioReel), width: pct(p.duracion) }}><Contrast size={11} aria-hidden="true" />Apertura B/N</div>
-            ))}
-            {ventanas.map(({ v, w }) => (
-              <div key={v.ref} className="lt-bloque versiculo" style={{ left: pct(w.desde), width: pct(w.hasta - w.desde) }}><BookOpen size={11} aria-hidden="true" />{v.ref}</div>
-            ))}
-            {partes.filter((p) => p.tipo === "cierre").map((p) => (
-              <div key="ci" className="lt-bloque cierre" style={{ left: pct(p.inicioReel), width: pct(p.duracion) }}><Flag size={11} aria-hidden="true" />Cierre</div>
-            ))}
+            {durGancho > 0 && (
+              <div className="lt-bloque gancho" style={{ left: 0, width: pct(durGancho) }} onClick={() => alElegirPista?.("gancho")}><Type size={11} aria-hidden="true" />{clip.gancho}</div>
+            )}
           </div>
-          <div className="lt-carril">
+          <div className="lt-carril" onClick={() => alElegirPista?.("subtitulos")}>
             {bloques.map((b, i) => (
               <div key={i} className={`lt-sub${b.palabras.some((p) => p.clave) ? " clave" : ""}`} style={{ left: pct(b.desde), width: pct(Math.max(0.1, b.hasta - b.desde)) }} />
             ))}
             {ventanas.map(({ v, w }) => (
               <div key={v.ref} className="lt-oculto" style={{ left: pct(w.desde), width: pct(w.hasta - w.desde) }}><EyeOff size={11} aria-hidden="true" />ocultos por la cita</div>
             ))}
+          </div>
+          <div className="lt-carril">
+            {ventanas.map(({ v, w }) => (
+              <div key={v.ref} className="lt-bloque versiculo" style={{ left: pct(w.desde), width: pct(w.hasta - w.desde) }} onClick={() => alElegirPista?.("versiculo")}><BookOpen size={11} aria-hidden="true" />{v.ref}</div>
+            ))}
+          </div>
+          <div className="lt-carril">
+            {clip.musica.modo !== "ninguna" && (
+              <div className="lt-bloque musica" style={{ left: 0, width: "100%" }} onClick={() => alElegirPista?.("audio")}><Music size={11} aria-hidden="true" />Música · {NOMBRE_MUSICA[clip.musica.modo]}</div>
+            )}
           </div>
           <div className="lt-cabezal" style={{ left: pct(tiempoActual) }} aria-hidden="true" />
         </div>

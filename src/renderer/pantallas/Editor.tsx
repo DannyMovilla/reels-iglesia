@@ -8,9 +8,9 @@ import { DURACION_MINIMA } from "@shared/reel/cortes";
 import { duracionConservada } from "@shared/reel/cortes-voz";
 import { estiloDesdeClip, moverVersiculos } from "@shared/clip";
 import type { Pista } from "@shared/reel/pistas";
-import { Download, FileText, ListOrdered, Package, Play, Plus, Scissors } from "lucide-react";
+import { Check, Download, FileText, ListOrdered, Package, Play, Plus, Scissors } from "lucide-react";
 import { ColaExportacion } from "../componentes/ColaExportacion";
-import { Inspector } from "../componentes/Inspector";
+import { Inspector, type Categoria } from "../componentes/Inspector";
 import type { EntradaChat } from "../componentes/ChatClip";
 import { Capitulos } from "../componentes/Capitulos";
 import { Entregas } from "../componentes/Entregas";
@@ -55,6 +55,9 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
   const [errorVoz, setErrorVoz] = useState<string | null>(null);
   /** Pedidos a Claude por clip (en esta sesión), para el historial y Deshacer. */
   const [conversaciones, setConversaciones] = useState<Record<string, EntradaChat[]>>({});
+  /** Categoría abierta en el panel de la derecha (la línea de tiempo también la cambia). */
+  const [categoria, setCategoria] = useState<Categoria>("gancho");
+  const [estiloGuardado, setEstiloGuardado] = useState(false);
   useEffect(() => { void window.reels!.listarPistas?.().then(setPistas); }, []);
 
   const recargar = useCallback(async () => {
@@ -190,7 +193,6 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
   return (
     <div className="editor">
       <aside className="editor-izq" aria-label="Proceso y clips">
-        <div className="titulo-seccion">Proceso</div>
         <PanelProceso proyecto={proyecto} tareas={tareas} alReintentar={(id) => void window.reels!.reintentar(id)}
           alProcesar={(desde) => void window.reels!.procesar(proyecto.id, desde)}
           alReanalizar={(a) => void intentar(async () => { await window.reels!.reanalizar(proyecto.id, a); await recargar(); })} />
@@ -220,7 +222,20 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
         {errorUbicar && <p className="error" role="alert">{errorUbicar}</p>}
         {errorAccion && <p className="error" role="alert">{errorAccion}</p>}
         {errorVoz && <p className="aviso" role="status"><TriangleAlert size={16} aria-hidden="true" />{errorVoz}</p>}
-        {clip && <div className="centro-cabeza"><h2>{clip.titulo}</h2><span>{clip.categoria} · {formatoTiempo(datos.transcripcion ? duracionReel(clip, palabrasDe(datos.transcripcion)) : clip.fin - clip.inicio)}</span></div>}
+        {clip && (
+          <div className="centro-cabeza">
+            <div className="centro-titulo"><h2>{clip.titulo}</h2><span>{clip.categoria} · {formatoTiempo(datos.transcripcion ? duracionReel(clip, palabrasDe(datos.transcripcion)) : clip.fin - clip.inicio)}</span></div>
+            <button type="button" className="btn fantasma guardar-estilo" title="Guardar como estilo de la iglesia: los próximos clips salen igual"
+              onClick={() => void guardarEstilo(clip).then(() => { setEstiloGuardado(true); setTimeout(() => setEstiloGuardado(false), 2000); })}>
+              {estiloGuardado ? <><Check size={15} aria-hidden="true" />Estilo guardado</> : "Guardar estilo"}
+            </button>
+            <button type="button" className="btn primario exportar-clip" disabled={clip.formatos.length === 0}
+              title={clip.formatos.length === 0 ? "Elige al menos un formato en Publicar" : undefined}
+              onClick={() => void exportar(proyecto.id, [clip.id])}>
+              <Download size={15} aria-hidden="true" />Exportar este clip
+            </button>
+          </div>
+        )}
         {datos.transcripcion && (
           <div className="pestanas centro-pestanas" role="tablist" aria-label="Vista del centro">
             <button type="button" role="tab" aria-selected={centro === "vista"} onClick={() => setCentro("vista")}><Play size={14} aria-hidden="true" />Vista previa</button>
@@ -277,22 +292,15 @@ export function Editor({ proyectoId }: { proyectoId: string }) {
           preparandoVoz={audioListo && !voces.includes(nivelPedido) && !errorVoz}
           fuenteIglesia={!!datos.marca?.fuente} colorMarca={datos.marca?.color}
           alMedirColor={proyecto.videoDisponible ? () => window.reels!.medirColor(proyectoId, clip.inicio, clip.fin) : undefined}
-          chat={datos.transcripcion ? { proyectoId, historial: conversaciones[clip.id] ?? [], alHistorial: (h) => setConversaciones((x) => ({ ...x, [clip.id]: h })) } : undefined} /> : <p className="vacio">Elige un clip para editarlo.</p>}
-        {clip && (
-          <div className="inspector-pie">
-            <button type="button" className="btn primario" disabled={clip.formatos.length === 0}
-              onClick={() => void exportar(proyecto.id, [clip.id])}>
-              <Download size={15} aria-hidden="true" />Exportar este clip
-            </button>
-          </div>
-        )}
+          chat={datos.transcripcion ? { proyectoId, historial: conversaciones[clip.id] ?? [], alHistorial: (h) => setConversaciones((x) => ({ ...x, [clip.id]: h })) } : undefined}
+          categoria={categoria} alCategoria={setCategoria} /> : <p className="vacio">Elige un clip para editarlo.</p>}
       </aside>
 
       <div className="editor-abajo">
         {listo && (
           <LineaTiempo clip={clip} palabras={palabrasDe(datos.transcripcion!)} tiempoActual={tiempo}
             alBuscar={(t) => { setTiempo(t); vista.current?.seek(t); }}
-            alCambiarCorte={(i, f) => cambiarCorte(clip, i, f)} alAlternarReproduccion={() => vista.current?.alternar()} />
+            alCambiarCorte={(i, f) => cambiarCorte(clip, i, f)} alAlternarReproduccion={() => vista.current?.alternar()} alElegirPista={setCategoria} />
         )}
       </div>
     </div>

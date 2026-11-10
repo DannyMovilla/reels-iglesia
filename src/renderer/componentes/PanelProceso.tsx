@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Check, CircleAlert, Circle, LoaderCircle, RotateCcw, Sparkles } from "lucide-react";
+import { Check, ChevronDown, CircleAlert, Circle, LoaderCircle, RotateCcw, Sparkles } from "lucide-react";
 import type { Analisis, NombrePaso, Proyecto, Tarea, TipoTarea } from "@shared/tipos";
 import { limpiarAnalisis, OpcionesAnalisis } from "./OpcionesAnalisis";
 
@@ -24,9 +24,22 @@ export function PanelProceso({ proyecto, tareas, alReintentar, alProcesar, alRea
   const [reanalizando, setReanalizando] = useState<Analisis | null>(null);
   const analizando = tareas.some((t) => t.proyectoId === proyecto.id && t.tipo === "analizar" && (t.estado === "pendiente" || t.estado === "corriendo"));
   const puedeReanalizar = alReanalizar && proyecto.pasos.analisis?.estado === "ok" && !analizando;
+  const ocupado = tareas.some((t) => t.proyectoId === proyecto.id && (t.estado === "pendiente" || t.estado === "corriendo"));
+  // Con todo listo, el proceso se resume en una línea (se puede abrir para ver los tiempos).
+  const terminado = !ocupado && PASOS.every(({ paso }) => proyecto.pasos[paso]?.estado === "ok");
+  const [abierto, setAbierto] = useState(false);
+  const compacto = terminado && !abierto;
   return (
     <>
-    <ol className="pasos" aria-label="Proceso">
+    {!terminado && <div className="titulo-seccion">Proceso</div>}
+    {terminado && (
+      <button type="button" className="proceso-resumen" aria-expanded={abierto} onClick={() => setAbierto((a) => !a)}>
+        <span className="punto" aria-hidden="true"><Check size={13} strokeWidth={2.6} /></span>
+        <span>Prédica lista <span className="tenue">· {PASOS.length} de {PASOS.length} pasos</span></span>
+        <ChevronDown size={15} className="flecha" aria-hidden="true" />
+      </button>
+    )}
+    <ol className={`pasos${compacto ? " compacta" : ""}`} aria-label="Proceso">
       {PASOS.map(({ paso, tipo, titulo }) => {
         const p = proyecto.pasos[paso] ?? { estado: "pendiente" as const };
         const ultima = tareas.filter((t) => t.proyectoId === proyecto.id && t.tipo === tipo).at(-1);
@@ -41,12 +54,12 @@ export function PanelProceso({ proyecto, tareas, alReintentar, alProcesar, alRea
             </span>
             <div className="paso-texto">
               <b>{titulo}</b>
-              <span>
+              {!compacto && <span>
                 {estado === "ok" && (p.segundos !== undefined ? `Listo en ${p.segundos < 60 ? `${p.segundos} s` : `${Math.round(p.segundos / 60)} min`}` : "Listo")}
                 {estado === "corriendo" && (ultima?.estado === "pendiente" ? "En espera…" : `${Math.round(ultima?.pct ?? 0)}%${ultima?.texto ? ` · ${ultima.texto}` : ""}`)}
                 {estado === "pendiente" && "Pendiente"}
                 {estado === "error" && (ultima?.estado === "interrumpida" ? "Se interrumpió al cerrar la app." : ultima?.error ?? p.detalle ?? "Falló")}
-              </span>
+              </span>}
             </div>
             {estado === "error" && (
               <button type="button" className="btn pequeno" onClick={() => (fallo && ultima ? alReintentar(ultima.id) : alProcesar(tipo))}>

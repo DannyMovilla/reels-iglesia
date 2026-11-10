@@ -63,7 +63,7 @@ describe("plan 8: los ganchos nuevos se pintan en el video", () => {
   test.each([["gigante", "9:16"], ["marca", "9:16"], ["subrayado", "9:16"], ["golpe", "9:16"], ["gigante", "1:1"]] as [EstiloGancho, Formato][])("%s en %s", async (estiloGancho, formato) => {
     const { salida, html } = await render({ gancho: "Dios es fiel siempre", estiloGancho }, formato);
     const top = topDe(html, "gancho");
-    if (estiloGancho === "gigante" && formato === "9:16") execFileSync("ffmpeg", ["-v", "error", "-y", "-ss", "1", "-i", salida, "-frames:v", "1", join(__dirname, "../../.superpowers/sdd/2026-11-09-reels-iglesia-plan-8-subtitulos-gancho-frases/gancho-gigante.png")]);
+    if (estiloGancho === "gigante" && formato === "9:16") execFileSync("ffmpeg", ["-v", "error", "-y", "-ss", "1", "-i", salida, "-frames:v", "1", salida.replace(/.mp4$/, "-gancho.png")]);
     expect(desvio(salida, 1.0, 60, Math.round(top - 60), 960, 120)).toBeGreaterThan(12);
   }, 300_000);
 });

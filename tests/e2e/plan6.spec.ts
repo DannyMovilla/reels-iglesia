@@ -40,13 +40,14 @@ test("plan 6: entregas (SRT, PDF, MP3, traducción), color y fuente, y exportar"
 
   // Color y fuente en el clip, y exportar.
   await v.getByRole("tab", { name: /Vista previa/ }).click();
-  await v.getByRole("tab", { name: /^Clip$/ }).click();
+  await v.getByRole("tab", { name: "Versículo" }).click();
   await v.getByLabel("Texto RVR1960 de Romanos 8:28").fill("Y sabemos que a los que aman a Dios, todas las cosas les ayudan a bien.");
   await v.getByRole("button", { name: "Confirmar texto" }).click();
-  await v.getByRole("tab", { name: /Estilo/ }).click();
+  await v.getByRole("tab", { name: "Imagen" }).click();
   await v.getByRole("group", { name: "Look de color" }).getByRole("button", { name: "Cine" }).click();
+  await v.getByRole("tab", { name: "Subtítulos" }).click();
   await v.getByLabel("Fuente de títulos").selectOption("montserrat");
-  await v.getByRole("tab", { name: /^Clip$/ }).click();
+  await v.getByRole("tab", { name: "Publicar" }).click();
   await v.getByRole("group", { name: "Formatos" }).getByRole("button", { name: /4:5/ }).click();
   await v.waitForTimeout(700);
   await v.getByRole("button", { name: "Exportar este clip" }).click();

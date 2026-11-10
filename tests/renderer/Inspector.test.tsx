@@ -34,6 +34,7 @@ test("tocar una alternativa la pone como gancho y el gancho anterior pasa a las 
 test("el versículo se puede apagar y su texto RVR1960 hay que confirmarlo", async () => {
   const alCambiar = vi.fn();
   render(<Prueba alCambiar={alCambiar} />);
+  await userEvent.click(screen.getByRole("tab", { name: "Versículo" }));
   expect(screen.getByText(/Revisa el texto RVR1960/)).toBeInTheDocument();
   await userEvent.click(screen.getByRole("button", { name: "Confirmar texto" }));
   expect(alCambiar.mock.calls.at(-1)![0].versiculos[0].confirmado).toBe(true);
@@ -46,29 +47,29 @@ test("muestra los avisos de la composición", () => {
   expect(screen.getByRole("status")).toHaveTextContent("Confirma el texto RVR1960 de Salmos 51:17 antes de exportar.");
 });
 
-test("en Estilo se cambia el estilo de subtítulos", async () => {
+test("en su categoría se cambia el estilo de subtítulos", async () => {
   const alCambiar = vi.fn();
   render(<Prueba alCambiar={alCambiar} />);
-  await userEvent.click(screen.getByRole("tab", { name: "Estilo" }));
+  await userEvent.click(screen.getByRole("tab", { name: "Subtítulos" }));
   await userEvent.click(screen.getByRole("radio", { name: "Caja" }));
   expect(alCambiar.mock.calls.at(-1)![0].subtitulos.estilo).toBe("caja");
 });
 
-test("en Estilo se guarda el estilo de la iglesia o se aplica a todos los clips", async () => {
+test("en su categoría se guarda el estilo de la iglesia o se aplica a todos los clips", async () => {
   const alGuardarEstilo = vi.fn();
   const alAplicarEstilo = vi.fn();
   render(<Inspector clip={base} avisos={[]} alCambiar={() => {}} alGuardarEstilo={alGuardarEstilo} alAplicarEstilo={alAplicarEstilo} />);
-  await userEvent.click(screen.getByRole("tab", { name: "Estilo" }));
+  await userEvent.click(screen.getByRole("tab", { name: "Mi estilo" }));
   await userEvent.click(screen.getByRole("button", { name: "Guardar como estilo de la iglesia" }));
   expect(alGuardarEstilo).toHaveBeenCalledWith(base);
   await userEvent.click(screen.getByRole("button", { name: "Aplicar a todos los clips" }));
   expect(alAplicarEstilo).toHaveBeenCalled();
 });
 
-test("en Estilo se elige la música: modo, ánimo, tonalidad del pad y volumen", async () => {
+test("en su categoría se elige la música: modo, ánimo, tonalidad del pad y volumen", async () => {
   const alCambiar = vi.fn();
   render(<Prueba alCambiar={alCambiar} />);
-  await userEvent.click(screen.getByRole("tab", { name: "Estilo" }));
+  await userEvent.click(screen.getByRole("tab", { name: "Audio" }));
   await userEvent.click(screen.getByRole("button", { name: "Pad" }));
   expect(alCambiar.mock.calls.at(-1)![0].musica.modo).toBe("pad");
   await userEvent.selectOptions(screen.getByLabelText("Ánimo de la música"), "victoria");
@@ -80,18 +81,18 @@ test("en Estilo se elige la música: modo, ánimo, tonalidad del pad y volumen",
   expect(screen.queryByLabelText("Volumen de la música")).toBeNull();
 });
 
-test("en Estilo se apagan los cortes de pausas y muletillas", async () => {
+test("en su categoría se apagan los cortes de pausas y muletillas", async () => {
   const alCambiar = vi.fn();
   render(<Prueba alCambiar={alCambiar} />);
-  await userEvent.click(screen.getByRole("tab", { name: "Estilo" }));
+  await userEvent.click(screen.getByRole("tab", { name: "Ritmo" }));
   await userEvent.click(screen.getByRole("switch", { name: "Quitar muletillas" }));
   expect(alCambiar.mock.calls.at(-1)![0].cortes.muletillas).toBe(!base.cortes.muletillas);
 });
 
-test("en Estilo hay 15 estilos de subtítulos con nombre en español", async () => {
+test("en Subtítulos hay 15 estilos de subtítulos con nombre en español", async () => {
   const alCambiar = vi.fn();
   render(<Prueba alCambiar={alCambiar} />);
-  await userEvent.click(screen.getByRole("tab", { name: "Estilo" }));
+  await userEvent.click(screen.getByRole("tab", { name: "Subtítulos" }));
   const grupo = screen.getByRole("radiogroup", { name: "Estilo de subtítulos" });
   const nombres = within(grupo).getAllByRole("radio").map((b) => b.getAttribute("aria-label"));
   expect(nombres).toEqual(["Pop", "Caja", "Limpio", "Resaltado", "Karaoke", "Impacto", "Neón",
@@ -100,10 +101,10 @@ test("en Estilo hay 15 estilos de subtítulos con nombre en español", async () 
   expect(alCambiar.mock.calls.at(-1)![0].subtitulos.estilo).toBe("karaoke");
 });
 
-test("en Estilo se eligen los efectos: transición, grano y rótulo del predicador", async () => {
+test("en su categoría se eligen los efectos: transición, grano y rótulo del predicador", async () => {
   const alCambiar = vi.fn();
   render(<Prueba alCambiar={alCambiar} />);
-  await userEvent.click(screen.getByRole("tab", { name: "Estilo" }));
+  await userEvent.click(screen.getByRole("tab", { name: "Imagen" }));
   await userEvent.click(within(screen.getByRole("group", { name: "Transición" })).getByRole("button", { name: "Luz" }));
   expect(alCambiar.mock.calls.at(-1)![0].efectos.transicion).toBe("luz");
   await userEvent.click(screen.getByRole("switch", { name: "Grano de película" }));
@@ -154,6 +155,7 @@ describe("Publicar", () => {
 test("un versículo que quedó fuera del corte lo avisa", async () => {
   const c = { ...base, versiculos: [{ ...base.versiculos[0], activo: false, fuera: true }] };
   render(<Inspector clip={c} avisos={[]} alCambiar={() => {}} />);
+  await userEvent.click(screen.getByRole("tab", { name: "Versículo" }));
   expect(screen.getByText(/Quedó fuera del corte/)).toBeInTheDocument();
 });
 
@@ -169,7 +171,7 @@ describe("plan 5: ritmo y frases repetidas", () => {
   test("intensidad Suave / Normal / Fuerte; deshabilitada si las pausas están apagadas", async () => {
     const alCambiar = vi.fn();
     render(<ConPalabras alCambiar={alCambiar} />);
-    await userEvent.click(screen.getByRole("tab", { name: /Estilo/ }));
+    await userEvent.click(screen.getByRole("tab", { name: "Ritmo" }));
     const grupo = screen.getByRole("group", { name: "Intensidad de los cortes" });
     expect(within(grupo).getByRole("button", { name: "Normal" })).toHaveAttribute("aria-pressed", "true");
     expect(within(grupo).getByRole("button", { name: "Suave" })).toBeDisabled(); // el clip de prueba no acorta pausas
@@ -183,7 +185,7 @@ describe("plan 5: ritmo y frases repetidas", () => {
   test("las frases repetidas se quitan y se vuelven a poner", async () => {
     const alCambiar = vi.fn();
     render(<ConPalabras alCambiar={alCambiar} />);
-    await userEvent.click(screen.getByRole("tab", { name: /Estilo/ }));
+    await userEvent.click(screen.getByRole("tab", { name: "Ritmo" }));
     expect(screen.getByText("«y Dios te»")).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "Quitar «y Dios te»" }));
     expect(alCambiar.mock.calls.at(-1)![0].cortes.quitados).toEqual([{ inicio: 40, fin: 42 }]);
@@ -196,7 +198,7 @@ describe("plan 5: ritmo y frases repetidas", () => {
     const alCambiar = vi.fn();
     const conQuitados = { ...base, inicio: 50, fin: 60, cortes: { ...base.cortes, quitados: [{ inicio: 51, fin: 52 }, { inicio: 55, fin: 56 }] } };
     render(<ConPalabras alCambiar={alCambiar} clip={conQuitados} />);
-    await userEvent.click(screen.getByRole("tab", { name: /Estilo/ }));
+    await userEvent.click(screen.getByRole("tab", { name: "Ritmo" }));
     expect(screen.getByText("No encontré frases repetidas en este clip.")).toBeInTheDocument();
     expect(screen.getByText("Tramos quitados a mano: 2")).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "Volver a poner todos" }));
@@ -207,7 +209,7 @@ describe("plan 5: ritmo y frases repetidas", () => {
 test("plan 5: nivel de voz Ligera / Limpia / Podcast y aviso mientras se prepara", async () => {
   const alCambiar = vi.fn();
   const { rerender } = render(<Inspector clip={base} avisos={[]} alCambiar={alCambiar} />);
-  await userEvent.click(screen.getByRole("tab", { name: /Estilo/ }));
+  await userEvent.click(screen.getByRole("tab", { name: "Audio" }));
   const grupo = screen.getByRole("group", { name: "Nivel de voz" });
   expect(within(grupo).getByRole("button", { name: "Limpia" })).toHaveAttribute("aria-pressed", "true");
   await userEvent.click(within(grupo).getByRole("button", { name: "Podcast" }));
@@ -220,7 +222,7 @@ test("plan 6: cada tramo quitado se lista con su minuto y se puede volver a pone
   const alCambiar = vi.fn();
   const c = { ...base, cortes: { ...base.cortes, quitados: [{ inicio: 31, fin: 33.5 }, { inicio: 45, fin: 47 }] } };
   render(<Inspector clip={c} avisos={[]} alCambiar={alCambiar} palabras={[]} />);
-  await userEvent.click(screen.getByRole("tab", { name: /Estilo/ }));
+  await userEvent.click(screen.getByRole("tab", { name: "Ritmo" }));
   await userEvent.click(screen.getByRole("button", { name: "Volver a poner el tramo 0:45–0:47" }));
   expect(alCambiar.mock.calls.at(-1)![0].cortes.quitados).toEqual([{ inicio: 31, fin: 33.5 }]);
 });
@@ -233,7 +235,7 @@ test("plan 6: color — look, intensidad y «Corregir tono amarillo» (y quitarl
     return <Inspector clip={c} avisos={[]} alCambiar={(n) => { setC(n); alCambiar(n); }} alMedirColor={alMedirColor} />;
   }
   render(<ConColor />);
-  await userEvent.click(screen.getByRole("tab", { name: /Estilo/ }));
+  await userEvent.click(screen.getByRole("tab", { name: "Imagen" }));
   const grupo = screen.getByRole("group", { name: "Look de color" });
   expect(within(grupo).getByRole("button", { name: "Natural" })).toHaveAttribute("aria-pressed", "true");
   await userEvent.click(within(grupo).getByRole("button", { name: "Cálido" }));
@@ -249,7 +251,7 @@ test("plan 6: color — look, intensidad y «Corregir tono amarillo» (y quitarl
 test("plan 6: fuente de títulos y de subtítulos (la de la iglesia solo si la marca tiene una)", async () => {
   const alCambiar = vi.fn();
   const { rerender } = render(<Inspector clip={base} avisos={[]} alCambiar={alCambiar} />);
-  await userEvent.click(screen.getByRole("tab", { name: /Estilo/ }));
+  await userEvent.click(screen.getByRole("tab", { name: "Subtítulos" }));
   expect(screen.queryByRole("option", { name: "La de la iglesia" })).toBeNull();
   expect(screen.getByLabelText("Fuente de títulos")).toHaveValue("figtree");
   await userEvent.selectOptions(screen.getByLabelText("Fuente de títulos"), "montserrat");
@@ -269,7 +271,7 @@ test("plan 7: cambiar el look mientras se mide el tono no se pierde", async () =
     return <Inspector clip={c} avisos={[]} alCambiar={setC} alMedirColor={alMedirColor} />;
   }
   render(<ConColor />);
-  await userEvent.click(screen.getByRole("tab", { name: /Estilo/ }));
+  await userEvent.click(screen.getByRole("tab", { name: "Imagen" }));
   await userEvent.click(screen.getByRole("button", { name: "Corregir tono amarillo" }));
   await userEvent.click(within(screen.getByRole("group", { name: "Look de color" })).getByRole("button", { name: "Frío" }));
   await act(async () => responder([0.9, 1, 1.2]));
@@ -278,16 +280,16 @@ test("plan 7: cambiar el look mientras se mide el tono no se pierde", async () =
 
 test("plan 7: si el clip usa la fuente de la iglesia y el archivo falta, el selector lo dice", async () => {
   render(<Inspector clip={{ ...base, fuentes: { titulos: "iglesia", subtitulos: "montserrat" } }} avisos={[]} alCambiar={() => {}} />);
-  await userEvent.click(screen.getByRole("tab", { name: /Estilo/ }));
+  await userEvent.click(screen.getByRole("tab", { name: "Subtítulos" }));
   expect(screen.getByLabelText("Fuente de títulos")).toHaveValue("iglesia");
   expect(screen.getByRole("option", { name: "La de la iglesia (falta el archivo: se usa Figtree)" })).toBeInTheDocument();
 });
 
 describe("plan 8: galerías de estilo", () => {
-  test("en Estilo los subtítulos se eligen en una galería", async () => {
+  test("en Subtítulos los subtítulos se eligen en una galería", async () => {
     const alCambiar = vi.fn();
     render(<Prueba alCambiar={alCambiar} />);
-    await userEvent.click(screen.getByRole("tab", { name: "Estilo" }));
+    await userEvent.click(screen.getByRole("tab", { name: "Subtítulos" }));
     const grupo = screen.getByRole("radiogroup", { name: "Estilo de subtítulos" });
     expect(within(grupo).getAllByRole("radio")).toHaveLength(15);
     await userEvent.click(within(grupo).getByRole("radio", { name: "Viral" }));
