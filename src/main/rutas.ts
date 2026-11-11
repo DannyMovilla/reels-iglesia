@@ -8,6 +8,12 @@ export function carpetaDatos(): string {
   return join(electron.app.getPath("documents"), "Reels Iglesia");
 }
 
+/** Registros de la app: <datos de prueba>/registros con REELS_IGLESIA_DATOS; si no, %APPDATA%\Reels Iglesia\registros. */
+export function carpetaRegistros(): string {
+  if (process.env.REELS_IGLESIA_DATOS) return join(process.env.REELS_IGLESIA_DATOS, "registros");
+  return join(electron.app.getPath("appData"), "Reels Iglesia", "registros");
+}
+
 interface Entorno { empaquetada: boolean; recursos: string }
 const entornoActual = (): Entorno => ({ empaquetada: !!electron.app?.isPackaged, recursos: process.resourcesPath ?? "" });
 
