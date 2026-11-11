@@ -92,5 +92,5 @@ test("plan 10: si no se puede borrar, el error se ve en el aviso", async () => {
   await userEvent.click(await screen.findByRole("button", { name: "Más opciones de Culto dominical" }));
   await userEvent.click(screen.getByRole("menuitem", { name: "Borrar prédica" }));
   await userEvent.click(await screen.findByRole("button", { name: "Borrar" }));
-  expect(await screen.findByRole("alert")).toHaveTextContent("Espera a que termine lo que está haciendo esta prédica.");
+  expect((await screen.findByRole("alert")).textContent).toBe("Espera a que termine lo que está haciendo esta prédica.");
 });

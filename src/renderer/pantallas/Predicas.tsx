@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { CircleAlert, CircleCheck, Clapperboard, EllipsisVertical, LoaderCircle, MicVocal, Plus, Trash2 } from "lucide-react";
 import type { EstadoProyecto, Proyecto } from "@shared/tipos";
 import { formatoTamano } from "@shared/tamano";
+// El mismo que el resto de las pantallas: quita el prefijo en inglés que agrega Electron.
+import { limpiarError } from "../componentes/Entregas";
 
 const ESTADO: Record<EstadoProyecto, string> = {
   nuevo: "En espera",
@@ -13,7 +15,6 @@ const ESTADO: Record<EstadoProyecto, string> = {
   error: "Necesita atención",
 };
 
-const limpiarError = (e: unknown) => (e instanceof Error ? e.message : String(e)).replace(/^Error invoking remote method [^:]+: (Error: )?/, "");
 const plural = (n: number, uno: string, varios: string) => `${n} ${n === 1 ? uno : varios}`;
 
 /** Aviso antes de mandar una prédica a la Papelera: dice qué se va y que el video original se queda. */

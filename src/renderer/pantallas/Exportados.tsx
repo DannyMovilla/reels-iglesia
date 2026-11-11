@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Clapperboard, FolderOpen, LoaderCircle, Trash2 } from "lucide-react";
 import { formatoTamano } from "@shared/tamano";
+// El mismo que el resto de las pantallas: quita el prefijo en inglés que agrega Electron.
+import { limpiarError } from "../componentes/Entregas";
 
 type Lista = Awaited<ReturnType<NonNullable<typeof window.reels>["listarExportados"]>>;
 
@@ -13,7 +15,6 @@ export function formatoDeArchivo(nombre: string): "9:16" | "4:5" | "1:1" | null 
 const cuantos = (n: number) => (n === 1 ? "1 reel" : `${n} reels`);
 
 interface Pedido { proyectoId: string; mp4s: string[] | "todos"; texto: string }
-const limpiarError = (e: unknown) => (e instanceof Error ? e.message : String(e)).replace(/^Error invoking remote method [^:]+: (Error: )?/, "");
 
 /** Todos los reels exportados, agrupados por prédica. */
 export function Exportados() {

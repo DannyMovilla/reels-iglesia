@@ -42,3 +42,16 @@ test("plan 10: borrar un reel y borrar todos, con confirmación", async () => {
   await userEvent.click(screen.getByRole("button", { name: "Sí, borrar" }));
   expect(api.borrarReels).toHaveBeenLastCalledWith("p1", "todos");
 });
+
+test("revisión: el error de borrar un reel sale en español, sin el prefijo de Electron", async () => {
+  const { default: userEvent } = await import("@testing-library/user-event");
+  (window as unknown as { reels: unknown }).reels = {
+    listarExportados: vi.fn(async () => [{ proyectoId: "p1", nombre: "Culto", archivos: [{ nombre: "a-9x16.mp4", tamano: 2e6 }] }]),
+    alCambiarTareas: () => () => {}, urlExportado: () => "",
+    borrarReels: vi.fn(async () => { throw new Error("Error invoking remote method 'datos:borrarReels': Error: No pude mandar el reel a la Papelera."); }),
+  };
+  render(<Exportados />);
+  await userEvent.click(await screen.findByRole("button", { name: "Borrar a-9x16.mp4" }));
+  await userEvent.click(screen.getByRole("button", { name: "Sí, borrar" }));
+  expect((await screen.findByRole("alert")).textContent).toBe("No pude mandar el reel a la Papelera.");
+});
