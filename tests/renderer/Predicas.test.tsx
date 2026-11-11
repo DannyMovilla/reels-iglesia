@@ -42,3 +42,16 @@ test("revisión plan 9: una prédica de menos de un minuto dice «Prédica de 1 
   render(<Predicas alAbrir={() => {}} alNueva={() => {}} />);
   expect(await screen.findByText("Prédica de 1 min")).toHaveClass("duracion-predica");
 });
+
+test("plan 10: cada tarjeta dice cuánto ocupa y si falta el video", async () => {
+  (window as unknown as { reels: unknown }).reels = {
+    listarProyectos: vi.fn(async () => [{ ...proyecto, videoDisponible: false }]),
+    alCambiarTareas: () => () => {},
+    urlVideo: vi.fn(() => "http://127.0.0.1:1/x"),
+    espacioProyectos: vi.fn(async () => ({ p1: 1_234_567_890 })),
+  };
+  render(<Predicas alAbrir={() => {}} alNueva={() => {}} />);
+  expect(await screen.findByText("1,2 GB")).toBeInTheDocument();
+  expect(screen.getByText("Video no encontrado")).toBeInTheDocument();
+  expect(document.querySelector(".proyecto video")).toBeNull();
+});

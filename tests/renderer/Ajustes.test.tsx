@@ -97,3 +97,14 @@ test("plan 10: la versión, buscar actualizaciones y su estado", async () => {
   act(() => avisar({ fase: "descargando", pct: 42 }));
   expect(screen.getByText("Descargando 42 %")).toBeInTheDocument();
 });
+
+test("plan 10: espacio total y liberar espacio", async () => {
+  const api = { verificarSistema: async () => estado, accionSistema: vi.fn(), alProgresoSistema: () => () => {},
+    espacioTotal: vi.fn(async () => 3_400_000_000), liberarEspacio: vi.fn(async () => ({ liberado: 820_000_000, saltadas: 1 })) };
+  window.reels = api as unknown as ApiReels;
+  render(<Ajustes />);
+  expect(await screen.findByText(/La app ocupa 3,4 GB/)).toBeInTheDocument();
+  await userEvent.click(screen.getByRole("button", { name: "Liberar espacio" }));
+  expect(api.liberarEspacio).toHaveBeenCalledWith();
+  expect(await screen.findByText("Liberé 820 MB. 1 prédica se saltó porque está trabajando.")).toBeInTheDocument();
+});

@@ -1,4 +1,5 @@
-import { Check, ClipboardCopy, Download, FolderOpen, LoaderCircle, RefreshCw } from "lucide-react";
+import { Check, ClipboardCopy, Download, Eraser, FolderOpen, LoaderCircle, RefreshCw } from "lucide-react";
+import { formatoTamano } from "@shared/tamano";
 import { textoActualizacion } from "@shared/actualizacion";
 import { useActualizacion } from "../actualizacion";
 import { useEffect, useState } from "react";
@@ -22,6 +23,42 @@ function Version() {
           {ocupado ? <LoaderCircle size={15} className="girar" aria-hidden="true" /> : <Download size={15} aria-hidden="true" />}Buscar actualizaciones
         </button>
         {estado && textoActualizacion(estado) && <span className={estado.fase === "error" ? "error" : "ayuda"} role="status">{textoActualizacion(estado)}</span>}
+      </div>
+    </div>
+  );
+}
+
+/** Cuánto ocupa la app en Documentos y «Liberar espacio» (lo que se puede rehacer). */
+function Espacio() {
+  const [total, setTotal] = useState<number | null>(null);
+  const [liberando, setLiberando] = useState(false);
+  const [mensaje, setMensaje] = useState<string | null>(null);
+  const medir = () => void window.reels?.espacioTotal?.().then(setTotal).catch(() => undefined);
+  useEffect(medir, []);
+  const liberar = async () => {
+    setLiberando(true);
+    setMensaje(null);
+    try {
+      const r = await window.reels!.liberarEspacio();
+      const saltadas = r.saltadas ? ` ${r.saltadas === 1 ? "1 prédica se saltó porque está trabajando" : `${r.saltadas} prédicas se saltaron porque están trabajando`}.` : "";
+      setMensaje(`Liberé ${formatoTamano(r.liberado)}.${saltadas}`);
+      medir();
+    } catch {
+      setMensaje("No pude liberar espacio. Prueba de nuevo.");
+    } finally {
+      setLiberando(false);
+    }
+  };
+  return (
+    <div className="grupo-ajuste">
+      <h2>Espacio</h2>
+      {total !== null && <p>La app ocupa {formatoTamano(total)} en Documentos\Reels Iglesia (sin contar los videos de los cultos).</p>}
+      <p className="ayuda">«Liberar espacio» borra lo que la app puede volver a hacer: archivos temporales y las voces limpias de las prédicas cuyo video sigue en su lugar.</p>
+      <div className="fila">
+        <button type="button" className="btn" disabled={liberando} onClick={() => void liberar()}>
+          {liberando ? <LoaderCircle size={15} className="girar" aria-hidden="true" /> : <Eraser size={15} aria-hidden="true" />}Liberar espacio
+        </button>
+        {mensaje && <span className="ayuda" role="status">{mensaje}</span>}
       </div>
     </div>
   );
@@ -87,6 +124,7 @@ export function Ajustes() {
       <Chequeos estado={estado} enCurso={enCurso} alAccion={(a) => void accion(a)} alCancelar={cancelar} />
       {error && <p className="error" role="alert">{error}</p>}
       <Version />
+      <Espacio />
       <Diagnostico />
     </section>
   );

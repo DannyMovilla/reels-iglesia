@@ -148,6 +148,12 @@ export interface ApiReels {
   /** Texto de «Copiar diagnóstico» (versión, sistema, chequeos sin Claude y las últimas 200 líneas del registro). */
   diagnostico(): Promise<string>;
   abrirRegistros(): Promise<void>;
+  /** Bytes de cada prédica (sin el video original, que no se copia). */
+  espacioProyectos(): Promise<Record<string, number>>;
+  /** Bytes de toda la carpeta de datos. */
+  espacioTotal(): Promise<number>;
+  /** Borra tmp/ y las voces que se pueden rehacer, de una prédica o de todas; salta las que están trabajando. */
+  liberarEspacio(id?: string): Promise<{ liberado: number; saltadas: number }>;
   /** Versión instalada de la app. */
   versionApp(): Promise<string>;
   estadoActualizacion(): Promise<EstadoActualizacion>;

@@ -32,6 +32,7 @@ import { cacheSinErrores } from "./util/cache";
 import { envolverManejador, leerUltimas, registrar } from "./registro";
 import { textoDiagnostico } from "./sistema/diagnostico";
 import type { Actualizador } from "./actualizar";
+import { liberarEspacio, liberarTodo, tamanoCarpeta } from "./datos/espacio";
 import { cpus, release, totalmem } from "node:os";
 import { aplicarEstilo, copiarLogo, reubicarVideo, crearProyecto, guardarClip, guardarMarca, leerClips, leerJson, leerMarca, leerProyecto, listarExportados, listarProyectos, leerTranscripcion, leerCorrecciones, corregir, quitarCorreccion, agregarClip, guardarProyecto, validarTramoClip, copiarFuente } from "./proyectos/almacen";
 
@@ -257,6 +258,18 @@ export function registrarIpc(deps: DepsIpc): void {
       cpu: cpus()[0]?.model.trim() ?? "sin datos", ramGb: Math.round(totalmem() / 1024 ** 3), gpu: nombreGpu,
       estado: await deps.verificarSistema({ claude: false }), lineas: leerUltimas(200),
     });
+  });
+  manejar("espacio:proyectos", async () => {
+    const r: Record<string, number> = {};
+    for (const pr of await listarProyectos()) r[pr.id] = await tamanoCarpeta(carpetaProyecto(pr.id));
+    return r;
+  });
+  manejar("espacio:total", () => tamanoCarpeta(carpetaDatos()));
+  manejar("espacio:liberar", async (_e, id?: string) => {
+    if (id === undefined || id === null) return liberarTodo({ ocupado: deps.ocupado.proyectoOcupado });
+    validarIdProyecto(String(id));
+    const r = await liberarEspacio(id, { ocupado: deps.ocupado.proyectoOcupado });
+    return { liberado: r.liberado, saltadas: r.saltada ? 1 : 0 };
   });
   manejar("app:version", () => app.getVersion());
   manejar("actualizar:estado", () => deps.actualizador.estado());

@@ -376,3 +376,6 @@
 
 /* Plan 10: aviso de una versión nueva lista para instalar (barra de arriba). */
 .aviso-actualizacion { display: inline-flex; align-items: center; gap: 8px; margin-right: 10px; padding: 4px 6px 4px 12px; border: 1px solid var(--luz); border-radius: 999px; color: var(--text); font: 500 12px var(--font-ui); -webkit-app-region: no-drag; }
+/* Plan 10: tamaño de la prédica y aviso de video que falta, en la tarjeta. */
+.proyecto .tamano-predica { color: var(--text-2); font-size: 12px; }
+.proyecto .sin-video { display: inline-flex; align-items: center; gap: 4px; color: var(--luz); font-size: 12px; }
