@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CircleAlert, CircleCheck, Clapperboard, EllipsisVertical, LoaderCircle, MicVocal, Plus, Trash2 } from "lucide-react";
 import type { EstadoProyecto, Proyecto } from "@shared/tipos";
 import { formatoTamano } from "@shared/tamano";
@@ -72,14 +72,24 @@ export function Predicas({ alAbrir, alNueva }: Props) {
   const [tamanos, setTamanos] = useState<Record<string, number>>({});
   const [menu, setMenu] = useState<string | null>(null);
   const [borrar, setBorrar] = useState<Proyecto | null>(null);
+  const pedido = useRef(0);
   const cargar = () => {
     const api = window.reels!;
-    void api.listarProyectos().then(setProyectos);
-    void api.espacioProyectos?.().then(setTamanos).catch(() => undefined);
+    // Solo la última respuesta cuenta (una medición vieja no pisa una nueva).
+    const n = ++pedido.current;
+    void api.listarProyectos().then((l) => { if (n === pedido.current) setProyectos(l); });
+    void api.espacioProyectos?.().then((t) => { if (n === pedido.current) setTamanos(t); }).catch(() => undefined);
   };
   useEffect(() => {
     cargar();
-    return window.reels!.alCambiarTareas(cargar);
+    // Las tareas avisan en cada avance de progreso; recargar (y medir carpetas) solo cuando alguna cambia de estado.
+    let firma = "";
+    return window.reels!.alCambiarTareas((tareas) => {
+      const nueva = tareas.map((t) => `${t.id}:${t.estado}`).join("|");
+      if (nueva === firma) return;
+      firma = nueva;
+      cargar();
+    });
   }, []);
 
   return (

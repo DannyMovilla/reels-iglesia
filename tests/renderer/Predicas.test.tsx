@@ -94,3 +94,23 @@ test("plan 10: si no se puede borrar, el error se ve en el aviso", async () => {
   await userEvent.click(await screen.findByRole("button", { name: "Borrar" }));
   expect((await screen.findByRole("alert")).textContent).toBe("Espera a que termine lo que está haciendo esta prédica.");
 });
+
+test("revisión: el tamaño se vuelve a medir solo cuando una tarea cambia de estado, no en cada avance", async () => {
+  const { act } = await import("@testing-library/react");
+  let avisar: (t: unknown[]) => void = () => {};
+  const tarea = (estado: string, pct: number) => ({ id: "t1", proyectoId: "p1", tipo: "transcribir", estado, pct, creada: "" });
+  const api = {
+    listarProyectos: vi.fn(async () => [proyecto]), urlVideo: () => "",
+    alCambiarTareas: (cb: typeof avisar) => { avisar = cb; return () => {}; },
+    espacioProyectos: vi.fn(async () => ({ p1: 1000 })),
+  };
+  (window as unknown as { reels: unknown }).reels = api;
+  render(<Predicas alAbrir={() => {}} alNueva={() => {}} />);
+  await screen.findByText("1 KB");
+  expect(api.espacioProyectos).toHaveBeenCalledTimes(1);
+  await act(async () => { avisar([tarea("corriendo", 10)]); });
+  await act(async () => { for (let p = 11; p < 60; p++) avisar([tarea("corriendo", p)]); });
+  expect(api.espacioProyectos).toHaveBeenCalledTimes(2);
+  await act(async () => { avisar([tarea("ok", 100)]); });
+  expect(api.espacioProyectos).toHaveBeenCalledTimes(3);
+});
