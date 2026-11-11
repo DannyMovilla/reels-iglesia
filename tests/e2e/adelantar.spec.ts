@@ -4,7 +4,8 @@ import { join, resolve } from "node:path";
 import { _electron as electron, expect, test } from "@playwright/test";
 
 /** Regresión: con Electron 35 el protocolo propio no dejaba adelantar ("PIPELINE_ERROR_READ"). Usa un culto real si está en el PC. */
-const CULTO = process.env.REELS_CULTO_LARGO ?? "C:/Users/djmov/Downloads/FDownloader.net-943096285322125-(1280p).mp4";
+// El culto largo no está en el repositorio: su ruta va en la variable REELS_CULTO_LARGO.
+const CULTO = process.env.REELS_CULTO_LARGO ?? "";
 test("se puede adelantar un culto largo hasta la prédica", async () => {
   test.skip(!existsSync(CULTO), "Sin video largo de prueba en este PC");
   const app = await electron.launch({

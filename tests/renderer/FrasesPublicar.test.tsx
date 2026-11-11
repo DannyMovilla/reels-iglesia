@@ -4,8 +4,8 @@ import { beforeEach, expect, test, vi } from "vitest";
 import { FrasesPublicar } from "../../src/renderer/componentes/FrasesPublicar";
 import type { Frase } from "../../src/shared/frases";
 
-const A = "Y ese quebrantamiento terrenal va a activar la gloria celestial";
-const D = "por eso es importante entender que el quebrantamiento nos va a acercar a la presencia";
+const A = "Y ese quebrantamiento sincero va a abrir la gloria eterna";
+const D = "por eso es bueno recordar que el quebrantamiento nos va a llevar a su presencia";
 const frases = (): Frase[] => [
   { texto: A, en: 39.02, original: A, fondo: "marca", clave: "gloria", versiculo: { ref: "Salmos 51:17", texto: "Los sacrificios de Dios…", confirmado: false } },
   { texto: D, en: 65.68, original: D, fondo: "marca" },
@@ -76,10 +76,10 @@ test("corregir de más avisa que ya no es lo que dijo el predicador; se guarda a
   api.leerFrases.mockResolvedValue(frases());
   render(<FrasesPublicar proyectoId="p" />);
   const campo = await screen.findByDisplayValue(A);
-  fireEvent.change(campo, { target: { value: "Y este dolor terrenal va a encender la gloria celestial" } });
+  fireEvent.change(campo, { target: { value: "Y este dolor terrenal va a encender la gloria eterna" } });
   expect(screen.getByText("Ya no es lo que dijo el predicador")).toBeInTheDocument();
   fireEvent.blur(campo);
-  expect(api.guardarFrases.mock.calls.at(-1)![1][0].texto).toBe("Y este dolor terrenal va a encender la gloria celestial");
+  expect(api.guardarFrases.mock.calls.at(-1)![1][0].texto).toBe("Y este dolor terrenal va a encender la gloria eterna");
 });
 
 test("el versículo hay que confirmarlo", async () => {

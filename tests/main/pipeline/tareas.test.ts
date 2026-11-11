@@ -14,7 +14,7 @@ let rutaVideo: string;
 beforeEach(async () => {
   process.env.REELS_IGLESIA_DATOS = mkdtempSync(join(tmpdir(), "reels-pipe-"));
   delete process.env.REELS_WHISPER_MODELO;
-  rutaVideo = join(mkdtempSync(join(tmpdir(), "reels-v-")), "FDownloader.net-943096285322125-(1280p).mp4");
+  rutaVideo = join(mkdtempSync(join(tmpdir(), "reels-v-")), "Culto.domingo-20261108-(1280p).mp4");
   writeFileSync(rutaVideo, Buffer.alloc(10));
   const p = await crearProyecto({
     nombre: "Culto",

@@ -31,3 +31,8 @@ dist/
 
 # Los efectos de sonido propios (python/efectos.py) sí van en git: se incluyen en la app.
 !resources/efectos/*.wav
+
+# Experimentos viejos que quedan solo en esta PC (traen cuadros y voz de un culto real).
+spike/plan2/
+spike/plan3/
+spike/plan4/

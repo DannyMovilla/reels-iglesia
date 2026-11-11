@@ -41,7 +41,7 @@ test("normalizarClips ajusta a los segmentos, ubica la apertura y aplica los val
   const c = clips[0];
   expect(c.inicio).toBe(30.93);
   expect(c.fin).toBe(63.46);
-  expect(c.apertura?.frase.toLowerCase().startsWith("ese quebrantamiento terrenal")).toBe(true);
+  expect(c.apertura?.frase.toLowerCase().startsWith("ese quebrantamiento sincero")).toBe(true);
   expect(c.apertura?.activa).toBe(true);
   expect(c.ganchosAlternativos).toEqual(["Cuando te humillas, Dios responde", "¿Oras o solo hablas?"]);
   expect(c.formatos).toEqual(["9:16", "4:5"]);

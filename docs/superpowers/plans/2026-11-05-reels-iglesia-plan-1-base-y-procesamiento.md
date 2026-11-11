@@ -25,7 +25,7 @@
 
 ## Review Focus
 
-1. Rutas de video con espacios, paréntesis y acentos (p. ej. `FDownloader.net-943096285322125-(1280p).mp4` en `Descargas`) → todo el pipeline funciona. Prueba en Task 3.
+1. Rutas de video con espacios, paréntesis y acentos (p. ej. `culto (1).mp4` en `Descargas`) → todo el pipeline funciona. Prueba en Task 3.
 2. Respuesta de Claude con texto antes/después del JSON o dentro de un bloque de código → se extrae el JSON; si no hay JSON válido tras un reintento, error legible. Prueba en Task 6.
 3. La app se cierra con una tarea corriendo → al abrir de nuevo esa tarea aparece "interrumpida" con "Reintentar", no "corriendo" para siempre. Prueba en Task 4.
 4. El video original se movió o borró → el proyecto abre, conserva transcripción y clips y marca "video no encontrado". Prueba en Task 2.
@@ -225,7 +225,7 @@ tests/                             # espejo de src/ (unitarias), tests/e2e/ (Pla
 - [ ] **Step 1: Tests que fallan:**
   - `construirPrompt` incluye `[1:44:44 - 1:44:51]` para un segmento `s=6284, e=6291` y menciona `ganchos_alternativos` y `versiculos`.
   - **Review Focus 2:** `extraerJson("Aquí van:\n```json\n[{\"a\":1}]\n```\nBendiciones")` → `[{a:1}]`; `extraerJson("sin json")` lanza el mensaje exacto de arriba.
-  - `normalizarClips` con `respuesta-ok.json` y la transcripción de `spike/prueba-hf` (copiada a `tests/fixtures/transcripcion-muestra.json`, sin el video): el clip queda en `inicio 30.93 / fin 63.88`, `apertura.frase` empieza con `"ese quebrantamiento terrenal"`, `formatos` = `["9:16","4:5"]`.
+  - `normalizarClips` con `respuesta-ok.json` y la transcripción de `spike/prueba-hf` (copiada a `tests/fixtures/transcripcion-muestra.json`, sin el video): el clip queda en `inicio 30.93 / fin 63.88`, `apertura.frase` empieza con `"ese quebrantamiento sincero"`, `formatos` = `["9:16","4:5"]`.
   - `analizarProyecto` con `comando: "node tests/fixtures/claude/falso-claude.mjs"` en tres modos (variable `FALSO_CLAUDE_MODO`): `ok` → `clips.json` escrito; `invalido-luego-ok` → éxito tras un reintento (el falso registra 2 llamadas); `sin-sesion` → rechaza con el mensaje de sesión.
 - [ ] **Step 2:** Run `npm test -- claude` → FAIL. Implementar. Run → PASS.
 - [ ] **Step 3:** Commit `feat: análisis de clips con claude -p`.
@@ -266,7 +266,7 @@ tests/                             # espejo de src/ (unitarias), tests/e2e/ (Pla
   - `ListaClips` con 3 clips ordena por puntaje, el filtro "Con versículo" deja solo los que tienen versículos y `AnilloPuntaje` tiene `aria-label="Puntaje 92"`.
 - [ ] **Step 2:** Run `npm test -- NuevaPredica ListaClips` → FAIL. Implementar. Run → PASS.
 - [ ] **Step 3: E2E** — `tests/e2e/flujo-basico.spec.ts`: con `REELS_IGLESIA_DATOS` temporal, el fixture de Task 3, `REELS_CLAUDE_COMANDO="node tests/fixtures/claude/falso-claude.mjs"` y `REELS_WHISPER_MODELO=tiny`: crear prédica → "Procesar prédica" → esperar (≤ 3 min) los tres pasos en verde → ver ≥ 1 clip en la lista y su título en el panel derecho. Run `npm run e2e` → PASS.
-- [ ] **Step 4: Prueba manual con el culto real** — `npm run dev`, crear una prédica con `C:\Users\djmov\Downloads\FDownloader.net-943096285322125-(1280p).mp4`, rango 1:44:44–2:32:35, con Claude real (requiere sesión iniciada). Esperado: clips sugeridos en la lista.
+- [ ] **Step 4: Prueba manual con el culto real** — `npm run dev`, crear una prédica con el video de un culto real, marcando el rango de la prédica, con Claude real (requiere sesión iniciada). Esperado: clips sugeridos en la lista.
 - [ ] **Step 5:** Commit `feat: pantallas de prédicas, nueva prédica y editor de lectura`.
 
 ---

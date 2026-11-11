@@ -10,12 +10,12 @@ const muestra: Transcripcion = JSON.parse(readFileSync(join(resolve(__dirname, "
 const palabras = palabrasDe(muestra);
 const rango = { inicio: 0, fin: 75.09 };
 
-const A = "Y ese quebrantamiento terrenal va a activar la gloria celestial"; // 39.02
-const B = "Porque cuando tú estás quebrantado, orando, aleluya, inmediatamente se va a activar la gloria celestial"; // 44.8
-const C = "porque cuando hay quebrantamiento eso va a entender que hay humillación de esa persona hacia Dios"; // 54.8
-const D = "por eso es importante entender que el quebrantamiento nos va a acercar a la presencia"; // 65.68
-const E = "Entendiendo que esa oración, aleluya, va a traerte quebrantamiento"; // 30.93
-const F = "el que ora profundamente, aleluya, tiene que sentir algo especial"; // dentro del primer segmento
+const A = "Y ese quebrantamiento sincero va a abrir la gloria eterna"; // 39.02
+const B = "Porque cuando tú estás rendido, orando, hermano, enseguida se va a abrir la gloria eterna"; // 44.8
+const C = "porque cuando hay quebrantamiento eso nos muestra que hay humildad en esa persona delante de Dios"; // 54.8
+const D = "por eso es bueno recordar que el quebrantamiento nos va a llevar a su presencia"; // 65.68
+const E = "Sabiendo que esta oración, hermanos, nos lleva al quebrantamiento"; // 30.93
+const F = "el que busca de verdad, amén, siempre encuentra respuesta"; // dentro del primer segmento
 
 test("normaliza sin tildes, mayúsculas ni puntuación y conserva la ñ", () => {
   expect(normalizarPalabras("¡Él está aquí, Señor!")).toEqual(["el", "esta", "aqui", "señor"]);
@@ -27,7 +27,7 @@ describe("coincidencia", () => {
     expect(coincidencia(A.toUpperCase().normalize("NFD").replace(/[̀-ͯ]/g, ""), palabras, 39)).toBe(1);
   });
   test("con una palabra cambiada en 12 queda entre 0,9 y 0,95", () => {
-    const doce = "porque cuando hay quebrantamiento eso va a entender que hay humillación grande"; // 12 palabras, la última cambiada
+    const doce = "porque cuando hay quebrantamiento eso nos muestra que hay humildad grande"; // 12 palabras, la última cambiada
     const v = coincidencia(doce, palabras, 55);
     expect(v).toBeGreaterThanOrEqual(0.9);
     expect(v).toBeLessThan(0.95);
@@ -89,8 +89,8 @@ test("tamaño de letra según el largo", () => {
 test("fiel: cambiar 3 de 10 palabras ya no es lo que dijo", () => {
   const f: Frase = { texto: A, en: 39, original: A, fondo: "marca" };
   expect(fiel(f)).toBe(true);
-  expect(fiel({ ...f, texto: A.replace("terrenal", "terreno") })).toBe(true); // 1 de 10
-  expect(fiel({ ...f, texto: "Y este dolor terrenal va a encender la gloria celestial" })).toBe(false);
+  expect(fiel({ ...f, texto: A.replace("sincero", "sencillo") })).toBe(true); // 1 de 10
+  expect(fiel({ ...f, texto: "Y este dolor sencillo va a encender la gloria eterna" })).toBe(false);
 });
 
 describe("tarjeta", () => {

@@ -33,7 +33,7 @@ ya reserva un lugar para ellos ("Pronto").
 | Detección de caras | YuNet (OpenCV, `modelos/face_detection_yunet_2023mar.onnx`) a 2 cuadros/s: cara encontrada en 80/80 cuadros de una muestra del culto real; ~2 min por 48 min de video. |
 | Elección de clips | Prompt probado en el artefacto `Púlpito Clips` (Claude vía capacidad `sample`). |
 | Render | Prueba en `spike/`: HyperFrames 0.9.17 renderizó un reel de 40,6 s (1080×1920) en 72 s con `--gpu --workers 4`, sin cuadros duplicados fuera de la tarjeta final fija; audio con pico −3,8 dB. Formatos 4:5 y 1:1 verificados con capturas. |
-| Diseño | Maqueta aprobada: `design/maqueta-editor.html` (+ `design/maqueta-editor.png`). |
+| Diseño | Maqueta aprobada: `design/maqueta-editor.html`. |
 
 ## 3. Decisiones de arquitectura
 

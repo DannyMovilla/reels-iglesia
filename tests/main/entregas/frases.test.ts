@@ -24,7 +24,7 @@ beforeEach(async () => {
 });
 
 test("el prompt pide frases textuales con su minuto y prohíbe inventar versículos", () => {
-  const p = promptFrases("[0:00:39] Y ese quebrantamiento terrenal va a activar la gloria celestial");
+  const p = promptFrases("[0:00:39] Y ese quebrantamiento sincero va a abrir la gloria eterna");
   expect(p.startsWith("FRASES DE LA PRÉDICA.")).toBe(true);
   expect(p).toContain("palabra por palabra");
   expect(p).toContain("10");

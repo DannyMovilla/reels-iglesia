@@ -57,9 +57,9 @@ describe("aplicarCambios", () => {
   });
 
   test("la frase de apertura se busca dentro del clip", () => {
-    const r = aplicarCambios(clip, { resumen: "", apertura_frase: "inmediatamente se va a activar la gloria celestial" }, palabras, rango);
+    const r = aplicarCambios(clip, { resumen: "", apertura_frase: "enseguida se va a abrir la gloria eterna" }, palabras, rango);
     expect(r.clip.apertura?.activa).toBe(true);
-    expect(r.clip.apertura?.frase).toMatch(/inmediatamente/);
+    expect(r.clip.apertura?.frase).toMatch(/enseguida/);
     const no = aplicarCambios(clip, { resumen: "", apertura_frase: "esto nunca lo dijo el pastor" }, palabras, rango);
     expect(no.clip.apertura).toBeNull();
     expect(no.avisos[0]).toMatch(/No encontré la frase de apertura/);
@@ -103,7 +103,7 @@ describe("pedirCambios con el Claude falso", () => {
 });
 
 test("revisión I2: los tramos que Claude quita se ajustan a palabras completas y se recortan al clip", () => {
-  // "inmediatamente" va de 51,64 a 52,16 y "celestial" de 54,26 a 54,8.
+  // "enseguida" va de 51,64 a 52,16 y "eterna" de 54,26 a 54,8.
   const r = aplicarCambios(clip, { resumen: "", quitar: [{ desde: "0:00:51.9", hasta: "0:00:54.6" }, { desde: "0:01:03.0", hasta: "0:01:10" }] }, palabras, rango);
   expect(r.clip.cortes.quitados![0]).toEqual({ inicio: 51.64, fin: 54.8 });
   expect(r.clip.cortes.quitados![1].inicio).toBeGreaterThanOrEqual(clip.inicio);

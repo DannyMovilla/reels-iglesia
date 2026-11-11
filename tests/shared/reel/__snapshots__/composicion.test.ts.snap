@@ -89,30 +89,27 @@ html, body { width: 1080px; height: 1080px; overflow: hidden; background: #000; 
 <div id="gancho" class="clip gancho" data-start="0" data-duration="5.78" style="top:615.6px">Tu quebranto abre el cielo<i></i></div>
 <div id="b0" class="clip sub pop" data-start="0" data-duration="1.26" style="top:864px"><span id="b0w0" class="w">Y</span> <span id="b0w1" class="w">ESE</span></div>
 <div id="b1" class="clip sub pop" data-start="1.26" data-duration="0.88" style="top:864px"><span id="b1w0" class="w clave">QUEBRANTAMIENTO</span></div>
-<div id="b2" class="clip sub pop" data-start="2.14" data-duration="1.9" style="top:864px"><span id="b2w0" class="w">TERRENAL</span> <span id="b2w1" class="w">VA</span> <span id="b2w2" class="w">A</span></div>
-<div id="b3" class="clip sub pop" data-start="4.04" data-duration="0.76" style="top:864px"><span id="b3w0" class="w">ACTIVAR</span> <span id="b3w1" class="w">LA</span></div>
-<div id="b4" class="clip sub pop" data-start="4.8" data-duration="0.98" style="top:864px"><span id="b4w0" class="w">GLORIA</span> <span id="b4w1" class="w">CELESTIAL</span></div>
-<div id="b5" class="clip sub pop" data-start="5.78" data-duration="1.32" style="top:864px"><span id="b5w0" class="w">ENTENDIENDO</span> <span id="b5w1" class="w">QUE</span></div>
-<div id="b6" class="clip sub pop" data-start="7.1" data-duration="0.78" style="top:864px"><span id="b6w0" class="w">ESA</span> <span id="b6w1" class="w">ORACIÓN,</span></div>
-<div id="b7" class="clip sub pop" data-start="8.4" data-duration="0.78" style="top:864px"><span id="b7w0" class="w">ALELUYA,</span></div>
-<div id="b8" class="clip sub pop" data-start="9.92" data-duration="0.68" style="top:864px"><span id="b8w0" class="w">VA</span> <span id="b8w1" class="w">A</span> <span id="b8w2" class="w">TRAERTE</span></div>
+<div id="b2" class="clip sub pop" data-start="2.14" data-duration="1.9" style="top:864px"><span id="b2w0" class="w">SINCERO</span> <span id="b2w1" class="w">VA</span> <span id="b2w2" class="w">A</span></div>
+<div id="b3" class="clip sub pop" data-start="4.04" data-duration="1.24" style="top:864px"><span id="b3w0" class="w">ABRIR</span> <span id="b3w1" class="w">LA</span> <span id="b3w2" class="w">GLORIA</span></div>
+<div id="b4" class="clip sub pop" data-start="5.28" data-duration="0.5" style="top:864px"><span id="b4w0" class="w">ETERNA</span></div>
+<div id="b5" class="clip sub pop" data-start="5.78" data-duration="1.32" style="top:864px"><span id="b5w0" class="w">SABIENDO</span> <span id="b5w1" class="w">QUE</span></div>
+<div id="b6" class="clip sub pop" data-start="7.1" data-duration="0.78" style="top:864px"><span id="b6w0" class="w">ESTA</span> <span id="b6w1" class="w">ORACIÓN,</span></div>
+<div id="b7" class="clip sub pop" data-start="8.4" data-duration="0.78" style="top:864px"><span id="b7w0" class="w">HERMANOS,</span></div>
+<div id="b8" class="clip sub pop" data-start="9.92" data-duration="0.68" style="top:864px"><span id="b8w0" class="w">NOS</span> <span id="b8w1" class="w">LLEVA</span> <span id="b8w2" class="w">AL</span></div>
 <div id="b9" class="clip sub pop" data-start="10.6" data-duration="1.31" style="top:864px"><span id="b9w0" class="w clave">QUEBRANTAMIENTO,</span></div>
-<div id="b10" class="clip sub pop" data-start="11.91" data-duration="3.22" style="top:864px"><span id="b10w0" class="w">ALELUYA</span> <span id="b10w1" class="w">Y</span> <span id="b10w2" class="w">ESE</span></div>
+<div id="b10" class="clip sub pop" data-start="11.91" data-duration="3.22" style="top:864px"><span id="b10w0" class="w">AMÉN</span> <span id="b10w1" class="w">Y</span> <span id="b10w2" class="w">ESE</span></div>
 <div id="b11" class="clip sub pop" data-start="15.13" data-duration="0.88" style="top:864px"><span id="b11w0" class="w clave">QUEBRANTAMIENTO</span></div>
-<div id="b12" class="clip sub pop" data-start="16.01" data-duration="1.9" style="top:864px"><span id="b12w0" class="w">TERRENAL</span> <span id="b12w1" class="w">VA</span> <span id="b12w2" class="w">A</span></div>
-<div id="b13" class="clip sub pop" data-start="17.91" data-duration="0.76" style="top:864px"><span id="b13w0" class="w">ACTIVAR</span> <span id="b13w1" class="w">LA</span></div>
-<div id="b14" class="clip sub pop" data-start="18.67" data-duration="0.98" style="top:864px"><span id="b14w0" class="w">GLORIA</span> <span id="b14w1" class="w">CELESTIAL</span></div>
-<div id="b15" class="clip sub pop" data-start="19.65" data-duration="1.14" style="top:864px"><span id="b15w0" class="w">PORQUE</span></div>
-<div id="b16" class="clip sub pop" data-start="27.97" data-duration="0.72" style="top:864px"><span id="b16w0" class="w">ACTIVAR</span> <span id="b16w1" class="w">LA</span></div>
-<div id="b17" class="clip sub pop" data-start="28.69" data-duration="0.96" style="top:864px"><span id="b17w0" class="w">GLORIA</span> <span id="b17w1" class="w">CELESTIAL</span></div>
-<div id="b18" class="clip sub pop" data-start="29.65" data-duration="1.96" style="top:864px"><span id="b18w0" class="w">PORQUE</span> <span id="b18w1" class="w">CUANDO</span></div>
-<div id="b19" class="clip sub pop" data-start="31.61" data-duration="0.2" style="top:864px"><span id="b19w0" class="w">HAY</span></div>
-<div id="b20" class="clip sub pop" data-start="31.81" data-duration="0.82" style="top:864px"><span id="b20w0" class="w clave">QUEBRANTAMIENTO</span></div>
-<div id="b21" class="clip sub pop" data-start="32.63" data-duration="0.82" style="top:864px"><span id="b21w0" class="w">ESO</span> <span id="b21w1" class="w">VA</span> <span id="b21w2" class="w">A</span></div>
-<div id="b22" class="clip sub pop" data-start="33.45" data-duration="0.76" style="top:864px"><span id="b22w0" class="w">ENTENDER</span> <span id="b22w1" class="w">QUE</span> <span id="b22w2" class="w">HAY</span></div>
-<div id="b23" class="clip sub pop" data-start="34.21" data-duration="2.36" style="top:864px"><span id="b23w0" class="w">HUMILLACIÓN</span> <span id="b23w1" class="w">DE</span></div>
-<div id="b24" class="clip sub pop" data-start="36.57" data-duration="0.72" style="top:864px"><span id="b24w0" class="w">ESA</span> <span id="b24w1" class="w">PERSONA</span></div>
-<div id="b25" class="clip sub pop" data-start="37.29" data-duration="1.02" style="top:864px"><span id="b25w0" class="w">HACIA</span> <span id="b25w1" class="w">DIOS</span></div>
+<div id="b12" class="clip sub pop" data-start="16.01" data-duration="1.9" style="top:864px"><span id="b12w0" class="w">SINCERO</span> <span id="b12w1" class="w">VA</span> <span id="b12w2" class="w">A</span></div>
+<div id="b13" class="clip sub pop" data-start="17.91" data-duration="1.24" style="top:864px"><span id="b13w0" class="w">ABRIR</span> <span id="b13w1" class="w">LA</span> <span id="b13w2" class="w">GLORIA</span></div>
+<div id="b14" class="clip sub pop" data-start="19.15" data-duration="1.64" style="top:864px"><span id="b14w0" class="w">ETERNA</span> <span id="b14w1" class="w">PORQUE</span></div>
+<div id="b15" class="clip sub pop" data-start="28.69" data-duration="0.96" style="top:864px"><span id="b15w0" class="w">GLORIA</span> <span id="b15w1" class="w">ETERNA</span></div>
+<div id="b16" class="clip sub pop" data-start="29.65" data-duration="1.96" style="top:864px"><span id="b16w0" class="w">PORQUE</span> <span id="b16w1" class="w">CUANDO</span></div>
+<div id="b17" class="clip sub pop" data-start="31.61" data-duration="0.2" style="top:864px"><span id="b17w0" class="w">HAY</span></div>
+<div id="b18" class="clip sub pop" data-start="31.81" data-duration="0.82" style="top:864px"><span id="b18w0" class="w clave">QUEBRANTAMIENTO</span></div>
+<div id="b19" class="clip sub pop" data-start="32.63" data-duration="0.82" style="top:864px"><span id="b19w0" class="w">ESO</span> <span id="b19w1" class="w">NOS</span> <span id="b19w2" class="w">MUESTRA</span></div>
+<div id="b20" class="clip sub pop" data-start="33.45" data-duration="0.76" style="top:864px"><span id="b20w0" class="w">QUE</span> <span id="b20w1" class="w">HAY</span> <span id="b20w2" class="w">HUMILDAD</span></div>
+<div id="b21" class="clip sub pop" data-start="34.21" data-duration="2.7" style="top:864px"><span id="b21w0" class="w">EN</span> <span id="b21w1" class="w">ESA</span> <span id="b21w2" class="w">PERSONA</span></div>
+<div id="b22" class="clip sub pop" data-start="36.91" data-duration="1.4" style="top:864px"><span id="b22w0" class="w">DELANTE</span> <span id="b22w1" class="w">DE</span> <span id="b22w2" class="w">DIOS</span></div>
 <div id="vers0" class="clip vers" data-start="22.07" data-duration="5.9" style="top:648px"><b>Salmos 51:17<small>RVR1960</small></b><p>Los sacrificios de Dios son el espíritu quebrantado; al corazón contrito y humillado no despreciarás tú, oh Dios.</p></div>
 <div id="marca" class="clip marca" data-start="0" data-duration="38.31"><span style="font-size:38px">Iglesia Familia</span></div>
 <div id="prog" class="clip prog" data-start="0" data-duration="38.31"></div>
@@ -144,11 +141,11 @@ tl.fromTo("#b3w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18
 tl.to("#b3w0", { color: "#ffffff", duration: 0.05 }, 4.67);
 tl.fromTo("#b3w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 4.62);
 tl.to("#b3w1", { color: "#ffffff", duration: 0.05 }, 4.85);
-tl.from("#b4", { opacity: 0, y: 16, duration: 0.12 }, 4.8);
-tl.fromTo("#b4w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 4.8);
-tl.to("#b4w0", { color: "#ffffff", duration: 0.05 }, 5.33);
-tl.fromTo("#b4w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 5.28);
-tl.to("#b4w1", { color: "#ffffff", duration: 0.05 }, 5.83);
+tl.fromTo("#b3w2", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 4.8);
+tl.to("#b3w2", { color: "#ffffff", duration: 0.05 }, 5.33);
+tl.from("#b4", { opacity: 0, y: 16, duration: 0.12 }, 5.28);
+tl.fromTo("#b4w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 5.28);
+tl.to("#b4w0", { color: "#ffffff", duration: 0.05 }, 5.83);
 tl.from("#b5", { opacity: 0, y: 16, duration: 0.12 }, 5.78);
 tl.fromTo("#b5w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 5.78);
 tl.to("#b5w0", { color: "#ffffff", duration: 0.05 }, 6.95);
@@ -192,63 +189,56 @@ tl.fromTo("#b13w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.1
 tl.to("#b13w0", { color: "#ffffff", duration: 0.05 }, 18.54);
 tl.fromTo("#b13w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 18.49);
 tl.to("#b13w1", { color: "#ffffff", duration: 0.05 }, 18.72);
-tl.from("#b14", { opacity: 0, y: 16, duration: 0.12 }, 18.67);
-tl.fromTo("#b14w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 18.67);
-tl.to("#b14w0", { color: "#ffffff", duration: 0.05 }, 19.2);
-tl.fromTo("#b14w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 19.15);
-tl.to("#b14w1", { color: "#ffffff", duration: 0.05 }, 19.7);
-tl.from("#b15", { opacity: 0, y: 16, duration: 0.12 }, 19.65);
-tl.fromTo("#b15w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 19.65);
-tl.to("#b15w0", { color: "#ffffff", duration: 0.05 }, 20.84);
-tl.from("#b16", { opacity: 0, y: 16, duration: 0.12 }, 27.97);
-tl.fromTo("#b16w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 27.97);
-tl.to("#b16w0", { color: "#ffffff", duration: 0.05 }, 28.56);
-tl.fromTo("#b16w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 28.51);
-tl.to("#b16w1", { color: "#ffffff", duration: 0.05 }, 28.74);
-tl.from("#b17", { opacity: 0, y: 16, duration: 0.12 }, 28.69);
-tl.fromTo("#b17w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 28.69);
-tl.to("#b17w0", { color: "#ffffff", duration: 0.05 }, 29.16);
-tl.fromTo("#b17w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 29.11);
-tl.to("#b17w1", { color: "#ffffff", duration: 0.05 }, 29.7);
-tl.from("#b18", { opacity: 0, y: 16, duration: 0.12 }, 29.65);
-tl.fromTo("#b18w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 29.65);
-tl.to("#b18w0", { color: "#ffffff", duration: 0.05 }, 31);
-tl.fromTo("#b18w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 31.27);
-tl.to("#b18w1", { color: "#ffffff", duration: 0.05 }, 31.66);
-tl.from("#b19", { opacity: 0, y: 16, duration: 0.12 }, 31.61);
-tl.fromTo("#b19w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 31.61);
-tl.to("#b19w0", { color: "#ffffff", duration: 0.05 }, 31.86);
-tl.from("#b20", { opacity: 0, y: 16, duration: 0.12 }, 31.81);
-tl.fromTo("#b20w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 31.81);
-tl.from("#b21", { opacity: 0, y: 16, duration: 0.12 }, 32.63);
-tl.fromTo("#b21w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 32.63);
-tl.to("#b21w0", { color: "#ffffff", duration: 0.05 }, 33.3);
-tl.fromTo("#b21w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 33.25);
-tl.to("#b21w1", { color: "#ffffff", duration: 0.05 }, 33.44);
-tl.fromTo("#b21w2", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 33.39);
-tl.to("#b21w2", { color: "#ffffff", duration: 0.05 }, 33.5);
-tl.from("#b22", { opacity: 0, y: 16, duration: 0.12 }, 33.45);
-tl.fromTo("#b22w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 33.45);
-tl.to("#b22w0", { color: "#ffffff", duration: 0.05 }, 33.76);
-tl.fromTo("#b22w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 33.71);
-tl.to("#b22w1", { color: "#ffffff", duration: 0.05 }, 34.1);
-tl.fromTo("#b22w2", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 34.05);
-tl.to("#b22w2", { color: "#ffffff", duration: 0.05 }, 34.26);
-tl.from("#b23", { opacity: 0, y: 16, duration: 0.12 }, 34.21);
-tl.fromTo("#b23w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 34.21);
-tl.to("#b23w0", { color: "#ffffff", duration: 0.05 }, 34.8);
-tl.fromTo("#b23w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 34.75);
-tl.to("#b23w1", { color: "#ffffff", duration: 0.05 }, 36.14);
-tl.from("#b24", { opacity: 0, y: 16, duration: 0.12 }, 36.57);
-tl.fromTo("#b24w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 36.57);
-tl.to("#b24w0", { color: "#ffffff", duration: 0.05 }, 36.96);
-tl.fromTo("#b24w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 36.91);
-tl.to("#b24w1", { color: "#ffffff", duration: 0.05 }, 37.34);
-tl.from("#b25", { opacity: 0, y: 16, duration: 0.12 }, 37.29);
-tl.fromTo("#b25w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 37.29);
-tl.to("#b25w0", { color: "#ffffff", duration: 0.05 }, 37.92);
-tl.fromTo("#b25w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 37.87);
-tl.to("#b25w1", { color: "#ffffff", duration: 0.05 }, 38.36);
+tl.fromTo("#b13w2", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 18.67);
+tl.to("#b13w2", { color: "#ffffff", duration: 0.05 }, 19.2);
+tl.from("#b14", { opacity: 0, y: 16, duration: 0.12 }, 19.15);
+tl.fromTo("#b14w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 19.15);
+tl.to("#b14w0", { color: "#ffffff", duration: 0.05 }, 19.7);
+tl.fromTo("#b14w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 19.65);
+tl.to("#b14w1", { color: "#ffffff", duration: 0.05 }, 20.84);
+tl.from("#b15", { opacity: 0, y: 16, duration: 0.12 }, 28.69);
+tl.fromTo("#b15w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 28.69);
+tl.to("#b15w0", { color: "#ffffff", duration: 0.05 }, 29.16);
+tl.fromTo("#b15w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 29.11);
+tl.to("#b15w1", { color: "#ffffff", duration: 0.05 }, 29.7);
+tl.from("#b16", { opacity: 0, y: 16, duration: 0.12 }, 29.65);
+tl.fromTo("#b16w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 29.65);
+tl.to("#b16w0", { color: "#ffffff", duration: 0.05 }, 31);
+tl.fromTo("#b16w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 31.27);
+tl.to("#b16w1", { color: "#ffffff", duration: 0.05 }, 31.66);
+tl.from("#b17", { opacity: 0, y: 16, duration: 0.12 }, 31.61);
+tl.fromTo("#b17w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 31.61);
+tl.to("#b17w0", { color: "#ffffff", duration: 0.05 }, 31.86);
+tl.from("#b18", { opacity: 0, y: 16, duration: 0.12 }, 31.81);
+tl.fromTo("#b18w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 31.81);
+tl.from("#b19", { opacity: 0, y: 16, duration: 0.12 }, 32.63);
+tl.fromTo("#b19w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 32.63);
+tl.to("#b19w0", { color: "#ffffff", duration: 0.05 }, 33.3);
+tl.fromTo("#b19w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 33.25);
+tl.to("#b19w1", { color: "#ffffff", duration: 0.05 }, 33.44);
+tl.fromTo("#b19w2", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 33.39);
+tl.to("#b19w2", { color: "#ffffff", duration: 0.05 }, 33.5);
+tl.from("#b20", { opacity: 0, y: 16, duration: 0.12 }, 33.45);
+tl.fromTo("#b20w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 33.45);
+tl.to("#b20w0", { color: "#ffffff", duration: 0.05 }, 33.76);
+tl.fromTo("#b20w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 33.71);
+tl.to("#b20w1", { color: "#ffffff", duration: 0.05 }, 34.1);
+tl.fromTo("#b20w2", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 34.05);
+tl.to("#b20w2", { color: "#ffffff", duration: 0.05 }, 34.26);
+tl.from("#b21", { opacity: 0, y: 16, duration: 0.12 }, 34.21);
+tl.fromTo("#b21w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 34.21);
+tl.to("#b21w0", { color: "#ffffff", duration: 0.05 }, 34.8);
+tl.fromTo("#b21w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 34.75);
+tl.to("#b21w1", { color: "#ffffff", duration: 0.05 }, 36.14);
+tl.fromTo("#b21w2", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 36.57);
+tl.to("#b21w2", { color: "#ffffff", duration: 0.05 }, 36.96);
+tl.from("#b22", { opacity: 0, y: 16, duration: 0.12 }, 36.91);
+tl.fromTo("#b22w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 36.91);
+tl.to("#b22w0", { color: "#ffffff", duration: 0.05 }, 37.34);
+tl.fromTo("#b22w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 37.29);
+tl.to("#b22w1", { color: "#ffffff", duration: 0.05 }, 37.92);
+tl.fromTo("#b22w2", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 37.87);
+tl.to("#b22w2", { color: "#ffffff", duration: 0.05 }, 38.36);
 tl.from("#vers0", { x: -1080, duration: 0.55, ease: "power3.out" }, 22.07);
 tl.to("#vers0", { x: -1080, duration: 0.4, ease: "power2.in" }, 27.57);
 tl.fromTo("#prog", { scaleX: 0 }, { scaleX: 1, duration: 38.31, ease: "none" }, 0);
@@ -353,30 +343,27 @@ html, body { width: 1080px; height: 1350px; overflow: hidden; background: #000; 
 <div id="gancho" class="clip gancho" data-start="0" data-duration="5.78" style="top:742.5px">Tu quebranto abre el cielo<i></i></div>
 <div id="b0" class="clip sub pop" data-start="0" data-duration="1.26" style="top:1080px"><span id="b0w0" class="w">Y</span> <span id="b0w1" class="w">ESE</span></div>
 <div id="b1" class="clip sub pop" data-start="1.26" data-duration="0.88" style="top:1080px"><span id="b1w0" class="w clave">QUEBRANTAMIENTO</span></div>
-<div id="b2" class="clip sub pop" data-start="2.14" data-duration="1.9" style="top:1080px"><span id="b2w0" class="w">TERRENAL</span> <span id="b2w1" class="w">VA</span> <span id="b2w2" class="w">A</span></div>
-<div id="b3" class="clip sub pop" data-start="4.04" data-duration="0.76" style="top:1080px"><span id="b3w0" class="w">ACTIVAR</span> <span id="b3w1" class="w">LA</span></div>
-<div id="b4" class="clip sub pop" data-start="4.8" data-duration="0.98" style="top:1080px"><span id="b4w0" class="w">GLORIA</span> <span id="b4w1" class="w">CELESTIAL</span></div>
-<div id="b5" class="clip sub pop" data-start="5.78" data-duration="1.32" style="top:1080px"><span id="b5w0" class="w">ENTENDIENDO</span> <span id="b5w1" class="w">QUE</span></div>
-<div id="b6" class="clip sub pop" data-start="7.1" data-duration="0.78" style="top:1080px"><span id="b6w0" class="w">ESA</span> <span id="b6w1" class="w">ORACIÓN,</span></div>
-<div id="b7" class="clip sub pop" data-start="8.4" data-duration="0.78" style="top:1080px"><span id="b7w0" class="w">ALELUYA,</span></div>
-<div id="b8" class="clip sub pop" data-start="9.92" data-duration="0.68" style="top:1080px"><span id="b8w0" class="w">VA</span> <span id="b8w1" class="w">A</span> <span id="b8w2" class="w">TRAERTE</span></div>
+<div id="b2" class="clip sub pop" data-start="2.14" data-duration="1.9" style="top:1080px"><span id="b2w0" class="w">SINCERO</span> <span id="b2w1" class="w">VA</span> <span id="b2w2" class="w">A</span></div>
+<div id="b3" class="clip sub pop" data-start="4.04" data-duration="1.24" style="top:1080px"><span id="b3w0" class="w">ABRIR</span> <span id="b3w1" class="w">LA</span> <span id="b3w2" class="w">GLORIA</span></div>
+<div id="b4" class="clip sub pop" data-start="5.28" data-duration="0.5" style="top:1080px"><span id="b4w0" class="w">ETERNA</span></div>
+<div id="b5" class="clip sub pop" data-start="5.78" data-duration="1.32" style="top:1080px"><span id="b5w0" class="w">SABIENDO</span> <span id="b5w1" class="w">QUE</span></div>
+<div id="b6" class="clip sub pop" data-start="7.1" data-duration="0.78" style="top:1080px"><span id="b6w0" class="w">ESTA</span> <span id="b6w1" class="w">ORACIÓN,</span></div>
+<div id="b7" class="clip sub pop" data-start="8.4" data-duration="0.78" style="top:1080px"><span id="b7w0" class="w">HERMANOS,</span></div>
+<div id="b8" class="clip sub pop" data-start="9.92" data-duration="0.68" style="top:1080px"><span id="b8w0" class="w">NOS</span> <span id="b8w1" class="w">LLEVA</span> <span id="b8w2" class="w">AL</span></div>
 <div id="b9" class="clip sub pop" data-start="10.6" data-duration="1.31" style="top:1080px"><span id="b9w0" class="w clave">QUEBRANTAMIENTO,</span></div>
-<div id="b10" class="clip sub pop" data-start="11.91" data-duration="3.22" style="top:1080px"><span id="b10w0" class="w">ALELUYA</span> <span id="b10w1" class="w">Y</span> <span id="b10w2" class="w">ESE</span></div>
+<div id="b10" class="clip sub pop" data-start="11.91" data-duration="3.22" style="top:1080px"><span id="b10w0" class="w">AMÉN</span> <span id="b10w1" class="w">Y</span> <span id="b10w2" class="w">ESE</span></div>
 <div id="b11" class="clip sub pop" data-start="15.13" data-duration="0.88" style="top:1080px"><span id="b11w0" class="w clave">QUEBRANTAMIENTO</span></div>
-<div id="b12" class="clip sub pop" data-start="16.01" data-duration="1.9" style="top:1080px"><span id="b12w0" class="w">TERRENAL</span> <span id="b12w1" class="w">VA</span> <span id="b12w2" class="w">A</span></div>
-<div id="b13" class="clip sub pop" data-start="17.91" data-duration="0.76" style="top:1080px"><span id="b13w0" class="w">ACTIVAR</span> <span id="b13w1" class="w">LA</span></div>
-<div id="b14" class="clip sub pop" data-start="18.67" data-duration="0.98" style="top:1080px"><span id="b14w0" class="w">GLORIA</span> <span id="b14w1" class="w">CELESTIAL</span></div>
-<div id="b15" class="clip sub pop" data-start="19.65" data-duration="1.14" style="top:1080px"><span id="b15w0" class="w">PORQUE</span></div>
-<div id="b16" class="clip sub pop" data-start="27.97" data-duration="0.72" style="top:1080px"><span id="b16w0" class="w">ACTIVAR</span> <span id="b16w1" class="w">LA</span></div>
-<div id="b17" class="clip sub pop" data-start="28.69" data-duration="0.96" style="top:1080px"><span id="b17w0" class="w">GLORIA</span> <span id="b17w1" class="w">CELESTIAL</span></div>
-<div id="b18" class="clip sub pop" data-start="29.65" data-duration="1.96" style="top:1080px"><span id="b18w0" class="w">PORQUE</span> <span id="b18w1" class="w">CUANDO</span></div>
-<div id="b19" class="clip sub pop" data-start="31.61" data-duration="0.2" style="top:1080px"><span id="b19w0" class="w">HAY</span></div>
-<div id="b20" class="clip sub pop" data-start="31.81" data-duration="0.82" style="top:1080px"><span id="b20w0" class="w clave">QUEBRANTAMIENTO</span></div>
-<div id="b21" class="clip sub pop" data-start="32.63" data-duration="0.82" style="top:1080px"><span id="b21w0" class="w">ESO</span> <span id="b21w1" class="w">VA</span> <span id="b21w2" class="w">A</span></div>
-<div id="b22" class="clip sub pop" data-start="33.45" data-duration="0.76" style="top:1080px"><span id="b22w0" class="w">ENTENDER</span> <span id="b22w1" class="w">QUE</span> <span id="b22w2" class="w">HAY</span></div>
-<div id="b23" class="clip sub pop" data-start="34.21" data-duration="2.36" style="top:1080px"><span id="b23w0" class="w">HUMILLACIÓN</span> <span id="b23w1" class="w">DE</span></div>
-<div id="b24" class="clip sub pop" data-start="36.57" data-duration="0.72" style="top:1080px"><span id="b24w0" class="w">ESA</span> <span id="b24w1" class="w">PERSONA</span></div>
-<div id="b25" class="clip sub pop" data-start="37.29" data-duration="1.02" style="top:1080px"><span id="b25w0" class="w">HACIA</span> <span id="b25w1" class="w">DIOS</span></div>
+<div id="b12" class="clip sub pop" data-start="16.01" data-duration="1.9" style="top:1080px"><span id="b12w0" class="w">SINCERO</span> <span id="b12w1" class="w">VA</span> <span id="b12w2" class="w">A</span></div>
+<div id="b13" class="clip sub pop" data-start="17.91" data-duration="1.24" style="top:1080px"><span id="b13w0" class="w">ABRIR</span> <span id="b13w1" class="w">LA</span> <span id="b13w2" class="w">GLORIA</span></div>
+<div id="b14" class="clip sub pop" data-start="19.15" data-duration="1.64" style="top:1080px"><span id="b14w0" class="w">ETERNA</span> <span id="b14w1" class="w">PORQUE</span></div>
+<div id="b15" class="clip sub pop" data-start="28.69" data-duration="0.96" style="top:1080px"><span id="b15w0" class="w">GLORIA</span> <span id="b15w1" class="w">ETERNA</span></div>
+<div id="b16" class="clip sub pop" data-start="29.65" data-duration="1.96" style="top:1080px"><span id="b16w0" class="w">PORQUE</span> <span id="b16w1" class="w">CUANDO</span></div>
+<div id="b17" class="clip sub pop" data-start="31.61" data-duration="0.2" style="top:1080px"><span id="b17w0" class="w">HAY</span></div>
+<div id="b18" class="clip sub pop" data-start="31.81" data-duration="0.82" style="top:1080px"><span id="b18w0" class="w clave">QUEBRANTAMIENTO</span></div>
+<div id="b19" class="clip sub pop" data-start="32.63" data-duration="0.82" style="top:1080px"><span id="b19w0" class="w">ESO</span> <span id="b19w1" class="w">NOS</span> <span id="b19w2" class="w">MUESTRA</span></div>
+<div id="b20" class="clip sub pop" data-start="33.45" data-duration="0.76" style="top:1080px"><span id="b20w0" class="w">QUE</span> <span id="b20w1" class="w">HAY</span> <span id="b20w2" class="w">HUMILDAD</span></div>
+<div id="b21" class="clip sub pop" data-start="34.21" data-duration="2.7" style="top:1080px"><span id="b21w0" class="w">EN</span> <span id="b21w1" class="w">ESA</span> <span id="b21w2" class="w">PERSONA</span></div>
+<div id="b22" class="clip sub pop" data-start="36.91" data-duration="1.4" style="top:1080px"><span id="b22w0" class="w">DELANTE</span> <span id="b22w1" class="w">DE</span> <span id="b22w2" class="w">DIOS</span></div>
 <div id="vers0" class="clip vers" data-start="22.07" data-duration="5.9" style="top:810px"><b>Salmos 51:17<small>RVR1960</small></b><p>Los sacrificios de Dios son el espíritu quebrantado; al corazón contrito y humillado no despreciarás tú, oh Dios.</p></div>
 <div id="marca" class="clip marca" data-start="0" data-duration="38.31"><span style="font-size:38px">Iglesia Familia</span></div>
 <div id="prog" class="clip prog" data-start="0" data-duration="38.31"></div>
@@ -408,11 +395,11 @@ tl.fromTo("#b3w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18
 tl.to("#b3w0", { color: "#ffffff", duration: 0.05 }, 4.67);
 tl.fromTo("#b3w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 4.62);
 tl.to("#b3w1", { color: "#ffffff", duration: 0.05 }, 4.85);
-tl.from("#b4", { opacity: 0, y: 16, duration: 0.12 }, 4.8);
-tl.fromTo("#b4w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 4.8);
-tl.to("#b4w0", { color: "#ffffff", duration: 0.05 }, 5.33);
-tl.fromTo("#b4w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 5.28);
-tl.to("#b4w1", { color: "#ffffff", duration: 0.05 }, 5.83);
+tl.fromTo("#b3w2", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 4.8);
+tl.to("#b3w2", { color: "#ffffff", duration: 0.05 }, 5.33);
+tl.from("#b4", { opacity: 0, y: 16, duration: 0.12 }, 5.28);
+tl.fromTo("#b4w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 5.28);
+tl.to("#b4w0", { color: "#ffffff", duration: 0.05 }, 5.83);
 tl.from("#b5", { opacity: 0, y: 16, duration: 0.12 }, 5.78);
 tl.fromTo("#b5w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 5.78);
 tl.to("#b5w0", { color: "#ffffff", duration: 0.05 }, 6.95);
@@ -456,63 +443,56 @@ tl.fromTo("#b13w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.1
 tl.to("#b13w0", { color: "#ffffff", duration: 0.05 }, 18.54);
 tl.fromTo("#b13w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 18.49);
 tl.to("#b13w1", { color: "#ffffff", duration: 0.05 }, 18.72);
-tl.from("#b14", { opacity: 0, y: 16, duration: 0.12 }, 18.67);
-tl.fromTo("#b14w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 18.67);
-tl.to("#b14w0", { color: "#ffffff", duration: 0.05 }, 19.2);
-tl.fromTo("#b14w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 19.15);
-tl.to("#b14w1", { color: "#ffffff", duration: 0.05 }, 19.7);
-tl.from("#b15", { opacity: 0, y: 16, duration: 0.12 }, 19.65);
-tl.fromTo("#b15w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 19.65);
-tl.to("#b15w0", { color: "#ffffff", duration: 0.05 }, 20.84);
-tl.from("#b16", { opacity: 0, y: 16, duration: 0.12 }, 27.97);
-tl.fromTo("#b16w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 27.97);
-tl.to("#b16w0", { color: "#ffffff", duration: 0.05 }, 28.56);
-tl.fromTo("#b16w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 28.51);
-tl.to("#b16w1", { color: "#ffffff", duration: 0.05 }, 28.74);
-tl.from("#b17", { opacity: 0, y: 16, duration: 0.12 }, 28.69);
-tl.fromTo("#b17w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 28.69);
-tl.to("#b17w0", { color: "#ffffff", duration: 0.05 }, 29.16);
-tl.fromTo("#b17w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 29.11);
-tl.to("#b17w1", { color: "#ffffff", duration: 0.05 }, 29.7);
-tl.from("#b18", { opacity: 0, y: 16, duration: 0.12 }, 29.65);
-tl.fromTo("#b18w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 29.65);
-tl.to("#b18w0", { color: "#ffffff", duration: 0.05 }, 31);
-tl.fromTo("#b18w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 31.27);
-tl.to("#b18w1", { color: "#ffffff", duration: 0.05 }, 31.66);
-tl.from("#b19", { opacity: 0, y: 16, duration: 0.12 }, 31.61);
-tl.fromTo("#b19w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 31.61);
-tl.to("#b19w0", { color: "#ffffff", duration: 0.05 }, 31.86);
-tl.from("#b20", { opacity: 0, y: 16, duration: 0.12 }, 31.81);
-tl.fromTo("#b20w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 31.81);
-tl.from("#b21", { opacity: 0, y: 16, duration: 0.12 }, 32.63);
-tl.fromTo("#b21w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 32.63);
-tl.to("#b21w0", { color: "#ffffff", duration: 0.05 }, 33.3);
-tl.fromTo("#b21w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 33.25);
-tl.to("#b21w1", { color: "#ffffff", duration: 0.05 }, 33.44);
-tl.fromTo("#b21w2", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 33.39);
-tl.to("#b21w2", { color: "#ffffff", duration: 0.05 }, 33.5);
-tl.from("#b22", { opacity: 0, y: 16, duration: 0.12 }, 33.45);
-tl.fromTo("#b22w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 33.45);
-tl.to("#b22w0", { color: "#ffffff", duration: 0.05 }, 33.76);
-tl.fromTo("#b22w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 33.71);
-tl.to("#b22w1", { color: "#ffffff", duration: 0.05 }, 34.1);
-tl.fromTo("#b22w2", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 34.05);
-tl.to("#b22w2", { color: "#ffffff", duration: 0.05 }, 34.26);
-tl.from("#b23", { opacity: 0, y: 16, duration: 0.12 }, 34.21);
-tl.fromTo("#b23w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 34.21);
-tl.to("#b23w0", { color: "#ffffff", duration: 0.05 }, 34.8);
-tl.fromTo("#b23w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 34.75);
-tl.to("#b23w1", { color: "#ffffff", duration: 0.05 }, 36.14);
-tl.from("#b24", { opacity: 0, y: 16, duration: 0.12 }, 36.57);
-tl.fromTo("#b24w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 36.57);
-tl.to("#b24w0", { color: "#ffffff", duration: 0.05 }, 36.96);
-tl.fromTo("#b24w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 36.91);
-tl.to("#b24w1", { color: "#ffffff", duration: 0.05 }, 37.34);
-tl.from("#b25", { opacity: 0, y: 16, duration: 0.12 }, 37.29);
-tl.fromTo("#b25w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 37.29);
-tl.to("#b25w0", { color: "#ffffff", duration: 0.05 }, 37.92);
-tl.fromTo("#b25w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 37.87);
-tl.to("#b25w1", { color: "#ffffff", duration: 0.05 }, 38.36);
+tl.fromTo("#b13w2", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 18.67);
+tl.to("#b13w2", { color: "#ffffff", duration: 0.05 }, 19.2);
+tl.from("#b14", { opacity: 0, y: 16, duration: 0.12 }, 19.15);
+tl.fromTo("#b14w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 19.15);
+tl.to("#b14w0", { color: "#ffffff", duration: 0.05 }, 19.7);
+tl.fromTo("#b14w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 19.65);
+tl.to("#b14w1", { color: "#ffffff", duration: 0.05 }, 20.84);
+tl.from("#b15", { opacity: 0, y: 16, duration: 0.12 }, 28.69);
+tl.fromTo("#b15w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 28.69);
+tl.to("#b15w0", { color: "#ffffff", duration: 0.05 }, 29.16);
+tl.fromTo("#b15w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 29.11);
+tl.to("#b15w1", { color: "#ffffff", duration: 0.05 }, 29.7);
+tl.from("#b16", { opacity: 0, y: 16, duration: 0.12 }, 29.65);
+tl.fromTo("#b16w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 29.65);
+tl.to("#b16w0", { color: "#ffffff", duration: 0.05 }, 31);
+tl.fromTo("#b16w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 31.27);
+tl.to("#b16w1", { color: "#ffffff", duration: 0.05 }, 31.66);
+tl.from("#b17", { opacity: 0, y: 16, duration: 0.12 }, 31.61);
+tl.fromTo("#b17w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 31.61);
+tl.to("#b17w0", { color: "#ffffff", duration: 0.05 }, 31.86);
+tl.from("#b18", { opacity: 0, y: 16, duration: 0.12 }, 31.81);
+tl.fromTo("#b18w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 31.81);
+tl.from("#b19", { opacity: 0, y: 16, duration: 0.12 }, 32.63);
+tl.fromTo("#b19w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 32.63);
+tl.to("#b19w0", { color: "#ffffff", duration: 0.05 }, 33.3);
+tl.fromTo("#b19w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 33.25);
+tl.to("#b19w1", { color: "#ffffff", duration: 0.05 }, 33.44);
+tl.fromTo("#b19w2", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 33.39);
+tl.to("#b19w2", { color: "#ffffff", duration: 0.05 }, 33.5);
+tl.from("#b20", { opacity: 0, y: 16, duration: 0.12 }, 33.45);
+tl.fromTo("#b20w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 33.45);
+tl.to("#b20w0", { color: "#ffffff", duration: 0.05 }, 33.76);
+tl.fromTo("#b20w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 33.71);
+tl.to("#b20w1", { color: "#ffffff", duration: 0.05 }, 34.1);
+tl.fromTo("#b20w2", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 34.05);
+tl.to("#b20w2", { color: "#ffffff", duration: 0.05 }, 34.26);
+tl.from("#b21", { opacity: 0, y: 16, duration: 0.12 }, 34.21);
+tl.fromTo("#b21w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 34.21);
+tl.to("#b21w0", { color: "#ffffff", duration: 0.05 }, 34.8);
+tl.fromTo("#b21w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 34.75);
+tl.to("#b21w1", { color: "#ffffff", duration: 0.05 }, 36.14);
+tl.fromTo("#b21w2", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 36.57);
+tl.to("#b21w2", { color: "#ffffff", duration: 0.05 }, 36.96);
+tl.from("#b22", { opacity: 0, y: 16, duration: 0.12 }, 36.91);
+tl.fromTo("#b22w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 36.91);
+tl.to("#b22w0", { color: "#ffffff", duration: 0.05 }, 37.34);
+tl.fromTo("#b22w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 37.29);
+tl.to("#b22w1", { color: "#ffffff", duration: 0.05 }, 37.92);
+tl.fromTo("#b22w2", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 37.87);
+tl.to("#b22w2", { color: "#ffffff", duration: 0.05 }, 38.36);
 tl.from("#vers0", { x: -1080, duration: 0.55, ease: "power3.out" }, 22.07);
 tl.to("#vers0", { x: -1080, duration: 0.4, ease: "power2.in" }, 27.57);
 tl.fromTo("#prog", { scaleX: 0 }, { scaleX: 1, duration: 38.31, ease: "none" }, 0);
@@ -617,30 +597,27 @@ html, body { width: 1080px; height: 1920px; overflow: hidden; background: #000; 
 <div id="gancho" class="clip gancho" data-start="0" data-duration="5.78" style="top:1017.6px">Tu quebranto abre el cielo<i></i></div>
 <div id="b0" class="clip sub pop" data-start="0" data-duration="1.26" style="top:1420.8px"><span id="b0w0" class="w">Y</span> <span id="b0w1" class="w">ESE</span></div>
 <div id="b1" class="clip sub pop" data-start="1.26" data-duration="0.88" style="top:1420.8px"><span id="b1w0" class="w clave">QUEBRANTAMIENTO</span></div>
-<div id="b2" class="clip sub pop" data-start="2.14" data-duration="1.9" style="top:1420.8px"><span id="b2w0" class="w">TERRENAL</span> <span id="b2w1" class="w">VA</span> <span id="b2w2" class="w">A</span></div>
-<div id="b3" class="clip sub pop" data-start="4.04" data-duration="0.76" style="top:1420.8px"><span id="b3w0" class="w">ACTIVAR</span> <span id="b3w1" class="w">LA</span></div>
-<div id="b4" class="clip sub pop" data-start="4.8" data-duration="0.98" style="top:1420.8px"><span id="b4w0" class="w">GLORIA</span> <span id="b4w1" class="w">CELESTIAL</span></div>
-<div id="b5" class="clip sub pop" data-start="5.78" data-duration="1.32" style="top:1420.8px"><span id="b5w0" class="w">ENTENDIENDO</span> <span id="b5w1" class="w">QUE</span></div>
-<div id="b6" class="clip sub pop" data-start="7.1" data-duration="0.78" style="top:1420.8px"><span id="b6w0" class="w">ESA</span> <span id="b6w1" class="w">ORACIÓN,</span></div>
-<div id="b7" class="clip sub pop" data-start="8.4" data-duration="0.78" style="top:1420.8px"><span id="b7w0" class="w">ALELUYA,</span></div>
-<div id="b8" class="clip sub pop" data-start="9.92" data-duration="0.68" style="top:1420.8px"><span id="b8w0" class="w">VA</span> <span id="b8w1" class="w">A</span> <span id="b8w2" class="w">TRAERTE</span></div>
+<div id="b2" class="clip sub pop" data-start="2.14" data-duration="1.9" style="top:1420.8px"><span id="b2w0" class="w">SINCERO</span> <span id="b2w1" class="w">VA</span> <span id="b2w2" class="w">A</span></div>
+<div id="b3" class="clip sub pop" data-start="4.04" data-duration="1.24" style="top:1420.8px"><span id="b3w0" class="w">ABRIR</span> <span id="b3w1" class="w">LA</span> <span id="b3w2" class="w">GLORIA</span></div>
+<div id="b4" class="clip sub pop" data-start="5.28" data-duration="0.5" style="top:1420.8px"><span id="b4w0" class="w">ETERNA</span></div>
+<div id="b5" class="clip sub pop" data-start="5.78" data-duration="1.32" style="top:1420.8px"><span id="b5w0" class="w">SABIENDO</span> <span id="b5w1" class="w">QUE</span></div>
+<div id="b6" class="clip sub pop" data-start="7.1" data-duration="0.78" style="top:1420.8px"><span id="b6w0" class="w">ESTA</span> <span id="b6w1" class="w">ORACIÓN,</span></div>
+<div id="b7" class="clip sub pop" data-start="8.4" data-duration="0.78" style="top:1420.8px"><span id="b7w0" class="w">HERMANOS,</span></div>
+<div id="b8" class="clip sub pop" data-start="9.92" data-duration="0.68" style="top:1420.8px"><span id="b8w0" class="w">NOS</span> <span id="b8w1" class="w">LLEVA</span> <span id="b8w2" class="w">AL</span></div>
 <div id="b9" class="clip sub pop" data-start="10.6" data-duration="1.31" style="top:1420.8px"><span id="b9w0" class="w clave">QUEBRANTAMIENTO,</span></div>
-<div id="b10" class="clip sub pop" data-start="11.91" data-duration="3.22" style="top:1420.8px"><span id="b10w0" class="w">ALELUYA</span> <span id="b10w1" class="w">Y</span> <span id="b10w2" class="w">ESE</span></div>
+<div id="b10" class="clip sub pop" data-start="11.91" data-duration="3.22" style="top:1420.8px"><span id="b10w0" class="w">AMÉN</span> <span id="b10w1" class="w">Y</span> <span id="b10w2" class="w">ESE</span></div>
 <div id="b11" class="clip sub pop" data-start="15.13" data-duration="0.88" style="top:1420.8px"><span id="b11w0" class="w clave">QUEBRANTAMIENTO</span></div>
-<div id="b12" class="clip sub pop" data-start="16.01" data-duration="1.9" style="top:1420.8px"><span id="b12w0" class="w">TERRENAL</span> <span id="b12w1" class="w">VA</span> <span id="b12w2" class="w">A</span></div>
-<div id="b13" class="clip sub pop" data-start="17.91" data-duration="0.76" style="top:1420.8px"><span id="b13w0" class="w">ACTIVAR</span> <span id="b13w1" class="w">LA</span></div>
-<div id="b14" class="clip sub pop" data-start="18.67" data-duration="0.98" style="top:1420.8px"><span id="b14w0" class="w">GLORIA</span> <span id="b14w1" class="w">CELESTIAL</span></div>
-<div id="b15" class="clip sub pop" data-start="19.65" data-duration="1.14" style="top:1420.8px"><span id="b15w0" class="w">PORQUE</span></div>
-<div id="b16" class="clip sub pop" data-start="27.97" data-duration="0.72" style="top:1420.8px"><span id="b16w0" class="w">ACTIVAR</span> <span id="b16w1" class="w">LA</span></div>
-<div id="b17" class="clip sub pop" data-start="28.69" data-duration="0.96" style="top:1420.8px"><span id="b17w0" class="w">GLORIA</span> <span id="b17w1" class="w">CELESTIAL</span></div>
-<div id="b18" class="clip sub pop" data-start="29.65" data-duration="1.96" style="top:1420.8px"><span id="b18w0" class="w">PORQUE</span> <span id="b18w1" class="w">CUANDO</span></div>
-<div id="b19" class="clip sub pop" data-start="31.61" data-duration="0.2" style="top:1420.8px"><span id="b19w0" class="w">HAY</span></div>
-<div id="b20" class="clip sub pop" data-start="31.81" data-duration="0.82" style="top:1420.8px"><span id="b20w0" class="w clave">QUEBRANTAMIENTO</span></div>
-<div id="b21" class="clip sub pop" data-start="32.63" data-duration="0.82" style="top:1420.8px"><span id="b21w0" class="w">ESO</span> <span id="b21w1" class="w">VA</span> <span id="b21w2" class="w">A</span></div>
-<div id="b22" class="clip sub pop" data-start="33.45" data-duration="0.76" style="top:1420.8px"><span id="b22w0" class="w">ENTENDER</span> <span id="b22w1" class="w">QUE</span> <span id="b22w2" class="w">HAY</span></div>
-<div id="b23" class="clip sub pop" data-start="34.21" data-duration="2.36" style="top:1420.8px"><span id="b23w0" class="w">HUMILLACIÓN</span> <span id="b23w1" class="w">DE</span></div>
-<div id="b24" class="clip sub pop" data-start="36.57" data-duration="0.72" style="top:1420.8px"><span id="b24w0" class="w">ESA</span> <span id="b24w1" class="w">PERSONA</span></div>
-<div id="b25" class="clip sub pop" data-start="37.29" data-duration="1.02" style="top:1420.8px"><span id="b25w0" class="w">HACIA</span> <span id="b25w1" class="w">DIOS</span></div>
+<div id="b12" class="clip sub pop" data-start="16.01" data-duration="1.9" style="top:1420.8px"><span id="b12w0" class="w">SINCERO</span> <span id="b12w1" class="w">VA</span> <span id="b12w2" class="w">A</span></div>
+<div id="b13" class="clip sub pop" data-start="17.91" data-duration="1.24" style="top:1420.8px"><span id="b13w0" class="w">ABRIR</span> <span id="b13w1" class="w">LA</span> <span id="b13w2" class="w">GLORIA</span></div>
+<div id="b14" class="clip sub pop" data-start="19.15" data-duration="1.64" style="top:1420.8px"><span id="b14w0" class="w">ETERNA</span> <span id="b14w1" class="w">PORQUE</span></div>
+<div id="b15" class="clip sub pop" data-start="28.69" data-duration="0.96" style="top:1420.8px"><span id="b15w0" class="w">GLORIA</span> <span id="b15w1" class="w">ETERNA</span></div>
+<div id="b16" class="clip sub pop" data-start="29.65" data-duration="1.96" style="top:1420.8px"><span id="b16w0" class="w">PORQUE</span> <span id="b16w1" class="w">CUANDO</span></div>
+<div id="b17" class="clip sub pop" data-start="31.61" data-duration="0.2" style="top:1420.8px"><span id="b17w0" class="w">HAY</span></div>
+<div id="b18" class="clip sub pop" data-start="31.81" data-duration="0.82" style="top:1420.8px"><span id="b18w0" class="w clave">QUEBRANTAMIENTO</span></div>
+<div id="b19" class="clip sub pop" data-start="32.63" data-duration="0.82" style="top:1420.8px"><span id="b19w0" class="w">ESO</span> <span id="b19w1" class="w">NOS</span> <span id="b19w2" class="w">MUESTRA</span></div>
+<div id="b20" class="clip sub pop" data-start="33.45" data-duration="0.76" style="top:1420.8px"><span id="b20w0" class="w">QUE</span> <span id="b20w1" class="w">HAY</span> <span id="b20w2" class="w">HUMILDAD</span></div>
+<div id="b21" class="clip sub pop" data-start="34.21" data-duration="2.7" style="top:1420.8px"><span id="b21w0" class="w">EN</span> <span id="b21w1" class="w">ESA</span> <span id="b21w2" class="w">PERSONA</span></div>
+<div id="b22" class="clip sub pop" data-start="36.91" data-duration="1.4" style="top:1420.8px"><span id="b22w0" class="w">DELANTE</span> <span id="b22w1" class="w">DE</span> <span id="b22w2" class="w">DIOS</span></div>
 <div id="vers0" class="clip vers" data-start="22.07" data-duration="5.9" style="top:1190.4px"><b>Salmos 51:17<small>RVR1960</small></b><p>Los sacrificios de Dios son el espíritu quebrantado; al corazón contrito y humillado no despreciarás tú, oh Dios.</p></div>
 <div id="marca" class="clip marca" data-start="0" data-duration="38.31"><span style="font-size:38px">Iglesia Familia</span></div>
 <div id="prog" class="clip prog" data-start="0" data-duration="38.31"></div>
@@ -672,11 +649,11 @@ tl.fromTo("#b3w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18
 tl.to("#b3w0", { color: "#ffffff", duration: 0.05 }, 4.67);
 tl.fromTo("#b3w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 4.62);
 tl.to("#b3w1", { color: "#ffffff", duration: 0.05 }, 4.85);
-tl.from("#b4", { opacity: 0, y: 16, duration: 0.12 }, 4.8);
-tl.fromTo("#b4w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 4.8);
-tl.to("#b4w0", { color: "#ffffff", duration: 0.05 }, 5.33);
-tl.fromTo("#b4w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 5.28);
-tl.to("#b4w1", { color: "#ffffff", duration: 0.05 }, 5.83);
+tl.fromTo("#b3w2", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 4.8);
+tl.to("#b3w2", { color: "#ffffff", duration: 0.05 }, 5.33);
+tl.from("#b4", { opacity: 0, y: 16, duration: 0.12 }, 5.28);
+tl.fromTo("#b4w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 5.28);
+tl.to("#b4w0", { color: "#ffffff", duration: 0.05 }, 5.83);
 tl.from("#b5", { opacity: 0, y: 16, duration: 0.12 }, 5.78);
 tl.fromTo("#b5w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 5.78);
 tl.to("#b5w0", { color: "#ffffff", duration: 0.05 }, 6.95);
@@ -720,63 +697,56 @@ tl.fromTo("#b13w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.1
 tl.to("#b13w0", { color: "#ffffff", duration: 0.05 }, 18.54);
 tl.fromTo("#b13w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 18.49);
 tl.to("#b13w1", { color: "#ffffff", duration: 0.05 }, 18.72);
-tl.from("#b14", { opacity: 0, y: 16, duration: 0.12 }, 18.67);
-tl.fromTo("#b14w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 18.67);
-tl.to("#b14w0", { color: "#ffffff", duration: 0.05 }, 19.2);
-tl.fromTo("#b14w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 19.15);
-tl.to("#b14w1", { color: "#ffffff", duration: 0.05 }, 19.7);
-tl.from("#b15", { opacity: 0, y: 16, duration: 0.12 }, 19.65);
-tl.fromTo("#b15w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 19.65);
-tl.to("#b15w0", { color: "#ffffff", duration: 0.05 }, 20.84);
-tl.from("#b16", { opacity: 0, y: 16, duration: 0.12 }, 27.97);
-tl.fromTo("#b16w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 27.97);
-tl.to("#b16w0", { color: "#ffffff", duration: 0.05 }, 28.56);
-tl.fromTo("#b16w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 28.51);
-tl.to("#b16w1", { color: "#ffffff", duration: 0.05 }, 28.74);
-tl.from("#b17", { opacity: 0, y: 16, duration: 0.12 }, 28.69);
-tl.fromTo("#b17w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 28.69);
-tl.to("#b17w0", { color: "#ffffff", duration: 0.05 }, 29.16);
-tl.fromTo("#b17w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 29.11);
-tl.to("#b17w1", { color: "#ffffff", duration: 0.05 }, 29.7);
-tl.from("#b18", { opacity: 0, y: 16, duration: 0.12 }, 29.65);
-tl.fromTo("#b18w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 29.65);
-tl.to("#b18w0", { color: "#ffffff", duration: 0.05 }, 31);
-tl.fromTo("#b18w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 31.27);
-tl.to("#b18w1", { color: "#ffffff", duration: 0.05 }, 31.66);
-tl.from("#b19", { opacity: 0, y: 16, duration: 0.12 }, 31.61);
-tl.fromTo("#b19w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 31.61);
-tl.to("#b19w0", { color: "#ffffff", duration: 0.05 }, 31.86);
-tl.from("#b20", { opacity: 0, y: 16, duration: 0.12 }, 31.81);
-tl.fromTo("#b20w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 31.81);
-tl.from("#b21", { opacity: 0, y: 16, duration: 0.12 }, 32.63);
-tl.fromTo("#b21w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 32.63);
-tl.to("#b21w0", { color: "#ffffff", duration: 0.05 }, 33.3);
-tl.fromTo("#b21w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 33.25);
-tl.to("#b21w1", { color: "#ffffff", duration: 0.05 }, 33.44);
-tl.fromTo("#b21w2", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 33.39);
-tl.to("#b21w2", { color: "#ffffff", duration: 0.05 }, 33.5);
-tl.from("#b22", { opacity: 0, y: 16, duration: 0.12 }, 33.45);
-tl.fromTo("#b22w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 33.45);
-tl.to("#b22w0", { color: "#ffffff", duration: 0.05 }, 33.76);
-tl.fromTo("#b22w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 33.71);
-tl.to("#b22w1", { color: "#ffffff", duration: 0.05 }, 34.1);
-tl.fromTo("#b22w2", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 34.05);
-tl.to("#b22w2", { color: "#ffffff", duration: 0.05 }, 34.26);
-tl.from("#b23", { opacity: 0, y: 16, duration: 0.12 }, 34.21);
-tl.fromTo("#b23w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 34.21);
-tl.to("#b23w0", { color: "#ffffff", duration: 0.05 }, 34.8);
-tl.fromTo("#b23w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 34.75);
-tl.to("#b23w1", { color: "#ffffff", duration: 0.05 }, 36.14);
-tl.from("#b24", { opacity: 0, y: 16, duration: 0.12 }, 36.57);
-tl.fromTo("#b24w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 36.57);
-tl.to("#b24w0", { color: "#ffffff", duration: 0.05 }, 36.96);
-tl.fromTo("#b24w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 36.91);
-tl.to("#b24w1", { color: "#ffffff", duration: 0.05 }, 37.34);
-tl.from("#b25", { opacity: 0, y: 16, duration: 0.12 }, 37.29);
-tl.fromTo("#b25w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 37.29);
-tl.to("#b25w0", { color: "#ffffff", duration: 0.05 }, 37.92);
-tl.fromTo("#b25w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 37.87);
-tl.to("#b25w1", { color: "#ffffff", duration: 0.05 }, 38.36);
+tl.fromTo("#b13w2", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 18.67);
+tl.to("#b13w2", { color: "#ffffff", duration: 0.05 }, 19.2);
+tl.from("#b14", { opacity: 0, y: 16, duration: 0.12 }, 19.15);
+tl.fromTo("#b14w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 19.15);
+tl.to("#b14w0", { color: "#ffffff", duration: 0.05 }, 19.7);
+tl.fromTo("#b14w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 19.65);
+tl.to("#b14w1", { color: "#ffffff", duration: 0.05 }, 20.84);
+tl.from("#b15", { opacity: 0, y: 16, duration: 0.12 }, 28.69);
+tl.fromTo("#b15w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 28.69);
+tl.to("#b15w0", { color: "#ffffff", duration: 0.05 }, 29.16);
+tl.fromTo("#b15w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 29.11);
+tl.to("#b15w1", { color: "#ffffff", duration: 0.05 }, 29.7);
+tl.from("#b16", { opacity: 0, y: 16, duration: 0.12 }, 29.65);
+tl.fromTo("#b16w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 29.65);
+tl.to("#b16w0", { color: "#ffffff", duration: 0.05 }, 31);
+tl.fromTo("#b16w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 31.27);
+tl.to("#b16w1", { color: "#ffffff", duration: 0.05 }, 31.66);
+tl.from("#b17", { opacity: 0, y: 16, duration: 0.12 }, 31.61);
+tl.fromTo("#b17w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 31.61);
+tl.to("#b17w0", { color: "#ffffff", duration: 0.05 }, 31.86);
+tl.from("#b18", { opacity: 0, y: 16, duration: 0.12 }, 31.81);
+tl.fromTo("#b18w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 31.81);
+tl.from("#b19", { opacity: 0, y: 16, duration: 0.12 }, 32.63);
+tl.fromTo("#b19w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 32.63);
+tl.to("#b19w0", { color: "#ffffff", duration: 0.05 }, 33.3);
+tl.fromTo("#b19w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 33.25);
+tl.to("#b19w1", { color: "#ffffff", duration: 0.05 }, 33.44);
+tl.fromTo("#b19w2", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 33.39);
+tl.to("#b19w2", { color: "#ffffff", duration: 0.05 }, 33.5);
+tl.from("#b20", { opacity: 0, y: 16, duration: 0.12 }, 33.45);
+tl.fromTo("#b20w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 33.45);
+tl.to("#b20w0", { color: "#ffffff", duration: 0.05 }, 33.76);
+tl.fromTo("#b20w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 33.71);
+tl.to("#b20w1", { color: "#ffffff", duration: 0.05 }, 34.1);
+tl.fromTo("#b20w2", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 34.05);
+tl.to("#b20w2", { color: "#ffffff", duration: 0.05 }, 34.26);
+tl.from("#b21", { opacity: 0, y: 16, duration: 0.12 }, 34.21);
+tl.fromTo("#b21w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 34.21);
+tl.to("#b21w0", { color: "#ffffff", duration: 0.05 }, 34.8);
+tl.fromTo("#b21w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 34.75);
+tl.to("#b21w1", { color: "#ffffff", duration: 0.05 }, 36.14);
+tl.fromTo("#b21w2", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 36.57);
+tl.to("#b21w2", { color: "#ffffff", duration: 0.05 }, 36.96);
+tl.from("#b22", { opacity: 0, y: 16, duration: 0.12 }, 36.91);
+tl.fromTo("#b22w0", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 36.91);
+tl.to("#b22w0", { color: "#ffffff", duration: 0.05 }, 37.34);
+tl.fromTo("#b22w1", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 37.29);
+tl.to("#b22w1", { color: "#ffffff", duration: 0.05 }, 37.92);
+tl.fromTo("#b22w2", { scale: 1.18, color: "#f5c542" }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, 37.87);
+tl.to("#b22w2", { color: "#ffffff", duration: 0.05 }, 38.36);
 tl.from("#vers0", { x: -1080, duration: 0.55, ease: "power3.out" }, 22.07);
 tl.to("#vers0", { x: -1080, duration: 0.4, ease: "power2.in" }, 27.57);
 tl.fromTo("#prog", { scaleX: 0 }, { scaleX: 1, duration: 38.31, ease: "none" }, 0);

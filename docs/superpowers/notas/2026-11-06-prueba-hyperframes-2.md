@@ -17,7 +17,7 @@ Fecha: 2026-11-06 · Equipo: Windows 11, GTX 1650 Ti (NVENC), HyperFrames 0.9.17
 
 ## D2 — Render desde el video original: **sí, ruta absoluta + `data-media-start`**
 
-- `src="C:/Users/.../FDownloader...(1280p).mp4"` (1 GB) con `data-media-start` en segundos del
+- `src="C:/Users/.../culto (1280p).mp4"` (1 GB) con `data-media-start` en segundos del
   original: render de 40,6 s en **67 s** (`--gpu --workers 4`), 1080×1920, sin cuadros duplicados
   fuera de la tarjeta final fija. No hace falta cortar el tramo antes.
 - El linter marca como **error** mover la cámara con `left`/`top` (se redondea al píxel y tiembla en
