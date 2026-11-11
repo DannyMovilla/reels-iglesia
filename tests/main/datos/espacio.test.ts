@@ -75,3 +75,13 @@ test("tamaños en palabras, con coma decimal", () => {
   expect(formatoTamano(820_000_000)).toBe("820 MB");
   expect(formatoTamano(2_000_000_000)).toBe("2 GB");
 });
+
+test("revisión: si una prédica no se puede liberar, las demás siguen", async () => {
+  const otra = (await crearProyecto({ nombre: "Otro culto", video: { ruta: video, tamano: 1, modificado: 0, duracion: 100 }, rango: { inicio: 0, fin: 50 } })).id;
+  mkdirSync(join(carpetaProyecto(otra), "tmp"), { recursive: true });
+  writeFileSync(join(carpetaProyecto(otra), "tmp", "x"), "z".repeat(700));
+  writeFileSync(join(carpetaProyecto(id), "proyecto.json"), "{ esto no es json");
+  const r = await liberarTodo(libre);
+  expect(r.liberado).toBe(700);
+  expect(existsSync(join(carpetaProyecto(otra), "tmp"))).toBe(false);
+});

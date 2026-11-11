@@ -18,7 +18,7 @@ import { release } from "node:os";
 import { limpiarRegistrosViejos, registrar } from "./registro";
 import { autoUpdater } from "electron-updater";
 import { Actualizador } from "./actualizar";
-import { crearOcupado } from "./ocupado";
+import { crearOcupado, trabajosEnCurso } from "./ocupado";
 import { limpiarTmpViejos } from "./datos/espacio";
 import { traduccionesEnCurso } from "./entregas/traducir";
 import { frasesEnCurso } from "./entregas/frases";
@@ -76,7 +76,7 @@ app.whenReady().then(async () => {
   const medios = await iniciarServidorMedios(resolverMedio);
   ipcMain.on("medios:base", (e) => { e.returnValue = medios.base; });
   ventana = crearVentana();
-  const ocupado = crearOcupado({ tareas: () => cola.lista(), entregas: () => [...traduccionesEnCurso(), ...frasesEnCurso()] });
+  const ocupado = crearOcupado({ tareas: () => cola.lista(), entregas: () => [...traduccionesEnCurso(), ...frasesEnCurso(), ...trabajosEnCurso()] });
   const actualizador = new Actualizador({
     updater: autoUpdater, empaquetada: app.isPackaged, hayTrabajo: ocupado.hayTrabajo,
     alCambiar: (e) => ventana?.webContents.send("actualizar:cambio", e),

@@ -29,3 +29,13 @@ test("sin nada en curso", () => {
   const o = crearOcupado({ tareas: () => [tarea("p1", "ok")], entregas: () => [] });
   expect(o.hayTrabajo()).toBe(false);
 });
+
+test("revisión: el trabajo fuera de la cola (MP3, imágenes, voces) ocupa su prédica mientras dura, aunque falle", async () => {
+  const { conTrabajo, trabajosEnCurso } = await import("../../src/main/ocupado");
+  let dentro: string[] = [];
+  await conTrabajo("p7", async () => { dentro = trabajosEnCurso(); });
+  expect(dentro).toEqual(["p7"]);
+  expect(trabajosEnCurso()).toEqual([]);
+  await expect(conTrabajo("p8", async () => { throw new Error("falló"); })).rejects.toThrow("falló");
+  expect(trabajosEnCurso()).toEqual([]);
+});

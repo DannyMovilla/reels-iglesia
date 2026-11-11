@@ -34,6 +34,7 @@ import { textoDiagnostico } from "./sistema/diagnostico";
 import type { Actualizador } from "./actualizar";
 import { liberarEspacio, liberarTodo, tamanoCarpeta } from "./datos/espacio";
 import { borrarProyecto, borrarReels, resumenBorrado } from "./datos/borrar";
+import { conTrabajo } from "./ocupado";
 import { cpus, release, totalmem } from "node:os";
 import { aplicarEstilo, copiarLogo, reubicarVideo, crearProyecto, guardarClip, guardarMarca, leerClips, leerJson, leerMarca, leerProyecto, listarExportados, listarProyectos, leerTranscripcion, leerCorrecciones, corregir, quitarCorreccion, agregarClip, guardarProyecto, validarTramoClip, copiarFuente } from "./proyectos/almacen";
 
@@ -146,10 +147,10 @@ export function registrarIpc(deps: DepsIpc): void {
   manejar("proyectos:quitarCorreccion", (_e, id: string, i: number) => quitarCorreccion(id, i));
   manejar("proyectos:caras", (_e, id: string) => leerJson<Caras>(id, "caras.json"));
   manejar("proyectos:guardarClip", (_e, id: string, clip: ClipSpec) => guardarClip(id, clip));
-  manejar("proyectos:prepararVoz", async (_e, id: string, nivel: NivelVoz) => {
+  manejar("proyectos:prepararVoz", (_e, id: string, nivel: NivelVoz) => conTrabajo(String(id), async () => {
     if (!["ligera", "limpia", "podcast"].includes(nivel)) throw new Error("Ese nivel de voz no existe.");
     await asegurarVoz(await leerProyecto(id), nivel);
-  });
+  }));
   manejar("estilo:copiar", async (_e, clip: ClipSpec) => {
     const r = await dialog.showOpenDialog({ title: "Elegir un reel de referencia", properties: ["openFile"], filters: [{ name: "Videos", extensions: ["mp4", "mov", "m4v", "webm"] }] });
     if (r.canceled || !r.filePaths[0]) return null;
@@ -165,12 +166,12 @@ export function registrarIpc(deps: DepsIpc): void {
   manejar("entregas:cancelarTraduccion", (_e, id: string) => cancelarTraduccion(id));
   manejar("entregas:traducir", (e, id: string, idiomas: string[], o?: { completo?: boolean }) =>
     traducirSrt(id, Array.isArray(idiomas) ? idiomas : [], { comando: process.env.REELS_CLAUDE_COMANDO, completo: o?.completo !== false, alProgreso: (t) => e.sender.send("entregas:progreso", t) }));
-  manejar("entregas:mp3", (_e, id: string, nivel: NivelVoz) => guardarMp3(id, ["ligera", "limpia", "podcast"].includes(nivel) ? nivel : "limpia"));
+  manejar("entregas:mp3", (_e, id: string, nivel: NivelVoz) => conTrabajo(String(id), () => guardarMp3(id, ["ligera", "limpia", "podcast"].includes(nivel) ? nivel : "limpia")));
   manejar("entregas:frases", (_e, id: string) => sacarFrases(id, { comando: process.env.REELS_CLAUDE_COMANDO }));
   manejar("entregas:cancelarFrases", (_e, id: string) => { validarIdProyecto(id); return cancelarFrases(id); });
   manejar("entregas:leerFrases", (_e, id: string) => leerFrases(id));
   manejar("entregas:guardarFrases", (_e, id: string, frases: Frase[]) => guardarFrases(id, frases));
-  manejar("entregas:imagenesFrases", (_e, id: string) => guardarImagenesFrases(id));
+  manejar("entregas:imagenesFrases", (_e, id: string) => conTrabajo(String(id), () => guardarImagenesFrases(id)));
   manejar("entregas:srt", (_e, id: string, o: { completo: boolean }) => guardarSrt(id, { completo: o?.completo !== false }));
   manejar("proyectos:capitulos", (_e, id: string) => leerCapitulos(id));
   manejar("claude:capitulos", (_e, id: string) => crearCapitulos(id, { comando: process.env.REELS_CLAUDE_COMANDO }));

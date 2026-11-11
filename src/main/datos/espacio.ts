@@ -1,8 +1,8 @@
 import { existsSync } from "node:fs";
 import { readdir, rm, stat } from "node:fs/promises";
 import { join } from "node:path";
-import { leerProyecto, listarProyectos } from "../proyectos/almacen";
-import { carpetaProyecto } from "../rutas";
+import { leerProyecto } from "../proyectos/almacen";
+import { carpetaProyecto, carpetaProyectos } from "../rutas";
 import { registrar } from "../registro";
 
 /** Bytes de una carpeta (recursivo); 0 si no existe. */
@@ -48,13 +48,26 @@ export async function liberarEspacio(id: string, d: { ocupado: (id: string) => b
   return { liberado, saltada: false };
 }
 
-/** «Liberar espacio» de todas las prédicas. */
+/** Ids de las carpetas de prédicas (sin leer cada proyecto: uno dañado no frena a los demás). */
+async function idsProyectos(): Promise<string[]> {
+  try {
+    return (await readdir(carpetaProyectos(), { withFileTypes: true })).filter((e) => e.isDirectory()).map((e) => e.name);
+  } catch {
+    return [];
+  }
+}
+
+/** «Liberar espacio» de todas las prédicas; una que falla (archivo bloqueado, proyecto dañado) no frena a las demás. */
 export async function liberarTodo(d: { ocupado: (id: string) => boolean }): Promise<{ liberado: number; saltadas: number }> {
   let liberado = 0, saltadas = 0;
-  for (const p of await listarProyectos()) {
-    const r = await liberarEspacio(p.id, d);
-    liberado += r.liberado;
-    if (r.saltada) saltadas++;
+  for (const id of await idsProyectos()) {
+    try {
+      const r = await liberarEspacio(id, d);
+      liberado += r.liberado;
+      if (r.saltada) saltadas++;
+    } catch (e) {
+      registrar("aviso", "espacio", `no pude liberar ${id}: ${e instanceof Error ? e.message : String(e)}`);
+    }
   }
   return { liberado, saltadas };
 }
@@ -62,9 +75,9 @@ export async function liberarTodo(d: { ocupado: (id: string) => boolean }): Prom
 /** Al abrir: borra lo que hay en tmp/ de cada prédica con más de `dias` días (salta las que están trabajando). */
 export async function limpiarTmpViejos(dias = 7, ahora = Date.now(), ocupado: (id: string) => boolean = () => false): Promise<number> {
   let borrados = 0;
-  for (const p of await listarProyectos().catch(() => [])) {
-    if (ocupado(p.id)) continue;
-    const tmp = join(carpetaProyecto(p.id), "tmp");
+  for (const id of await idsProyectos()) {
+    if (ocupado(id)) continue;
+    const tmp = join(carpetaProyecto(id), "tmp");
     let entradas: string[];
     try {
       entradas = await readdir(tmp);
