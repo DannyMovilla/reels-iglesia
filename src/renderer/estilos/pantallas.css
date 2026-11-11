@@ -379,3 +379,16 @@
 /* Plan 10: tamaño de la prédica y aviso de video que falta, en la tarjeta. */
 .proyecto .tamano-predica { color: var(--text-2); font-size: 12px; }
 .proyecto .sin-video { display: inline-flex; align-items: center; gap: 4px; color: var(--luz); font-size: 12px; }
+
+/* Plan 10: borrar prédicas y reels (menú de la tarjeta y aviso de confirmación). */
+.proyecto-item { position: relative; }
+.proyecto-item .mas-opciones { position: absolute; top: 8px; right: 8px; z-index: 2; }
+.menu-proyecto { position: absolute; top: 40px; right: 8px; z-index: 3; display: flex; flex-direction: column; min-width: 170px; padding: 4px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg-2); box-shadow: 0 12px 30px rgba(0,0,0,.35); }
+.menu-proyecto button { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border: 0; border-radius: 6px; background: transparent; color: var(--text); font: 500 13px var(--font-ui); text-align: left; cursor: pointer; }
+.menu-proyecto button:hover, .menu-proyecto button:focus-visible { background: var(--bg-3); }
+.confirmar-borrado { position: fixed; left: 50%; bottom: 32px; transform: translateX(-50%); z-index: 20; display: flex; flex-direction: column; gap: 10px; max-width: 520px; padding: 16px 18px; border: 1px solid var(--line); border-radius: 14px; background: var(--bg-2); box-shadow: 0 18px 50px rgba(0,0,0,.45); }
+.confirmar-borrado p { margin: 0; color: var(--text-2); }
+.exportado { position: relative; }
+.exportado .borrar-reel { position: absolute; top: 6px; right: 6px; }
+.btn.peligro { background: #c2413a; border-color: #c2413a; color: #fff; }
+.btn-icono { display: inline-grid; place-items: center; width: 28px; height: 28px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg-1); color: var(--text-2); cursor: pointer; }

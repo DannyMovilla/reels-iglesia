@@ -154,6 +154,12 @@ export interface ApiReels {
   espacioTotal(): Promise<number>;
   /** Borra tmp/ y las voces que se pueden rehacer, de una prédica o de todas; salta las que están trabajando. */
   liberarEspacio(id?: string): Promise<{ liberado: number; saltadas: number }>;
+  /** Lo que se va al borrar una prédica. */
+  resumenBorrado(id: string): Promise<{ clips: number; reels: number; bytes: number }>;
+  /** Manda la prédica a la Papelera (nunca el video original del culto). */
+  borrarProyecto(id: string): Promise<void>;
+  /** Manda reels a la Papelera (con su portada y sus textos); proyectoId puede ser "ia:<id>". */
+  borrarReels(proyectoId: string, mp4s: string[] | "todos"): Promise<{ bytes: number }>;
   /** Versión instalada de la app. */
   versionApp(): Promise<string>;
   estadoActualizacion(): Promise<EstadoActualizacion>;

@@ -55,3 +55,42 @@ test("plan 10: cada tarjeta dice cuánto ocupa y si falta el video", async () =>
   expect(screen.getByText("Video no encontrado")).toBeInTheDocument();
   expect(document.querySelector(".proyecto video")).toBeNull();
 });
+
+test("plan 10: borrar una prédica pide confirmación con lo que se va y recarga", async () => {
+  const { default: userEvent } = await import("@testing-library/user-event");
+  let lista = [proyecto];
+  const api = {
+    listarProyectos: vi.fn(async () => lista),
+    alCambiarTareas: () => () => {},
+    urlVideo: () => "",
+    espacioProyectos: vi.fn(async () => ({})),
+    resumenBorrado: vi.fn(async () => ({ clips: 6, reels: 4, bytes: 1_200_000_000 })),
+    borrarProyecto: vi.fn(async () => { lista = []; }),
+  };
+  (window as unknown as { reels: unknown }).reels = api;
+  render(<Predicas alAbrir={() => {}} alNueva={() => {}} />);
+  await userEvent.click(await screen.findByRole("button", { name: "Más opciones de Culto dominical" }));
+  await userEvent.click(screen.getByRole("menuitem", { name: "Borrar prédica" }));
+  expect(await screen.findByText("Se van a la Papelera la transcripción, 6 clips, 4 reels exportados y las frases (1,2 GB). El video original del culto no se borra.")).toBeInTheDocument();
+  await userEvent.click(screen.getByRole("button", { name: "Cancelar" }));
+  expect(api.borrarProyecto).not.toHaveBeenCalled();
+  await userEvent.click(screen.getByRole("button", { name: "Más opciones de Culto dominical" }));
+  await userEvent.click(screen.getByRole("menuitem", { name: "Borrar prédica" }));
+  await userEvent.click(await screen.findByRole("button", { name: "Borrar" }));
+  expect(api.borrarProyecto).toHaveBeenCalledWith("p1");
+  expect(await screen.findByText("Todavía no hay prédicas")).toBeInTheDocument();
+});
+
+test("plan 10: si no se puede borrar, el error se ve en el aviso", async () => {
+  const { default: userEvent } = await import("@testing-library/user-event");
+  (window as unknown as { reels: unknown }).reels = {
+    listarProyectos: vi.fn(async () => [proyecto]), alCambiarTareas: () => () => {}, urlVideo: () => "",
+    resumenBorrado: vi.fn(async () => ({ clips: 1, reels: 0, bytes: 1000 })),
+    borrarProyecto: vi.fn(async () => { throw new Error("Error invoking remote method 'datos:borrarProyecto': Error: Espera a que termine lo que está haciendo esta prédica."); }),
+  };
+  render(<Predicas alAbrir={() => {}} alNueva={() => {}} />);
+  await userEvent.click(await screen.findByRole("button", { name: "Más opciones de Culto dominical" }));
+  await userEvent.click(screen.getByRole("menuitem", { name: "Borrar prédica" }));
+  await userEvent.click(await screen.findByRole("button", { name: "Borrar" }));
+  expect(await screen.findByRole("alert")).toHaveTextContent("Espera a que termine lo que está haciendo esta prédica.");
+});

@@ -173,6 +173,8 @@ export interface ClipSpec {
   oculto?: boolean;
   /** "manual": la persona lo creó desde la transcripción. Sin el campo: lo sugirió Claude. */
   origen?: "claude" | "manual";
+  /** Nombres de los MP4 exportados de este clip (para saber qué clip vuelve a «editado» si se borran). */
+  exportados?: string[];
   /** Cómo se ve el gancho; sin el campo, "tarjeta" (la de siempre). */
   estiloGancho?: import("./reel/gancho").EstiloGancho;
 }

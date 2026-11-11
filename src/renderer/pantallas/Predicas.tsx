@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { CircleAlert, CircleCheck, Clapperboard, LoaderCircle, MicVocal, Plus } from "lucide-react";
+import { CircleAlert, CircleCheck, Clapperboard, EllipsisVertical, LoaderCircle, MicVocal, Plus, Trash2 } from "lucide-react";
 import type { EstadoProyecto, Proyecto } from "@shared/tipos";
 import { formatoTamano } from "@shared/tamano";
 
@@ -12,6 +12,41 @@ const ESTADO: Record<EstadoProyecto, string> = {
   listo: "Listo",
   error: "Necesita atención",
 };
+
+const limpiarError = (e: unknown) => (e instanceof Error ? e.message : String(e)).replace(/^Error invoking remote method [^:]+: (Error: )?/, "");
+const plural = (n: number, uno: string, varios: string) => `${n} ${n === 1 ? uno : varios}`;
+
+/** Aviso antes de mandar una prédica a la Papelera: dice qué se va y que el video original se queda. */
+function ConfirmarBorrado({ p, alListo, alCancelar }: { p: Proyecto; alListo(): void; alCancelar(): void }) {
+  const [resumen, setResumen] = useState<{ clips: number; reels: number; bytes: number } | null>(null);
+  const [borrando, setBorrando] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => { void window.reels!.resumenBorrado(p.id).then(setResumen).catch((e) => setError(limpiarError(e))); }, [p.id]);
+  const borrar = async () => {
+    setBorrando(true);
+    setError(null);
+    try {
+      await window.reels!.borrarProyecto(p.id);
+      alListo();
+    } catch (e) {
+      setError(limpiarError(e));
+      setBorrando(false);
+    }
+  };
+  return (
+    <div className="confirmar-borrado" role="alertdialog" aria-label={`Borrar ${p.nombre}`}>
+      <b>¿Borrar «{p.nombre}»?</b>
+      {resumen && <p>Se van a la Papelera la transcripción, {plural(resumen.clips, "clip", "clips")}, {plural(resumen.reels, "reel exportado", "reels exportados")} y las frases ({formatoTamano(resumen.bytes)}). El video original del culto no se borra.</p>}
+      {error && <p className="error" role="alert">{error}</p>}
+      <div className="fila">
+        <button type="button" className="btn peligro" disabled={!resumen || borrando} onClick={() => void borrar()}>
+          {borrando ? <LoaderCircle size={14} className="girar" aria-hidden="true" /> : <Trash2 size={14} aria-hidden="true" />}Borrar
+        </button>
+        <button type="button" className="btn fantasma" onClick={alCancelar}>Cancelar</button>
+      </div>
+    </div>
+  );
+}
 
 interface Props {
   alAbrir(id: string): void;
@@ -34,14 +69,16 @@ function Portada({ p }: { p: Proyecto }) {
 export function Predicas({ alAbrir, alNueva }: Props) {
   const [proyectos, setProyectos] = useState<Proyecto[] | null>(null);
   const [tamanos, setTamanos] = useState<Record<string, number>>({});
-  useEffect(() => {
+  const [menu, setMenu] = useState<string | null>(null);
+  const [borrar, setBorrar] = useState<Proyecto | null>(null);
+  const cargar = () => {
     const api = window.reels!;
-    const cargar = () => {
-      void api.listarProyectos().then(setProyectos);
-      void api.espacioProyectos?.().then(setTamanos).catch(() => undefined);
-    };
+    void api.listarProyectos().then(setProyectos);
+    void api.espacioProyectos?.().then(setTamanos).catch(() => undefined);
+  };
+  useEffect(() => {
     cargar();
-    return api.alCambiarTareas(cargar);
+    return window.reels!.alCambiarTareas(cargar);
   }, []);
 
   return (
@@ -60,7 +97,7 @@ export function Predicas({ alAbrir, alNueva }: Props) {
       )}
       <ul className="proyectos" aria-label="Prédicas">
         {proyectos?.map((p) => (
-          <li key={p.id}>
+          <li key={p.id} className="proyecto-item">
             <button type="button" className="proyecto" onClick={() => alAbrir(p.id)}>
               <Portada p={p} />
               <b>{p.nombre}</b>
@@ -73,9 +110,17 @@ export function Predicas({ alAbrir, alNueva }: Props) {
                 {ESTADO[p.estado]}
               </span>
             </button>
+            <button type="button" className="btn-icono mas-opciones" aria-label={`Más opciones de ${p.nombre}`} aria-haspopup="menu" aria-expanded={menu === p.id}
+              onClick={() => setMenu(menu === p.id ? null : p.id)}><EllipsisVertical size={16} aria-hidden="true" /></button>
+            {menu === p.id && (
+              <div className="menu-proyecto" role="menu">
+                <button type="button" role="menuitem" onClick={() => { setMenu(null); setBorrar(p); }}><Trash2 size={14} aria-hidden="true" />Borrar prédica</button>
+              </div>
+            )}
           </li>
         ))}
       </ul>
+      {borrar && <ConfirmarBorrado p={borrar} alCancelar={() => setBorrar(null)} alListo={() => { setBorrar(null); cargar(); }} />}
     </section>
   );
 }

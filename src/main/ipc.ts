@@ -33,6 +33,7 @@ import { envolverManejador, leerUltimas, registrar } from "./registro";
 import { textoDiagnostico } from "./sistema/diagnostico";
 import type { Actualizador } from "./actualizar";
 import { liberarEspacio, liberarTodo, tamanoCarpeta } from "./datos/espacio";
+import { borrarProyecto, borrarReels, resumenBorrado } from "./datos/borrar";
 import { cpus, release, totalmem } from "node:os";
 import { aplicarEstilo, copiarLogo, reubicarVideo, crearProyecto, guardarClip, guardarMarca, leerClips, leerJson, leerMarca, leerProyecto, listarExportados, listarProyectos, leerTranscripcion, leerCorrecciones, corregir, quitarCorreccion, agregarClip, guardarProyecto, validarTramoClip, copiarFuente } from "./proyectos/almacen";
 
@@ -271,6 +272,11 @@ export function registrarIpc(deps: DepsIpc): void {
     const r = await liberarEspacio(id, { ocupado: deps.ocupado.proyectoOcupado });
     return { liberado: r.liberado, saltadas: r.saltada ? 1 : 0 };
   });
+  const papelera = (ruta: string) => shell.trashItem(ruta);
+  manejar("datos:resumenBorrado", (_e, id: string) => resumenBorrado(String(id)));
+  manejar("datos:borrarProyecto", (_e, id: string) => borrarProyecto(String(id), { papelera, ocupado: deps.ocupado.proyectoOcupado }));
+  manejar("datos:borrarReels", (_e, id: string, mp4s: string[] | "todos") =>
+    borrarReels(String(id), mp4s === "todos" ? "todos" : Array.isArray(mp4s) ? mp4s.map(String) : [], { papelera, ocupado: deps.ocupado.proyectoOcupado }));
   manejar("app:version", () => app.getVersion());
   manejar("actualizar:estado", () => deps.actualizador.estado());
   manejar("actualizar:buscar", () => deps.actualizador.buscar());

@@ -196,7 +196,7 @@ export function crearEjecutorExportar(deps: DepsExportar = {}): Ejecutor {
       await writeFile(join(exportados, textosNombre(nombre)), textosDelClip(clip), "utf8");
       await escribirCapitulosTxt(t.proyectoId, exportados);
       const clips = await leerClips(t.proyectoId);
-      await guardarJson(t.proyectoId, "clips.json", clips.map((c) => (c.id === clip.id ? { ...c, estado: "exportado" } : c)));
+      await guardarJson(t.proyectoId, "clips.json", clips.map((c) => (c.id === clip.id ? { ...c, estado: "exportado", exportados: [...(c.exportados ?? []), nombre] } : c)));
       ctx.alProgreso(100, nombre);
     } finally {
       await borrarTemporal(tmp, borrar);
