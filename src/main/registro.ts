@@ -90,3 +90,25 @@ export function leerUltimas(n: number): string[] {
     return [];
   }
 }
+
+const mensajeDe = (e: unknown) => (e instanceof Error ? e.message : String(e));
+
+/**
+ * Envuelve un manejador de IPC: si lanza, anota el canal y el mensaje y vuelve a lanzar (la ventana recibe el mismo
+ * error). Con `largo`, anota también el inicio, el fin y la duración.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function envolverManejador<A extends any[], R>(canal: string, fn: (...a: A) => R | Promise<R>, o: { largo?: boolean } = {}): (...a: A) => Promise<R> {
+  return async (...a: A) => {
+    const t0 = Date.now();
+    if (o.largo) registrar("info", "ipc", `inicio ${canal}`);
+    try {
+      const r = await fn(...a);
+      if (o.largo) registrar("info", "ipc", `fin ${canal} en ${Math.round((Date.now() - t0) / 1000)} s`);
+      return r;
+    } catch (e) {
+      registrar("error", "ipc", `${canal}: ${mensajeDe(e)}`);
+      throw e;
+    }
+  };
+}

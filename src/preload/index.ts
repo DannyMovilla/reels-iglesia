@@ -6,6 +6,7 @@ import type { Tarea } from "@shared/tipos";
 const medios = ipcRenderer.sendSync("medios:base") as string;
 
 const api: ApiReels = {
+  registrarError: (texto) => ipcRenderer.send("registro:ventana", String(texto).slice(0, 1000)),
   elegirVideo: () => ipcRenderer.invoke("video:elegir"),
   descargarVideo: (url) => ipcRenderer.invoke("video:descargar", url),
   cancelarDescarga: () => ipcRenderer.invoke("video:cancelarDescarga"),

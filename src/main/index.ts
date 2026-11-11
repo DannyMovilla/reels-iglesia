@@ -14,8 +14,15 @@ import { protegerNavegacion } from "./ventana";
 import { carpetaDatos, raizApp, raizRecursos, rutaEntorno, rutaPython, rutaTranscriptor } from "./rutas";
 import { argsWinget, prepararEntorno } from "./sistema/preparar";
 import { ejecutarConProgreso } from "./procesos/lineas";
+import { release } from "node:os";
+import { limpiarRegistrosViejos, registrar } from "./registro";
 
 registrarEsquemaVideo();
+
+// Errores no capturados del proceso principal: al registro (Ajustes → Copiar diagnóstico).
+const textoError = (e: unknown) => (e instanceof Error ? `${e.message} ${e.stack?.split(/\r?\n/)[1]?.trim() ?? ""}` : String(e));
+process.on("uncaughtException", (e) => registrar("error", "app", `error no capturado: ${textoError(e)}`));
+process.on("unhandledRejection", (e) => registrar("error", "app", `promesa sin atender: ${textoError(e)}`));
 
 let ventana: BrowserWindow | null = null;
 
@@ -34,6 +41,7 @@ function crearVentana(): BrowserWindow {
     webPreferences: { preload: join(__dirname, "../preload/index.js"), contextIsolation: true, sandbox: true },
   });
   protegerNavegacion(v.webContents);
+  v.webContents.on("render-process-gone", (_e, d) => registrar("error", "ventana", `la ventana se cerró: ${d.reason} (${d.exitCode})`));
   v.once("ready-to-show", () => v.show());
   if (process.env.ELECTRON_RENDERER_URL) v.loadURL(process.env.ELECTRON_RENDERER_URL);
   else v.loadFile(join(__dirname, "../renderer/index.html"));
@@ -44,6 +52,8 @@ let preparando: AbortController | null = null;
 const comandoClaude = (): string => process.env.REELS_CLAUDE_COMANDO ?? "claude";
 
 app.whenReady().then(async () => {
+  registrar("info", "app", `inicio ${app.getVersion()} electron ${process.versions.electron} windows ${release()}`);
+  limpiarRegistrosViejos();
   let cola: Cola;
   const ejecutores = crearEjecutores({
     python: rutaPython(),

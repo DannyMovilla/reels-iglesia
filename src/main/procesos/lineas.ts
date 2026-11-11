@@ -1,4 +1,6 @@
 import { spawn, spawnSync } from "node:child_process";
+import { basename } from "node:path";
+import { registrar } from "../registro";
 
 export interface Progreso {
   etapa: string;
@@ -72,7 +74,12 @@ export function ejecutarConProgreso(cmd: string, args: string[], op: OpcionesPro
         if (p) op.alProgreso?.(p);
         else stdout += pendiente;
       }
-      resolve({ codigo: codigo ?? 1, stdout, stderr });
+      const c = codigo ?? 1;
+      if (c !== 0) {
+        const cola = stderr.split(/\r?\n/).map((l) => l.trim()).filter(Boolean).slice(-20).join(" | ");
+        registrar("aviso", "proceso", `${basename(cmd)} salió con ${c}${cola ? `: ${cola}` : ""}`);
+      }
+      resolve({ codigo: c, stdout, stderr });
     });
   });
 }

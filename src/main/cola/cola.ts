@@ -5,6 +5,7 @@ import { mkdir, readFile, rename } from "node:fs/promises";
 import { dirname } from "node:path";
 import type { Tarea, TipoTarea } from "@shared/tipos";
 import { escribirAtomico } from "../proyectos/almacen";
+import { registrar } from "../registro";
 
 export type { Tarea, TipoTarea, EstadoTarea } from "@shared/tipos";
 
@@ -74,6 +75,8 @@ export class Cola extends EventEmitter {
     const ctl = new AbortController();
     this.actual = { id: t.id, ctl };
     Object.assign(t, { estado: "corriendo", iniciada: new Date().toISOString() });
+    const t0 = Date.now();
+    registrar("info", "cola", `inicio ${t.tipo} ${t.proyectoId}`);
     this.cambio(true);
     const ctx: ContextoTarea = {
       senal: ctl.signal,
@@ -94,6 +97,8 @@ export class Cola extends EventEmitter {
       )
       .finally(() => {
         t.terminada = new Date().toISOString();
+        const dur = `${t.estado} ${t.tipo} ${t.proyectoId} en ${Math.round((Date.now() - t0) / 1000)} s`;
+        registrar(t.estado === "error" ? "error" : "info", "cola", t.estado === "error" ? `${dur}: ${t.error}` : dur);
         this.actual = null;
         this.cambio(true);
         this.siguiente();

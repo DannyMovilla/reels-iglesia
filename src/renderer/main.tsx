@@ -21,6 +21,13 @@ import "./estilos/pulido.css";
 // tema.js ya pintó el tema guardado; con «Como Windows», esto además sigue los cambios de Windows.
 aplicarTema(leerPreferencia());
 
+// Los errores de la ventana van al registro de la app (Ajustes → Copiar diagnóstico).
+window.addEventListener("error", (e) => window.reels?.registrarError(`${e.message} @ ${e.filename}:${e.lineno}`));
+window.addEventListener("unhandledrejection", (e) => {
+  const r = e.reason as unknown;
+  window.reels?.registrarError(`promesa sin atender: ${r instanceof Error ? r.message : String(r)}`);
+});
+
 // Soltar un archivo sobre la ventana no debe abrirlo en lugar de la app.
 for (const evento of ["dragover", "drop"]) document.addEventListener(evento, (e) => e.preventDefault());
 

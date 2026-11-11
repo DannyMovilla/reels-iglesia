@@ -133,6 +133,8 @@ export interface ApiReels {
   urlExportado(proyectoId: string, archivo: string): string;
   tareas(): Promise<Tarea[]>;
   alCambiarTareas(cb: (t: Tarea[]) => void): () => void;
+  /** Anota en el registro de la app un error de la ventana. */
+  registrarError(texto: string): void;
   reintentar(idTarea: string): Promise<void>;
   cancelar(idTarea: string): Promise<void>;
   urlVideo(id: string): string;
