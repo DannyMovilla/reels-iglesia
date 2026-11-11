@@ -67,15 +67,18 @@ export async function borrarReels(proyectoId: string, mp4s: string[] | "todos", 
   if (lista.some((f) => typeof f !== "string" || /[\\/]|\.\./.test(f) || !/\.mp4$/i.test(f))) throw new Error("Archivo no válido.");
 
   let bytes = 0;
+  // Un archivo que no se puede mover no frena a los demás: al final se ponen al día los clips y recién ahí se avisa.
+  let fallos = 0;
   const mover = async (f: string) => {
     const ruta = join(dir, f);
     if (!existsSync(ruta)) return;
-    bytes += await stat(ruta).then((s) => s.size).catch(() => 0);
+    const tamano = await stat(ruta).then((s) => s.size).catch(() => 0);
     try {
       await d.papelera(ruta);
+      bytes += tamano;
     } catch (e) {
+      fallos++;
       registrar("error", "borrar", `${f}: ${e instanceof Error ? e.message : String(e)}`);
-      throw new Error(NO_PAPELERA_REEL);
     }
   };
   for (const f of lista) {
@@ -92,6 +95,7 @@ export async function borrarReels(proyectoId: string, mp4s: string[] | "todos", 
     const id = proyectoId.slice(3);
     const c = await leerCreacion(id);
     if (!quedan.length && c.estado === "exportado") await guardarCreacion({ ...c, estado: "borrador" });
+    if (fallos) throw new Error(NO_PAPELERA_REEL);
     return { bytes };
   }
   const clips = await leerClips(proyectoId);
@@ -102,5 +106,6 @@ export async function borrarReels(proyectoId: string, mp4s: string[] | "todos", 
     return { ...c, ...(c.exportados ? { exportados: suyos } : {}), ...(suyos.length ? {} : { estado: "editado" as const }) };
   });
   await guardarJson(proyectoId, "clips.json", nuevos);
+  if (fallos) throw new Error(NO_PAPELERA_REEL);
   return { bytes };
 }

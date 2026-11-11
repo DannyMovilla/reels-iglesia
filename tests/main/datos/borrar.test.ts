@@ -97,3 +97,16 @@ test("Con IA: sin reels, la creación vuelve a borrador", async () => {
   await borrarReels("ia:c9", "todos", libre);
   expect((await leerCreacion("c9")).estado).toBe("borrador");
 });
+
+test("revisión: si la Papelera falla con un reel, los demás se borran igual y los clips quedan al día", async () => {
+  const exp = join(carpetaProyecto(id), "exportados");
+  const fallaCon4x5 = async (ruta: string) => { if (ruta.endsWith("fe-4x5.mp4")) throw new Error("EBUSY"); await aPapelera(ruta); };
+  await guardarJson(id, "clips.json", [clip({ exportados: ["fe-9x16.mp4"] }), clip({ id: "c3", titulo: "Paz", exportados: ["fe-4x5.mp4"] })]);
+  await expect(borrarReels(id, "todos", { papelera: fallaCon4x5, ocupado: () => false }))
+    .rejects.toThrow("No pude mandar el reel a la Papelera. Ciérralo si está abierto en otro programa y prueba de nuevo.");
+  expect(existsSync(join(exp, "fe-9x16.mp4"))).toBe(false);
+  expect(existsSync(join(exp, "fe-4x5.mp4"))).toBe(true);
+  const clips = await leerClips(id);
+  expect(clips.find((c) => c.id === "c1")!.estado).toBe("editado");
+  expect(clips.find((c) => c.id === "c3")!.estado).toBe("exportado");
+});
