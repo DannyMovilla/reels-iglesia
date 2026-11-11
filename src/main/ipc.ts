@@ -3,7 +3,7 @@ import type { Frase } from "@shared/frases";
 import { existsSync } from "node:fs";
 import { mkdir, stat } from "node:fs/promises";
 import { basename, join } from "node:path";
-import { dialog, ipcMain, protocol, shell, type BrowserWindow } from "electron";
+import { app, dialog, ipcMain, protocol, shell, type BrowserWindow } from "electron";
 import type { DatosNuevoProyecto, EstadoSistema } from "@shared/api";
 import { descargarVideo } from "./descargas/ytdlp";
 import { agregarPista, cambiarAnimo, carpetaMusica, listarPistas, musicaParaVista, musicaVistaEn } from "./musica/banco";
@@ -26,10 +26,12 @@ import { asegurarVoz } from "./exportar/tarea";
 import { palabrasDe } from "@shared/reel/tiempo";
 import type { Cola } from "./cola/cola";
 import { dimensionesVideo, duracionVideo } from "./procesos/video";
-import { carpetaDatos, carpetaProyecto, raizApp, rutaEfectos, rutaEscenas, rutaPinturas } from "./rutas";
+import { carpetaDatos, carpetaProyecto, carpetaRegistros, raizApp, rutaEfectos, rutaEscenas, rutaPinturas } from "./rutas";
 import { esquemaVista, registrarComposicion, servirVista } from "./vista";
 import { cacheSinErrores } from "./util/cache";
-import { envolverManejador, registrar } from "./registro";
+import { envolverManejador, leerUltimas, registrar } from "./registro";
+import { textoDiagnostico } from "./sistema/diagnostico";
+import { cpus, release, totalmem } from "node:os";
 import { aplicarEstilo, copiarLogo, reubicarVideo, crearProyecto, guardarClip, guardarMarca, leerClips, leerJson, leerMarca, leerProyecto, listarExportados, listarProyectos, leerTranscripcion, leerCorrecciones, corregir, quitarCorreccion, agregarClip, guardarProyecto, validarTramoClip, copiarFuente } from "./proyectos/almacen";
 
 export interface DepsIpc {
@@ -242,5 +244,18 @@ export function registrarIpc(deps: DepsIpc): void {
   manejar("tareas:reintentar", (_e, id: string) => cola.reintentar(id));
   manejar("tareas:cancelar", (_e, id: string) => cola.cancelar(id));
   manejar("sistema:verificar", (_e, o?: { claude?: boolean }) => deps.verificarSistema(o));
+  manejar("sistema:diagnostico", async () => {
+    const gpu = await app.getGPUInfo("basic").catch(() => null) as { gpuDevice?: { vendorId?: number; deviceString?: string }[] } | null;
+    const nombreGpu = gpu?.gpuDevice?.map((g) => g.deviceString).filter(Boolean).join(", ") || "sin datos";
+    return textoDiagnostico({
+      version: app.getVersion(), electron: process.versions.electron, windows: release(),
+      cpu: cpus()[0]?.model.trim() ?? "sin datos", ramGb: Math.round(totalmem() / 1024 ** 3), gpu: nombreGpu,
+      estado: await deps.verificarSistema({ claude: false }), lineas: leerUltimas(200),
+    });
+  });
+  manejar("sistema:abrirRegistros", async () => {
+    await mkdir(carpetaRegistros(), { recursive: true });
+    await shell.openPath(carpetaRegistros());
+  });
   manejar("sistema:accion", (e, a: string) => deps.accionSistema(a, (p) => e.sender.send("sistema:progreso", p)));
 }

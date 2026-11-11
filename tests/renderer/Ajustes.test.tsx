@@ -68,3 +68,17 @@ test("plan 7: Apariencia — Oscuro, Claro o Como Windows; se aplica enseguida y
   await userEvent.click(within(grupo).getByRole("button", { name: "Oscuro" }));
   expect(document.documentElement.dataset.tema).toBe("oscuro");
 });
+
+test("plan 10: copiar el diagnóstico y abrir la carpeta de registros", async () => {
+  const escribir = vi.fn(async () => {});
+  Object.defineProperty(navigator, "clipboard", { value: { writeText: escribir }, configurable: true });
+  const api = { verificarSistema: async () => estado, accionSistema: vi.fn(), alProgresoSistema: () => () => {},
+    diagnostico: vi.fn(async () => "Reels Iglesia 0.2.0\n…"), abrirRegistros: vi.fn(async () => {}) };
+  window.reels = api as unknown as ApiReels;
+  render(<Ajustes />);
+  await userEvent.click(await screen.findByRole("button", { name: "Copiar diagnóstico" }));
+  expect(escribir).toHaveBeenCalledWith("Reels Iglesia 0.2.0\n…");
+  expect(await screen.findByText("Copiado")).toBeInTheDocument();
+  await userEvent.click(screen.getByRole("button", { name: "Abrir carpeta de registros" }));
+  expect(api.abrirRegistros).toHaveBeenCalled();
+});

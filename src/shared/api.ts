@@ -144,6 +144,9 @@ export interface ApiReels {
   registrarVista(id: string, html: string): Promise<string>;
   /** Revisa lo que necesita la app. Con `claude: true` también consulta a Claude (gasta una consulta). */
   verificarSistema(opciones?: { claude?: boolean }): Promise<EstadoSistema>;
+  /** Texto de «Copiar diagnóstico» (versión, sistema, chequeos sin Claude y las últimas 200 líneas del registro). */
+  diagnostico(): Promise<string>;
+  abrirRegistros(): Promise<void>;
   /** Progreso de una acción del asistente (preparar el entorno, instalar FFmpeg…). */
   alProgresoSistema(cb: (p: { pct: number; texto?: string }) => void): () => void;
   accionSistema(accion: NonNullable<Chequeo["accion"]>): Promise<void>;

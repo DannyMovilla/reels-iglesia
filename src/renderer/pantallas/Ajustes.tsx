@@ -1,9 +1,38 @@
-import { LoaderCircle, RefreshCw } from "lucide-react";
+import { Check, ClipboardCopy, FolderOpen, LoaderCircle, RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { Chequeos } from "../componentes/Chequeos";
 import { useSistema } from "./PrimerUso";
 import { Segmentos } from "../componentes/Inspector";
 import { aplicarTema, leerPreferencia, type PreferenciaTema } from "../tema";
+
+/** «Copiar diagnóstico» y la carpeta de registros: lo que hace falta para pedir ayuda si algo falla. */
+function Diagnostico() {
+  const [estado, setEstado] = useState<"listo" | "copiando" | "copiado" | string>("listo");
+  const copiar = async () => {
+    setEstado("copiando");
+    try {
+      await navigator.clipboard.writeText(await window.reels!.diagnostico());
+      setEstado("copiado");
+      setTimeout(() => setEstado("listo"), 2000);
+    } catch {
+      setEstado("No pude copiar el diagnóstico. Prueba de nuevo.");
+    }
+  };
+  return (
+    <div className="grupo-ajuste">
+      <h2>Diagnóstico</h2>
+      <p className="ayuda">Si algo falla, copia el diagnóstico y mándaselo a quien te ayuda con la app. No se envía nada solo.</p>
+      <div className="fila">
+        <button type="button" className="btn" onClick={() => void copiar()} disabled={estado === "copiando"}>
+          {estado === "copiando" ? <LoaderCircle size={15} className="girar" aria-hidden="true" /> : <ClipboardCopy size={15} aria-hidden="true" />}Copiar diagnóstico
+        </button>
+        <button type="button" className="btn fantasma" onClick={() => void window.reels!.abrirRegistros()}><FolderOpen size={15} aria-hidden="true" />Abrir carpeta de registros</button>
+        {estado === "copiado" && <span className="ayuda listo" role="status"><Check size={14} aria-hidden="true" />Copiado</span>}
+      </div>
+      {estado !== "listo" && estado !== "copiando" && estado !== "copiado" && <p className="error" role="alert">{estado}</p>}
+    </div>
+  );
+}
 
 export function Ajustes() {
   const { estado, enCurso, error, revisar, accion, cancelar } = useSistema();
@@ -35,6 +64,7 @@ export function Ajustes() {
       <h2 className="subtitulo-ajustes">Lo que necesita la app</h2>
       <Chequeos estado={estado} enCurso={enCurso} alAccion={(a) => void accion(a)} alCancelar={cancelar} />
       {error && <p className="error" role="alert">{error}</p>}
+      <Diagnostico />
     </section>
   );
 }

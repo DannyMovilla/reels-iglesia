@@ -95,6 +95,8 @@ const api: ApiReels = {
   urlArchivo: (ruta) => `${medios}/archivo/${encodeURIComponent(ruta)}`,
   registrarVista: (id, html) => ipcRenderer.invoke("vista:registrar", id, html),
   verificarSistema: (o) => ipcRenderer.invoke("sistema:verificar", o),
+  diagnostico: () => ipcRenderer.invoke("sistema:diagnostico"),
+  abrirRegistros: () => ipcRenderer.invoke("sistema:abrirRegistros"),
   alProgresoSistema: (cb) => {
     const oyente = (_e: unknown, p: { pct: number; texto?: string }) => cb(p);
     ipcRenderer.on("sistema:progreso", oyente);
