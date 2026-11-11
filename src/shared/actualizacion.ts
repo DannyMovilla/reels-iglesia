@@ -4,6 +4,8 @@ export type EstadoActualizacion = {
   version?: string;
   pct?: number;
   error?: string;
+  /** Con la versión lista: hay una exportación o tarea larga en curso (no se ofrece reiniciar). */
+  trabajando?: boolean;
 };
 
 /** El estado en palabras, para Ajustes. */
@@ -12,7 +14,7 @@ export function textoActualizacion(e: EstadoActualizacion): string {
     case "buscando": return "Buscando…";
     case "al-dia": return "Estás al día";
     case "descargando": return `Descargando ${e.pct ?? 0} %`;
-    case "lista": return `Versión ${e.version ?? "nueva"} lista: se instala al cerrar`;
+    case "lista": return `Versión ${e.version ?? "nueva"} lista: se instala al cerrar la app`;
     case "error": return e.error ?? "No pude revisar las actualizaciones.";
     default: return "";
   }

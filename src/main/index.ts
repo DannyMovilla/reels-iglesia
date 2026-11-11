@@ -82,6 +82,8 @@ app.whenReady().then(async () => {
     alCambiar: (e) => ventana?.webContents.send("actualizar:cambio", e),
   });
   actualizador.iniciar();
+  // Con la versión lista, la barra de arriba sabe si puede ofrecer «Reiniciar ahora».
+  cola.on("cambio", () => actualizador.avisarTrabajo());
   // Lo de tmp/ con más de 7 días (renders a medias, vistas previas) se borra al abrir, sin esperar.
   void limpiarTmpViejos(7, Date.now(), ocupado.proyectoOcupado).then((n) => { if (n) registrar("info", "espacio", `borré ${n} temporales viejos`); });
   registrarIpc({

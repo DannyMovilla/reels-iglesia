@@ -27,7 +27,7 @@ test("sin actualización lista no hay aviso", async () => {
 test("con la versión lista: aviso y «Reiniciar ahora»", async () => {
   const { a } = api({ fase: "lista", version: "0.3.0" });
   render(<BarraTitulo migas={[]} />);
-  expect(await screen.findByText("La versión 0.3.0 está lista: se instala al cerrar")).toBeInTheDocument();
+  expect(await screen.findByText("La versión 0.3.0 está lista: se instala al cerrar la app")).toBeInTheDocument();
   await userEvent.click(screen.getByRole("button", { name: "Reiniciar ahora" }));
   expect(a.reiniciarParaActualizar).toHaveBeenCalled();
 });
@@ -37,5 +37,14 @@ test("si hay trabajo en curso, avisa que se instalará al terminar", async () =>
   render(<BarraTitulo migas={[]} />);
   avisar({ fase: "lista", version: "0.3.0" });
   await userEvent.click(await screen.findByRole("button", { name: "Reiniciar ahora" }));
-  expect(await screen.findByText("Se instalará al terminar lo que está haciendo")).toBeInTheDocument();
+  expect(await screen.findByText("La versión 0.3.0 se instala al cerrar la app, cuando termine lo que está haciendo")).toBeInTheDocument();
+});
+
+test("revisión: con trabajo en curso no se ofrece «Reiniciar ahora»; vuelve al terminar", async () => {
+  const { avisar } = api({ fase: "lista", version: "0.3.0", trabajando: true });
+  render(<BarraTitulo migas={[]} />);
+  expect(await screen.findByText("La versión 0.3.0 se instala al cerrar la app, cuando termine lo que está haciendo")).toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "Reiniciar ahora" })).toBeNull();
+  avisar({ fase: "lista", version: "0.3.0", trabajando: false });
+  expect(await screen.findByRole("button", { name: "Reiniciar ahora" })).toBeInTheDocument();
 });

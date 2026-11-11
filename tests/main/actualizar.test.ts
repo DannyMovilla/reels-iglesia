@@ -56,8 +56,8 @@ test("los eventos se vuelven estados en español", () => {
   updater.emit("download-progress", { percent: 41.7 });
   expect(a.estado()).toEqual({ fase: "descargando", pct: 42 });
   updater.emit("update-downloaded", { version: "0.3.0" });
-  expect(a.estado()).toEqual({ fase: "lista", version: "0.3.0" });
-  expect(estados.at(-1)).toEqual({ fase: "lista", version: "0.3.0" });
+  expect(a.estado()).toEqual({ fase: "lista", version: "0.3.0", trabajando: false });
+  expect(estados.at(-1)).toEqual({ fase: "lista", version: "0.3.0", trabajando: false });
 });
 
 test("sin internet: estado de error en español y sin buscar dos veces a la vez (Review Focus 3)", async () => {
@@ -89,4 +89,19 @@ test("en desarrollo, «Buscar actualizaciones» dice que solo funciona instalada
   await a.buscar();
   expect(updater.checkForUpdates).not.toHaveBeenCalled();
   expect(a.estado()).toEqual({ fase: "error", error: "Las actualizaciones funcionan solo en la app instalada." });
+});
+
+test("revisión: con la versión lista, el estado dice si hay trabajo y se vuelve a avisar cuando cambia", () => {
+  const a = crear();
+  updater.emit("update-downloaded", { version: "0.3.0" });
+  expect(a.estado()).toEqual({ fase: "lista", version: "0.3.0", trabajando: false });
+  const antes = estados.length;
+  trabajo = true;
+  a.avisarTrabajo();
+  expect(estados.at(-1)).toEqual({ fase: "lista", version: "0.3.0", trabajando: true });
+  a.avisarTrabajo();
+  expect(estados.length).toBe(antes + 1);
+  trabajo = false;
+  a.avisarTrabajo();
+  expect(estados.at(-1)).toEqual({ fase: "lista", version: "0.3.0", trabajando: false });
 });

@@ -24,6 +24,7 @@ export const SOLO_INSTALADA = "Las actualizaciones funcionan solo en la app inst
  */
 export class Actualizador {
   private actual: EstadoActualizacion = { fase: "inactivo" };
+  private ultimoTrabajando: boolean | null = null;
 
   constructor(private d: { updater: UpdaterMinimo; empaquetada: boolean; hayTrabajo: () => boolean; alCambiar: (e: EstadoActualizacion) => void }) {
     const u = d.updater;
@@ -40,8 +41,18 @@ export class Actualizador {
     u.on("error", (e: unknown) => this.fallo(e));
   }
 
+  /** El estado; con la versión lista, también si hay trabajo en curso (entonces no se ofrece reiniciar). */
   estado(): EstadoActualizacion {
-    return this.actual;
+    return this.actual.fase === "lista" ? { ...this.actual, trabajando: this.d.hayTrabajo() } : this.actual;
+  }
+
+  /** Vuelve a avisar a la ventana si cambió «hay trabajo» con la versión lista (se llama cuando cambian las tareas). */
+  avisarTrabajo(): void {
+    if (this.actual.fase !== "lista") return;
+    const t = this.d.hayTrabajo();
+    if (t === this.ultimoTrabajando) return;
+    this.d.alCambiar(this.estado());
+    this.ultimoTrabajando = t;
   }
 
   iniciar(): void {
@@ -75,6 +86,8 @@ export class Actualizador {
 
   private poner(e: EstadoActualizacion): void {
     this.actual = e;
-    this.d.alCambiar(e);
+    const estado = this.estado();
+    if (e.fase === "lista") this.ultimoTrabajando = estado.trabajando ?? null;
+    this.d.alCambiar(estado);
   }
 }

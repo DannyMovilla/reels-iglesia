@@ -1,17 +1,24 @@
 import { useState, type ReactNode } from "react";
 import { ChevronRight, Flame, Minus, RotateCw, Square, X } from "lucide-react";
 import { useActualizacion } from "../actualizacion";
+import type { EstadoActualizacion } from "@shared/actualizacion";
 
-/** Aviso de una versión nueva descargada: se instala al cerrar o al tocar «Reiniciar ahora» (si no hay trabajo). */
+/**
+ * Aviso de una versión nueva descargada: se instala al cerrar la app. «Reiniciar ahora» solo se ofrece si no hay una
+ * exportación o tarea larga en curso (el proceso principal avisa cuando eso cambia).
+ */
 function AvisoActualizacion() {
   const estado = useActualizacion();
-  const [esperando, setEsperando] = useState(false);
+  const [rechazado, setRechazado] = useState<EstadoActualizacion | null>(null);
   if (estado?.fase !== "lista") return null;
-  if (esperando) return <span className="aviso-actualizacion" role="status">Se instalará al terminar lo que está haciendo</span>;
+  // Si «Reiniciar ahora» se negó, vale hasta el próximo aviso del proceso principal.
+  if (estado.trabajando || rechazado === estado) {
+    return <span className="aviso-actualizacion" role="status">La versión {estado.version} se instala al cerrar la app, cuando termine lo que está haciendo</span>;
+  }
   return (
     <span className="aviso-actualizacion" role="status">
-      La versión {estado.version} está lista: se instala al cerrar
-      <button type="button" className="btn pequeno" onClick={() => void window.reels!.reiniciarParaActualizar().then((ok) => { if (!ok) setEsperando(true); })}>
+      La versión {estado.version} está lista: se instala al cerrar la app
+      <button type="button" className="btn pequeno" onClick={() => void window.reels!.reiniciarParaActualizar().then((ok) => { if (!ok) setRechazado(estado); })}>
         <RotateCw size={13} aria-hidden="true" />Reiniciar ahora
       </button>
     </span>
