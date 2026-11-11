@@ -46,6 +46,9 @@ ${lineas}`;
 /** Pedidos en curso (uno por prédica), para poder cancelarlos. */
 const enCurso = new Map<string, AbortController>();
 
+/** Prédicas con un pedido de frases en curso. */
+export const frasesEnCurso = (): string[] => [...enCurso.keys()];
+
 /** Aviso cuando Claude encontró menos de 7 frases («1 frase textual», «3 frases textuales»). */
 export function avisoFrases(n: number): string | undefined {
   if (n >= MAX_FRASES) return undefined;

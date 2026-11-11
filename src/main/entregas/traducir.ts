@@ -63,6 +63,9 @@ const acomodar = (t: string): string => {
 /** Traducciones en curso (una por prédica), para poder cancelarlas. */
 const enCurso = new Map<string, AbortController>();
 
+/** Prédicas con un traducción en curso. */
+export const traduccionesEnCurso = (): string[] => [...enCurso.keys()];
+
 /** Cancela la traducción en curso de esa prédica; false si no había ninguna. */
 export function cancelarTraduccion(proyectoId: string): boolean {
   const c = enCurso.get(proyectoId);
