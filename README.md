@@ -150,7 +150,7 @@ la app crea un fondo suave (pad) en el momento.
 - **Lo que necesita la app:** el estado de FFmpeg, Python, la tarjeta de video y Claude.
 - **Espacio:** cuánto ocupa cada prédica y **Liberar espacio** (borra lo que se puede volver a crear).
 - **Diagnóstico:** **Copiar diagnóstico** para mandar si algo falla.
-- **Versión:** la versión instalada y si hay una actualización.
+- **Versión:** la versión instalada y **Buscar actualizaciones**.
 
 Las prédicas y los reels se pueden borrar: van a la Papelera de Windows.
 
