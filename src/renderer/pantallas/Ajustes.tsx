@@ -53,7 +53,7 @@ function Espacio() {
     <div className="grupo-ajuste">
       <h2>Espacio</h2>
       {total !== null && <p>La app ocupa {formatoTamano(total)} en Documentos\Reels Iglesia (sin contar los videos de los cultos).</p>}
-      <p className="ayuda">«Liberar espacio» borra lo que la app puede volver a hacer: archivos temporales y las voces limpias de las prédicas cuyo video sigue en su lugar.</p>
+      <p className="ayuda">«Liberar espacio» borra lo que la app puede volver a hacer: archivos temporales y las voces de los niveles Ligera y Podcast de las prédicas cuyo video sigue en su lugar.</p>
       <div className="fila">
         <button type="button" className="btn" disabled={liberando} onClick={() => void liberar()}>
           {liberando ? <LoaderCircle size={15} className="girar" aria-hidden="true" /> : <Eraser size={15} aria-hidden="true" />}Liberar espacio

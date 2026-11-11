@@ -30,12 +30,13 @@ test("tamanoCarpeta suma los archivos anidados; una carpeta que no existe pesa 0
   expect(await tamanoCarpeta(join(carpetaProyecto(id), "no-existe"))).toBe(0);
 });
 
-test("liberar borra tmp/ y las voces si el video original está", async () => {
+test("liberar borra tmp/ y las voces de otros niveles si el video original está; voz.m4a (Limpia) se queda", async () => {
   const r = await liberarEspacio(id, libre);
-  expect(r).toEqual({ liberado: 6000, saltada: false });
+  expect(r).toEqual({ liberado: 4000, saltada: false });
   const c = carpetaProyecto(id);
   expect(existsSync(join(c, "tmp"))).toBe(false);
-  expect(existsSync(join(c, "voz.m4a"))).toBe(false);
+  // La vista previa del editor usa voz.m4a sin volver a crearla: borrarla deja las prédicas mudas.
+  expect(existsSync(join(c, "voz.m4a"))).toBe(true);
   expect(existsSync(join(c, "voz-podcast.m4a"))).toBe(false);
   expect(existsSync(join(c, "exportados", "fe-9x16.mp4"))).toBe(true);
 });

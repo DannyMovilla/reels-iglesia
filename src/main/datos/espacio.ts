@@ -22,7 +22,8 @@ export async function tamanoCarpeta(ruta: string): Promise<number> {
   return total;
 }
 
-const esVoz = (f: string) => /^voz(-[a-z]+)?\.m4a$/i.test(f);
+/** Voces de otros niveles (voz-<nivel>.m4a). voz.m4a (Limpia) no: la vista previa del editor la usa sin rehacerla. */
+const esVoz = (f: string) => /^voz-[a-z]+\.m4a$/i.test(f);
 
 /**
  * Borra lo que la app sabe rehacer de una prédica: tmp/ y las voces limpias (estas solo si el video original sigue
