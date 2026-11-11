@@ -82,3 +82,18 @@ test("plan 10: copiar el diagnóstico y abrir la carpeta de registros", async ()
   await userEvent.click(screen.getByRole("button", { name: "Abrir carpeta de registros" }));
   expect(api.abrirRegistros).toHaveBeenCalled();
 });
+
+test("plan 10: la versión, buscar actualizaciones y su estado", async () => {
+  let avisar: (e: { fase: string; pct?: number }) => void = () => {};
+  const api = { verificarSistema: async () => estado, accionSistema: vi.fn(), alProgresoSistema: () => () => {},
+    versionApp: vi.fn(async () => "0.2.0"), estadoActualizacion: vi.fn(async () => ({ fase: "al-dia" })),
+    alCambiarActualizacion: vi.fn((cb: typeof avisar) => { avisar = cb; return () => {}; }), buscarActualizacion: vi.fn(async () => {}) };
+  window.reels = api as unknown as ApiReels;
+  render(<Ajustes />);
+  expect(await screen.findByText("Reels Iglesia 0.2.0")).toBeInTheDocument();
+  expect(await screen.findByText("Estás al día")).toBeInTheDocument();
+  await userEvent.click(screen.getByRole("button", { name: "Buscar actualizaciones" }));
+  expect(api.buscarActualizacion).toHaveBeenCalled();
+  act(() => avisar({ fase: "descargando", pct: 42 }));
+  expect(screen.getByText("Descargando 42 %")).toBeInTheDocument();
+});

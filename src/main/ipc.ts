@@ -31,11 +31,16 @@ import { esquemaVista, registrarComposicion, servirVista } from "./vista";
 import { cacheSinErrores } from "./util/cache";
 import { envolverManejador, leerUltimas, registrar } from "./registro";
 import { textoDiagnostico } from "./sistema/diagnostico";
+import type { Actualizador } from "./actualizar";
 import { cpus, release, totalmem } from "node:os";
 import { aplicarEstilo, copiarLogo, reubicarVideo, crearProyecto, guardarClip, guardarMarca, leerClips, leerJson, leerMarca, leerProyecto, listarExportados, listarProyectos, leerTranscripcion, leerCorrecciones, corregir, quitarCorreccion, agregarClip, guardarProyecto, validarTramoClip, copiarFuente } from "./proyectos/almacen";
 
 export interface DepsIpc {
   cola: Cola;
+  /** Actualizaciones automáticas (estado, buscar, reiniciar para instalar). */
+  actualizador: Pick<Actualizador, "estado" | "buscar" | "reiniciar">;
+  /** Qué prédicas tienen trabajo en curso. */
+  ocupado: { proyectoOcupado(id: string): boolean; hayTrabajo(): boolean };
   ventana: () => BrowserWindow | null;
   verificarSistema(o?: { claude?: boolean }): Promise<EstadoSistema>;
   accionSistema(accion: string, alProgreso: (p: { pct: number; texto?: string }) => void): Promise<void>;
@@ -253,6 +258,10 @@ export function registrarIpc(deps: DepsIpc): void {
       estado: await deps.verificarSistema({ claude: false }), lineas: leerUltimas(200),
     });
   });
+  manejar("app:version", () => app.getVersion());
+  manejar("actualizar:estado", () => deps.actualizador.estado());
+  manejar("actualizar:buscar", () => deps.actualizador.buscar());
+  manejar("actualizar:reiniciar", () => deps.actualizador.reiniciar());
   manejar("sistema:abrirRegistros", async () => {
     await mkdir(carpetaRegistros(), { recursive: true });
     await shell.openPath(carpetaRegistros());

@@ -1,3 +1,4 @@
+import type { EstadoActualizacion } from "./actualizacion";
 import type { Frase } from "./frases";
 import type { Correccion } from "./correcciones";
 import type { EstiloReferencia } from "./estilo-referencia";
@@ -147,6 +148,13 @@ export interface ApiReels {
   /** Texto de «Copiar diagnóstico» (versión, sistema, chequeos sin Claude y las últimas 200 líneas del registro). */
   diagnostico(): Promise<string>;
   abrirRegistros(): Promise<void>;
+  /** Versión instalada de la app. */
+  versionApp(): Promise<string>;
+  estadoActualizacion(): Promise<EstadoActualizacion>;
+  buscarActualizacion(): Promise<void>;
+  /** Reinicia para instalar la versión descargada; false si hay trabajo en curso (se instalará al terminar). */
+  reiniciarParaActualizar(): Promise<boolean>;
+  alCambiarActualizacion(cb: (e: EstadoActualizacion) => void): () => void;
   /** Progreso de una acción del asistente (preparar el entorno, instalar FFmpeg…). */
   alProgresoSistema(cb: (p: { pct: number; texto?: string }) => void): () => void;
   accionSistema(accion: NonNullable<Chequeo["accion"]>): Promise<void>;

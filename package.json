@@ -1,7 +1,7 @@
 {
   "name": "reels-iglesia",
   "productName": "Reels Iglesia",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Convierte prédicas de cultos en reels listos para publicar.",
   "private": true,
   "main": "out/main/index.js",
@@ -13,6 +13,7 @@
     "e2e": "electron-vite build && playwright test",
     "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
     "dist": "electron-vite build && electron-builder --win",
+    "publicar": "electron-vite build && electron-builder --win --publish always",
     "dist:carpeta": "electron-vite build && electron-builder --win --dir"
   },
   "dependencies": {
@@ -22,6 +23,7 @@
     "@fontsource/geist-sans": "^5.3.0",
     "@fontsource/montserrat": "5.3.0",
     "@hyperframes/player": "0.9.17",
+    "electron-updater": "6.3.9",
     "gsap": "3.12.5",
     "hyperframes": "0.9.17",
     "lucide-react": "0.468.0",

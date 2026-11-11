@@ -38,5 +38,10 @@ nsis:
   shortcutName: Reels Iglesia
   installerIcon: build/icon.ico
   uninstallerIcon: build/icon.ico
+# Actualizaciones automáticas (electron-updater): releases públicos de GitHub. GH_TOKEN solo al publicar.
+publish:
+  provider: github
+  owner: DannyMovilla
+  repo: reels-iglesia
 npmRebuild: false
 afterPack: build/despues-empaquetar.cjs

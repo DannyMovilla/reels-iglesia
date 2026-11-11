@@ -97,6 +97,15 @@ const api: ApiReels = {
   verificarSistema: (o) => ipcRenderer.invoke("sistema:verificar", o),
   diagnostico: () => ipcRenderer.invoke("sistema:diagnostico"),
   abrirRegistros: () => ipcRenderer.invoke("sistema:abrirRegistros"),
+  versionApp: () => ipcRenderer.invoke("app:version"),
+  estadoActualizacion: () => ipcRenderer.invoke("actualizar:estado"),
+  buscarActualizacion: () => ipcRenderer.invoke("actualizar:buscar"),
+  reiniciarParaActualizar: () => ipcRenderer.invoke("actualizar:reiniciar"),
+  alCambiarActualizacion: (cb) => {
+    const oyente = (_e: unknown, estado: Parameters<typeof cb>[0]) => cb(estado);
+    ipcRenderer.on("actualizar:cambio", oyente);
+    return () => ipcRenderer.removeListener("actualizar:cambio", oyente);
+  },
   alProgresoSistema: (cb) => {
     const oyente = (_e: unknown, p: { pct: number; texto?: string }) => cb(p);
     ipcRenderer.on("sistema:progreso", oyente);

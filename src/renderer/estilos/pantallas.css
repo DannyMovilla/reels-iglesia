@@ -373,3 +373,6 @@
 .frase-item textarea { resize: vertical; font: 500 13px/1.45 var(--font-ui); }
 .frase-vers { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 12px; color: var(--text-2); }
 .frase-vers p { flex-basis: 100%; margin: 0; }
+
+/* Plan 10: aviso de una versión nueva lista para instalar (barra de arriba). */
+.aviso-actualizacion { display: inline-flex; align-items: center; gap: 8px; margin-right: 10px; padding: 4px 6px 4px 12px; border: 1px solid var(--luz); border-radius: 999px; color: var(--text); font: 500 12px var(--font-ui); -webkit-app-region: no-drag; }
