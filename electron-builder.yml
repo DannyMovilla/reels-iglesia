@@ -43,5 +43,7 @@ publish:
   provider: github
   owner: DannyMovilla
   repo: reels-iglesia
+  # Un release normal: electron-updater no ve los borradores.
+  releaseType: release
 npmRebuild: false
 afterPack: build/despues-empaquetar.cjs
