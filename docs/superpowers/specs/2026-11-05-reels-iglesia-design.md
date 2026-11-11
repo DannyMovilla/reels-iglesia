@@ -569,3 +569,85 @@ acciones en la barra de arriba). Nada nuevo para Claude ni para el análisis.
 3. Si el archivo del logo ya no existe, Marca lo dice («No encuentro el archivo del logo: elige otro») y la
    muestra usa el nombre.
 4. En 4:5 y 1:1, el logo de la marca durante el reel se achica para no tocar los subtítulos (mínimo 40 px de alto).
+
+## 21. Plan 10 — listos para producción (decidido 2026-11-10)
+
+Objetivo: que la app se instale, se actualice y se pueda diagnosticar en una PC que no sea la del desarrollo,
+y que la persona pueda borrar lo que ya no usa. Nada de esto cambia cómo se hacen los reels.
+
+**A. Registro de errores y diagnóstico**
+1. `src/main/registro.ts` escribe en `%APPDATA%\Reels Iglesia\registros\reels-AAAA-MM-DD.log` (una línea por
+   evento: hora ISO, nivel `info`/`aviso`/`error`, origen, mensaje). Se guardan los últimos 7 días; un archivo
+   que pasa de 5 MB deja de crecer ese día (se anota una sola línea «registro lleno»).
+2. Se anotan: arranque (versión de la app, Electron y Windows); errores no capturados del proceso principal
+   (`uncaughtException`, `unhandledRejection`); errores de la ventana (`window.onerror` y
+   `unhandledrejection`, enviados por el preload); `render-process-gone`; cada `ipcMain.handle` que lanza
+   (nombre del canal y mensaje); inicio, fin y duración de cada tarea larga (transcribir, caras, analizar,
+   voz, exportar, traducir, frases, MP3, PDF); y las últimas 20 líneas de stderr cuando un proceso hijo
+   (Python, FFmpeg, Claude, render) termina con error.
+3. Nunca se anota el texto de la prédica, las respuestas de Claude, el contenido de los prompts ni variables de
+   entorno. Las rutas de archivos sí.
+4. Ajustes → «Diagnóstico»: botón **«Copiar diagnóstico»**, que copia al portapapeles la versión de la app,
+   Electron y Windows, la CPU, la RAM, la GPU, el resultado de los chequeos del sistema (sin consultar a
+   Claude) y las últimas 200 líneas del registro; y botón **«Abrir carpeta de registros»**. El diagnóstico
+   nunca se envía a ningún lado.
+
+**B. Actualizaciones automáticas**
+1. `electron-updater` con el proveedor GitHub (`DannyMovilla/reels-iglesia`, releases públicos). El repositorio
+   debe ser público; el token para publicar (`GH_TOKEN`) vive solo en la PC de quien publica.
+2. La app revisa 10 s después de abrir y luego cada 6 horas; si hay versión nueva la descarga en segundo plano.
+   En desarrollo (`!app.isPackaged`) no revisa.
+3. Con la descarga lista, un aviso en la barra de arriba: «La versión X está lista: se instala al cerrar» y el
+   botón «Reiniciar ahora». «Reiniciar ahora» no se ofrece mientras haya una exportación o una tarea larga en
+   curso (se muestra «Se instalará al terminar»).
+4. Ajustes → «Versión»: la versión actual, «Buscar actualizaciones» y el estado (buscando, al día, descargando
+   N %, lista, o el error en español: «No pude revisar las actualizaciones. Revisa tu internet.»).
+5. `npm run publicar` = build + `electron-builder --publish always`. La versión pasa a **0.2.0**.
+6. Sin firma de código: la actualización se verifica con el sha512 de `latest.yml`.
+
+**C. Borrar prédicas y exportados**
+1. Prédicas → menú de la tarjeta → «Borrar prédica». El aviso dice qué se va (transcripción, N clips, M reels
+   exportados, frases y el espacio en MB) y «El video original del culto no se borra». Se manda la carpeta de
+   la prédica a la Papelera de Windows (`shell.trashItem`). Si la Papelera no está disponible, error en español
+   y no se borra nada.
+2. No se puede borrar una prédica con una tarea en curso (procesar, exportar, traducir, frases): «Espera a que
+   termine lo que está haciendo esta prédica».
+3. Exportados: «Borrar» en cada reel (el MP4, su portada y su archivo de textos) y «Borrar todos» por prédica,
+   con aviso y el espacio que se libera. Todo va a la Papelera. Los clips cuyo reel se borró vuelven a estado
+   «editado». Lo mismo para los reels de «Con IA».
+4. Los IPC de borrar validan el id y que la ruta quede dentro de la carpeta de datos.
+
+**D. Datos y disco**
+1. Cada tarjeta de Prédicas muestra cuánto ocupa la prédica (sin contar el video original). Ajustes → «Espacio»
+   muestra el total de la carpeta de datos.
+2. «Liberar espacio» (por prédica y en Ajustes para todas) borra lo que la app sabe rehacer: la carpeta `tmp/`
+   y las voces limpias `voz-*.m4a`, estas últimas solo si el video original sigue disponible. Dice cuánto liberó.
+3. Al abrir la app se borran los archivos de `tmp/` de más de 7 días de todas las prédicas.
+4. La tarjeta de una prédica cuyo video no está dice «Video no encontrado» (el editor ya ofrece ubicarlo).
+
+**E. Instalador 0.2.0 y prueba en una PC limpia**
+1. `npm run dist` con la versión 0.2.0 y `tests/e2e/instalado.spec.ts` actualizado (incluye que el registro se
+   cree en la carpeta de datos de prueba).
+2. `docs/superpowers/notas/prueba-pc-limpia.md`: lista de verificación paso a paso del primer uso en un Windows
+   sin Python, FFmpeg, Node ni Claude (instalar, aviso de Windows, asistente, crear entorno, iniciar sesión en
+   Claude, primera prédica, exportar, «Copiar diagnóstico»), con dónde anotar cada falla. La prueba la hace la
+   persona en otra PC (Windows 11 Home no trae Windows Sandbox).
+
+**F. Prueba con un culto real**
+1. Una sesión con la persona: un culto de 1 a 2 horas, Claude real; transcribir, analizar, exportar 3 reels en
+   9:16 y 4:5, frases y entregas. Los tiempos de cada paso se toman del registro y se anotan en
+   `docs/superpowers/notas/prueba-culto-real.md`, junto con lo que se vio mal.
+2. Solo se ajustan valores (no lógica) y cada ajuste lleva su prueba.
+
+**Pruebas**
+- Registro: formato de línea, rotación de 7 días, tope de 5 MB, que no anote textos de la prédica, errores de
+  IPC y de procesos hijos con el final del stderr.
+- Diagnóstico: el texto copiado tiene versión, sistema, chequeos y las últimas 200 líneas.
+- Actualizaciones: con un `autoUpdater` simulado, los estados y avisos; no reinicia con una tarea en curso; no
+  revisa en desarrollo.
+- Borrar: va a la Papelera (simulada), avisa lo correcto, se niega con tarea en curso, rechaza ids y rutas
+  fuera de la carpeta de datos, los clips vuelven a «editado».
+- Espacio: tamaños, liberar respeta las voces sin video, limpieza de `tmp/` viejo al abrir.
+- E2E: instalado.spec con la versión 0.2.0.
+
+Fuera del plan 10: firma de código, integración continua, licencia y nota de privacidad, publicar en redes.
