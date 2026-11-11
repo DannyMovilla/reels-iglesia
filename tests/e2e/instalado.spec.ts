@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdtempSync, readdirSync } from "node:fs";
+import { existsSync, mkdtempSync, readdirSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { _electron as electron, expect, test } from "@playwright/test";
@@ -38,5 +38,14 @@ test("la app instalada crea, procesa y exporta una prédica", async () => {
   await expect(v.getByText("1 reel listo")).toBeVisible({ timeout: 400_000 });
   const proyecto = readdirSync(join(datos, "proyectos"))[0];
   expect(readdirSync(join(datos, "proyectos", proyecto, "exportados")).some((a) => a.endsWith("-9x16.mp4"))).toBe(true);
+
+  // Plan 10: el registro se crea en la carpeta de datos y Ajustes muestra la versión.
+  const registros = join(datos, "registros");
+  const hoy = readdirSync(registros).find((f) => /^reels-\d{4}-\d{2}-\d{2}\.log$/.test(f))!;
+  const registro = readFileSync(join(registros, hoy), "utf8");
+  expect(registro).toMatch(/ info app inicio 0\.2\.0 electron /);
+  expect(registro).toMatch(/ info cola ok exportar /);
+  await v.getByRole("link", { name: "Ajustes" }).click();
+  await expect(v.getByText("Reels Iglesia 0.2.0")).toBeVisible();
   await app.close();
 });
